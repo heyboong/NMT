@@ -1,0 +1,21 @@
+{
+  "name": "management-app-p2p-proxy",
+  "version": "1.0.0",
+  "description": "Proxy for Binance P2P rates used by the offline management UI",
+  "main": "p2p-rate-proxy.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node p2p-rate-proxy.js",
+    "dev": "nodemon p2p-rate-proxy.js",
+    "check-rate": "node scripts/check-rate-change.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.4",
+    "express": "^4.19.2",
+    "nodemailer": "^6.9.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
