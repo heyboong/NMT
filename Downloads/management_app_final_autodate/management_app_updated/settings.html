@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cài Đặt</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html">🏠 Trang Chủ</a>
+        <a href="dashboard.html">📊 Bảng Chính</a>
+        <a href="AE.html">💼 Bảng AE</a>
+        <a href="AE-QT.html">🌐 Bảng AE-QT</a>
+        <a href="rate.html">💱 Tỷ Giá USD</a>
+        <a href="usdt-purchase.html">💰 Giá Nhập USDT</a>
+        <a href="balance.html">👥 Danh Sách Tên</a>
+        <a href="settings.html" class="active">⚙️ Cài Đặt</a>
+        <a href="system.html">🔧 Quản Lý</a>
+    </nav>
+
+    <div class="container">
+        <h2>⚙️ Cài Đặt Hệ Thống</h2>
+        <p class="text-hint">Tùy chỉnh công thức tính, đơn vị tiền tệ và hiển thị cho toàn bộ ứng dụng</p>
+
+        <!-- Search -->
+        <div class="settings-search">
+            <input type="text" id="settings-search" placeholder="🔍 Tìm kiếm cài đặt..." aria-label="Tìm kiếm cài đặt">
+        </div>
+
+        <!-- Tabs -->
+        <div class="settings-tabs">
+            <button class="settings-tab active" data-tab="currency">💱 Tiền Tệ</button>
+            <button class="settings-tab" data-tab="formulas">🧮 Công Thức</button>
+            <button class="settings-tab" data-tab="display">🎨 Hiển Thị</button>
+            <button class="settings-tab" data-tab="p2p">📈 P2P Rate</button>
+            <button class="settings-tab" data-tab="history">📜 Lịch Sử</button>
+            <button class="settings-tab" data-tab="advanced">🔧 Nâng Cao</button>
+        </div>
+
+        <!-- Currency Tab -->
+        <div class="settings-tab-content active" data-content="currency">
+            <section class="settings-section">
+                <h3>💱 Cài Đặt Tiền Tệ</h3>
+                
+                <!-- Quick Templates -->
+                <div class="settings-card" style="background: #f3e5f5; border-left: 4px solid #9c27b0; margin-bottom: 20px;">
+                    <h4>⚡ Mẫu Cài Đặt Nhanh</h4>
+                    <div class="quick-action-buttons">
+                        <button type="button" id="template-vn-standard" class="btn secondary">🇻🇳 Việt Nam Chuẩn</button>
+                        <button type="button" id="template-vn-accounting" class="btn secondary">📊 Kế Toán VN</button>
+                        <button type="button" id="template-international" class="btn secondary">🌍 Quốc Tế</button>
+                        <button type="button" id="template-crypto" class="btn secondary">🪙 Crypto</button>
+                    </div>
+                    <p class="field-hint" style="margin-top: 10px;">ℹ️ Click để áp dụng mẫu cài đặt sẵn, sau đó có thể tùy chỉnh</p>
+                </div>
+                
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h4>Tiền tệ chính (VND)</h4>
+                        <label>
+                            Ký hiệu tiền tệ
+                            <span class="help-tooltip">?
+                                <span class="tooltiptext">Ký hiệu hiển thị cho đơn vị tiền tệ chính (VD: ₫, đ, VND)</span>
+                            </span>
+                            <input type="text" id="currency-symbol" placeholder="₫" maxlength="5">
+                        </label>
+                        <label>
+                            Vị trí ký hiệu
+                            <select id="currency-position">
+                                <option value="after">Sau số (1,000₫)</option>
+                                <option value="before">Trước số (₫1,000)</option>
+                            </select>
+                        </label>
+                        <label>
+                            Số chữ số thập phân
+                            <input type="number" id="currency-decimals" min="0" max="4" value="0">
+                        </label>
+                        <label>
+                            Ký tự phân cách nghìn
+                            <select id="currency-separator">
+                                <option value=",">Dấu phẩy (1,000)</option>
+                                <option value=".">Dấu chấm (1.000)</option>
+                                <option value=" ">Khoảng trắng (1 000)</option>
+                                <option value="">Không dùng (1000)</option>
+                            </select>
+                        </label>
+                        <label>
+                            Ký tự thập phân
+                            <select id="currency-decimal-separator">
+                                <option value=".">Dấu chấm (.)</option>
+                                <option value=",">Dấu phẩy (,)</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <div class="settings-card">
+                        <h4>Tiền tệ ngoại tệ (USD/USDT)</h4>
+                        <label>
+                            Ký hiệu
+                            <input type="text" id="crypto-symbol" placeholder="$" maxlength="5">
+                        </label>
+                        <label>
+                            Vị trí ký hiệu
+                            <select id="crypto-position">
+                                <option value="after">Sau số (100$)</option>
+                                <option value="before">Trước số ($100)</option>
+                            </select>
+                        </label>
+                        <label>
+                            Số chữ số thập phân
+                            <input type="number" id="crypto-decimals" min="0" max="8" value="2">
+                        </label>
+                        <div class="quick-action-buttons">
+                            <button type="button" id="quick-usd">$ USD Standard</button>
+                            <button type="button" id="quick-usdt">₮ USDT</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview -->
+                <div class="settings-preview">
+                    <h4>Xem Trước</h4>
+                    <div class="preview-examples">
+                        <div class="preview-item">
+                            <span class="preview-label">Số nguyên:</span>
+                            <span class="preview-value" id="preview-integer">1,000,000₫</span>
+                        </div>
+                        <div class="preview-item">
+                            <span class="preview-label">Số thập phân:</span>
+                            <span class="preview-value" id="preview-decimal">1,234.56₫</span>
+                        </div>
+                        <div class="preview-item">
+                            <span class="preview-label">USD/USDT:</span>
+                            <span class="preview-value" id="preview-crypto">100.25$</span>
+                        </div>
+                        <div class="preview-item">
+                            <span class="preview-label">Số âm:</span>
+                            <span class="preview-value" id="preview-negative" style="color: #dc2626;">-500₫</span>
+                        </div>
+                        <div class="preview-item">
+                            <span class="preview-label">Số lớn:</span>
+                            <span class="preview-value" id="preview-large">123,456,789₫</span>
+                        </div>
+                        <div class="preview-item">
+                            <span class="preview-label">Số nhỏ:</span>
+                            <span class="preview-value" id="preview-small">0.0125$</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Formulas Tab -->
+        <div class="settings-tab-content" data-content="formulas">
+            <section class="settings-section">
+                <h3>🧮 Công Thức Tính Toán</h3>
+                
+                <!-- Formula Builder Tool - Redesigned Clean UI -->
+                <div class="settings-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; margin-bottom: 20px; border-radius: 16px; box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3); overflow: hidden;">
+                    <!-- Header Section -->
+                    <div style="padding: 24px 24px 16px 24px; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 32px;">🧮</span>
+                                <div>
+                                    <h4 style="margin: 0; font-size: 22px; font-weight: 700;">Công Thức Tính Toán</h4>
+                                    <p style="margin: 4px 0 0 0; font-size: 12px; opacity: 0.85;">Tạo và quản lý công thức tính toán cho các bảng</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <span id="builder-complexity" style="font-size: 11px; padding: 5px 12px; background: rgba(255,255,255,0.25); border-radius: 20px; font-weight: 600;">Đơn giản</span>
+                                <span id="builder-char-count" style="font-size: 11px; opacity: 0.75;">0/500</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Main Content -->
+                    <div style="padding: 24px;">
+                        <!-- Step 1: Select Table & Field -->
+                        <div style="background: white; color: #1f2937; padding: 20px; border-radius: 12px; margin-bottom: 16px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                                <span style="background: #667eea; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">1</span>
+                                <h5 style="margin: 0; font-size: 16px; font-weight: 600; color: #1f2937;">Chọn Bảng & Trường</h5>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: #4b5563;">Bảng dữ liệu</label>
+                                    <select id="builder-table" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #e5e7eb; font-size: 14px; font-weight: 600; color: #1f2937; background: white; cursor: pointer;">
+                                        <option value="ae">📋 Bảng AE</option>
+                                        <option value="aeqt">📋 Bảng AE-QT</option>
+                                        <option value="conversion">💱 Bảng Ngày Đổi</option>
+                                        <option value="withdraw">💰 Bảng Ngày Lấy</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: #4b5563;">Trường tính toán</label>
+                                    <select id="builder-field" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #e5e7eb; font-size: 14px; font-weight: 600; color: #1f2937; background: white; cursor: pointer;">
+                                        <option value="total">Tổng tiền</option>
+                                        <option value="chia">Chia</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 2: Build Formula -->
+                        <div style="background: white; color: #1f2937; padding: 20px; border-radius: 12px; margin-bottom: 16px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="background: #667eea; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">2</span>
+                                    <h5 style="margin: 0; font-size: 16px; font-weight: 600; color: #1f2937;">Xây Dựng Công Thức</h5>
+                                </div>
+                                <div style="display: flex; gap: 6px;">
+                                    <button type="button" id="builder-beautify" style="padding: 6px 12px; background: #f3f4f6; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; color: #6b7280;">✨ Format</button>
+                                    <button type="button" id="builder-history" style="padding: 6px 12px; background: #f3f4f6; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; color: #6b7280;">📜 Lịch Sử</button>
+                                </div>
+                            </div>
+                            <!-- Formula Input -->
+                            <textarea id="builder-formula" 
+                                placeholder="Nhập công thức... Ví dụ: money * 0.5 hoặc (usdt + usd) * price" 
+                                style="width: 100%; padding: 16px; border-radius: 8px; border: 2px solid #e5e7eb; font-family: 'Consolas', monospace; font-size: 15px; min-height: 100px; resize: vertical; color: #1f2937; background: #f9fafb; line-height: 1.6;"></textarea>
+                            <div id="builder-suggestions" style="position: absolute; background: white; border: 2px solid #667eea; border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); max-height: 200px; overflow-y: auto; z-index: 1000; display: none; min-width: 200px;"></div>
+                            <div id="builder-validation" style="margin-top: 8px; padding: 12px; border-radius: 8px; font-size: 13px; display: none; font-weight: 600;"></div>
+                            
+                            <!-- Variables & Operators Grid -->
+                            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 16px;">
+                                <!-- Variables -->
+                                <div>
+                                    <label style="display: block; margin-bottom: 8px; font-size: 12px; font-weight: 600; color: #6b7280;">🎯 BIẾN SỐ</label>
+                                    <div id="builder-variables" style="display: flex; flex-wrap: wrap; gap: 6px; padding: 12px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb; max-height: 120px; overflow-y: auto;"></div>
+                                </div>
+                                <!-- Operators -->
+                                <div>
+                                    <label style="display: block; margin-bottom: 8px; font-size: 12px; font-weight: 600; color: #6b7280;">➕ PHÉP TOÁN</label>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                                        <button type="button" class="builder-operator" data-op=" + " style="padding: 10px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; color: #1f2937;">+</button>
+                                        <button type="button" class="builder-operator" data-op=" - " style="padding: 10px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; color: #1f2937;">−</button>
+                                        <button type="button" class="builder-operator" data-op=" * " style="padding: 10px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; color: #1f2937;">×</button>
+                                        <button type="button" class="builder-operator" data-op=" / " style="padding: 10px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; color: #1f2937;">÷</button>
+                                        <button type="button" class="builder-operator" data-op="()" style="padding: 10px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; color: #1f2937;">( )</button>
+                                        <button type="button" class="builder-operator" data-op=" || " style="padding: 10px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; color: #1f2937;">||</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Live Preview -->
+                            <div style="margin-top: 16px; padding: 16px; background: #f0fdf4; border-radius: 8px; border: 2px solid #bbf7d0;">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                    <span style="font-size: 13px; font-weight: 600; color: #166534;">👁️ Xem Trước Kết Quả</span>
+                                    <span id="preview-status" style="font-size: 11px; padding: 3px 10px; background: #dcfce7; border-radius: 12px; color: #166534; font-weight: 600;">Chờ nhập...</span>
+                                </div>
+                                <div id="builder-preview-result" style="padding: 12px; background: white; border-radius: 6px; color: #1f2937; font-family: 'Courier New', monospace; font-size: 15px; font-weight: 600; min-height: 45px; display: flex; align-items: center; justify-content: center; border: 1px solid #bbf7d0;">
+                                    <span style="color: #9ca3af; font-style: italic;">Nhập công thức để xem kết quả...</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 3: Actions -->
+                        <div style="background: white; color: #1f2937; padding: 20px; border-radius: 12px; margin-bottom: 16px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                                <span style="background: #667eea; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">3</span>
+                                <h5 style="margin: 0; font-size: 16px; font-weight: 600; color: #1f2937;">Thực Hiện</h5>
+                            </div>
+                            
+                            <!-- Main Actions -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                                <button type="button" id="builder-apply" style="padding: 16px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 15px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); transition: all 0.2s;">
+                                    <div style="font-size: 20px; margin-bottom: 4px;">✅</div>
+                                    <div>Áp Dụng</div>
+                                    <div style="font-size: 10px; opacity: 0.9; font-weight: 500; margin-top: 4px;">Ctrl+Enter</div>
+                                </button>
+                                <button type="button" id="builder-test" style="padding: 16px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 15px; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4); transition: all 0.2s;">
+                                    <div style="font-size: 20px; margin-bottom: 4px;">🧪</div>
+                                    <div>Kiểm Tra</div>
+                                    <div style="font-size: 10px; opacity: 0.9; font-weight: 500; margin-top: 4px;">Ctrl+Space</div>
+                                </button>
+                                <button type="button" id="builder-clear" style="padding: 16px; background: white; color: #ef4444; border: 2px solid #ef4444; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 15px; transition: all 0.2s;">
+                                    <div style="font-size: 20px; margin-bottom: 4px;">🗑️</div>
+                                    <div>Xóa</div>
+                                    <div style="font-size: 10px; opacity: 0.8; font-weight: 500; margin-top: 4px;">Escape</div>
+                                </button>
+                            </div>
+                            
+                            <!-- Utility Actions -->
+                            <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;">
+                                <button type="button" id="builder-undo" style="padding: 10px; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; color: #4b5563;">↶ Undo</button>
+                                <button type="button" id="builder-redo" style="padding: 10px; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; color: #4b5563;">↷ Redo</button>
+                                <button type="button" id="builder-copy" style="padding: 10px; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; color: #4b5563;">📋 Copy</button>
+                                <button type="button" id="builder-paste" style="padding: 10px; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; color: #4b5563;">📄 Paste</button>
+                                <button type="button" style="display: none;" id="builder-smart-suggest"></button>
+                                <input type="text" style="display: none;" id="builder-variable-search">
+                                <span style="display: none;" id="builder-variable-count"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Collapsible Sections -->
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <!-- History Panel -->
+                            <div id="builder-history-panel" style="display: none; background: white; color: #1f2937; padding: 16px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <strong style="color: #667eea; font-size: 14px;">📜 Lịch Sử Công Thức</strong>
+                                    <button type="button" id="builder-history-clear" style="padding: 6px 12px; background: #fee2e2; color: #ef4444; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">🗑️ Xóa Tất Cả</button>
+                                </div>
+                                <div id="builder-history-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+                                    <div style="text-align: center; color: #9ca3af; font-size: 12px; padding: 20px;">Chưa có lịch sử</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Test Area -->
+                            <div id="builder-test-area" style="display: none; background: white; color: #1f2937; padding: 16px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                <strong style="color: #f59e0b; font-size: 14px; display: block; margin-bottom: 12px;">🧪 Kiểm Tra Công Thức</strong>
+                                <div id="builder-test-inputs" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;"></div>
+                                <div id="builder-test-result" style="padding: 14px; background: #f9fafb; border-radius: 8px; color: #1f2937; font-weight: 600; font-size: 15px; border: 2px solid #e5e7eb;"></div>
+                            </div>
+                            
+                            <!-- Keyboard Shortcuts -->
+                            <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                    <strong style="font-size: 12px; color: white;">⌨️ Phím Tắt</strong>
+                                    <button type="button" id="builder-shortcuts-toggle" style="padding: 4px 10px; background: rgba(255,255,255,0.2); border: none; border-radius: 6px; color: white; font-size: 10px; font-weight: 600; cursor: pointer;">Xem</button>
+                                </div>
+                                <div id="builder-shortcuts-extended" style="display: none; font-size: 11px; color: rgba(255,255,255,0.9); line-height: 1.8;">
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                        <div>• Ctrl+Enter: Áp dụng</div>
+                                        <div>• Ctrl+Space: Test</div>
+                                        <div>• Ctrl+Z: Undo</div>
+                                        <div>• Ctrl+Y: Redo</div>
+                                        <div>• Ctrl+D: Duplicate</div>
+                                        <div>• Esc: Xóa công thức</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Thư viện mẫu công thức -->
+                <div class="settings-card" style="background: #f0fdf4; border-left: 4px solid #10b981; margin-bottom: 20px;">
+                    <h4 style="color: #065f46; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 20px;">📚</span>
+                        Thư Viện Mẫu Công Thức
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-top: 12px;">
+                        <div class="formula-template" data-formula="(usdt + usd) * price" data-desc="Tổng crypto nhân giá" style="padding: 12px; background: white; border-radius: 8px; border: 2px solid #d1fae5; cursor: pointer; transition: all 0.2s;">
+                            <div style="font-weight: 600; color: #065f46; margin-bottom: 4px;">🪙 Tổng Crypto × Giá</div>
+                            <code style="font-size: 12px; color: #047857;">(usdt + usd) * price</code>
+                        </div>
+                        <div class="formula-template" data-formula="money / (nameCount || 2)" data-desc="Chia theo số người" style="padding: 12px; background: white; border-radius: 8px; border: 2px solid #d1fae5; cursor: pointer; transition: all 0.2s;">
+                            <div style="font-weight: 600; color: #065f46; margin-bottom: 4px;">👥 Chia Đều</div>
+                            <code style="font-size: 12px; color: #047857;">money / (nameCount || 2)</code>
+                        </div>
+                        <div class="formula-template" data-formula="bankdep + bankbad + visa" data-desc="Tổng 3 kênh rút tiền" style="padding: 12px; background: white; border-radius: 8px; border: 2px solid #d1fae5; cursor: pointer; transition: all 0.2s;">
+                            <div style="font-weight: 600; color: #065f46; margin-bottom: 4px;">🏦 Tổng 3 Kênh</div>
+                            <code style="font-size: 12px; color: #047857;">bankdep + bankbad + visa</code>
+                        </div>
+                        <div class="formula-template" data-formula="money * 0.4" data-desc="Lấy 40% tiền làm" style="padding: 12px; background: white; border-radius: 8px; border: 2px solid #d1fae5; cursor: pointer; transition: all 0.2s;">
+                            <div style="font-weight: 600; color: #065f46; margin-bottom: 4px;">💰 40% Tiền Làm</div>
+                            <code style="font-size: 12px; color: #047857;">money * 0.4</code>
+                        </div>
+                        <div class="formula-template" data-formula="money * 0.5" data-desc="Lấy 50% tiền làm" style="padding: 12px; background: white; border-radius: 8px; border: 2px solid #d1fae5; cursor: pointer; transition: all 0.2s;">
+                            <div style="font-weight: 600; color: #065f46; margin-bottom: 4px;">💰 50% Tiền Làm</div>
+                            <code style="font-size: 12px; color: #047857;">money * 0.5</code>
+                        </div>
+                        <div class="formula-template" data-formula="money * 0.8" data-desc="Lấy 80% tiền làm" style="padding: 12px; background: white; border-radius: 8px; border: 2px solid #d1fae5; cursor: pointer; transition: all 0.2s;">
+                            <div style="font-weight: 600; color: #065f46; margin-bottom: 4px;">💰 80% Tiền Làm</div>
+                            <code style="font-size: 12px; color: #047857;">money * 0.8</code>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h4>Bảng AE</h4>
+                        <label>
+                            Công thức Tổng tiền
+                            <span class="help-tooltip">?
+                                <span class="tooltiptext">Biến khả dụng: money (tiền làm), name (tên), chia, khoa. VD: money * 0.5</span>
+                            </span>
+                            <input type="text" id="formula-ae-total" placeholder="money * 0.5" style="width: 100%; word-break: break-all; overflow-wrap: break-word;">
+                            <span class="validation-message" id="error-ae-total"></span>
+                        </label>
+                        <label>
+                            Công thức Chia
+                            <input type="text" id="formula-ae-chia" placeholder="money / count" style="width: 100%; word-break: break-all; overflow-wrap: break-word;">
+                            <span class="field-hint">Hệ thống tự động đếm số tên và chia</span>
+                        </label>
+                        <div class="quick-action-buttons" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            <button type="button" data-formula="ae-total" data-value="money * 0.4" style="padding: 4px 8px; font-size: 11px;">40%</button>
+                            <button type="button" data-formula="ae-total" data-value="money * 0.5" style="padding: 4px 8px; font-size: 11px;">50%</button>
+                            <button type="button" data-formula="ae-total" data-value="money * 0.8" style="padding: 4px 8px; font-size: 11px;">80%</button>
+                        </div>
+                        <!-- Test Formula -->
+                        <div style="margin-top: 12px; padding: 8px; background: #fff3cd; border-radius: 4px;">
+                            <strong style="font-size: 11px;">🧪 Test:</strong>
+                            <div style="display: flex; gap: 6px; margin-top: 6px;">
+                                <input type="number" id="test-ae-money" placeholder="Tiền làm" style="flex: 1; padding: 4px 6px; font-size: 11px;">
+                                <button type="button" id="test-ae-formula" class="btn secondary" style="padding: 4px 10px; font-size: 11px;">Test</button>
+                            </div>
+                            <div id="test-ae-result" style="margin-top: 6px; font-weight: 600; font-size: 12px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h4>Bảng AE-QT</h4>
+                        <label>
+                            Công thức Tổng tiền
+                            <span class="help-tooltip">?
+                                <span class="tooltiptext">Tương tự bảng AE nhưng không có cột VND</span>
+                            </span>
+                            <input type="text" id="formula-aeqt-total" placeholder="money * 0.5" style="width: 100%; word-break: break-all; overflow-wrap: break-word;">
+                        </label>
+                        <label>
+                            Công thức Chia
+                            <input type="text" id="formula-aeqt-chia" placeholder="money / count" style="width: 100%; word-break: break-all; overflow-wrap: break-word;">
+                        </label>
+                        <!-- Test Formula -->
+                        <div style="margin-top: 12px; padding: 8px; background: #fff3cd; border-radius: 4px;">
+                            <strong style="font-size: 11px;">🧪 Test:</strong>
+                            <div style="display: flex; gap: 6px; margin-top: 6px;">
+                                <input type="number" id="test-aeqt-money" placeholder="Tiền làm" style="flex: 1; padding: 4px 6px; font-size: 11px;">
+                                <button type="button" id="test-aeqt-formula" class="btn secondary" style="padding: 4px 10px; font-size: 11px;">Test</button>
+                            </div>
+                            <div id="test-aeqt-result" style="margin-top: 6px; font-weight: 600; font-size: 12px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h4>Bảng Ngày Đổi</h4>
+                        <label>
+                            Công thức VND
+                            <span class="help-tooltip">?
+                                <span class="tooltiptext">Biến: usdt, usd, price, vnd. Tính tổng từ USDT và USD</span>
+                            </span>
+                            <input type="text" id="formula-conv-vnd" placeholder="(usdt + usd) * price" style="width: 100%; word-break: break-all; overflow-wrap: break-word;">
+                        </label>
+                        <label>
+                            Ưu tiên VND thủ công
+                            <select id="formula-conv-priority">
+                                <option value="true">Có - Dùng VND nhập tay nếu có</option>
+                                <option value="false">Không - Luôn tính lại</option>
+                            </select>
+                        </label>
+                        <!-- Test Formula -->
+                        <div style="margin-top: 12px; padding: 8px; background: #fff3cd; border-radius: 4px;">
+                            <strong style="font-size: 11px;">🧪 Test:</strong>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 6px;">
+                                <input type="number" id="test-conv-usdt" placeholder="USDT" step="0.01" style="padding: 4px 6px; font-size: 11px;">
+                                <input type="number" id="test-conv-usd" placeholder="USD" step="0.01" style="padding: 4px 6px; font-size: 11px;">
+                                <input type="number" id="test-conv-price" placeholder="Giá" style="padding: 4px 6px; font-size: 11px;">
+                            </div>
+                            <button type="button" id="test-conv-formula" class="btn secondary" style="margin-top: 6px; width: 100%; padding: 4px 10px; font-size: 11px;">Test</button>
+                            <div id="test-conv-result" style="margin-top: 6px; font-weight: 600; font-size: 12px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h4>Bảng Ngày Lấy</h4>
+                        <label>
+                            Công thức Tổng
+                            <span class="help-tooltip">?
+                                <span class="tooltiptext">Biến: bankdep (Bank đẹp), bankbad (Bank xấu), visa</span>
+                            </span>
+                            <input type="text" id="formula-withdraw-total" placeholder="bankdep + bankbad + visa" style="width: 100%; word-break: break-all; overflow-wrap: break-word;">
+                        </label>
+                        <!-- Test Formula -->
+                        <div style="margin-top: 12px; padding: 8px; background: #fff3cd; border-radius: 4px;">
+                            <strong style="font-size: 11px;">🧪 Test:</strong>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 6px;">
+                                <input type="number" id="test-withdraw-bankdep" placeholder="Bank đẹp" style="padding: 4px 6px; font-size: 11px;">
+                                <input type="number" id="test-withdraw-bankbad" placeholder="Bank xấu" style="padding: 4px 6px; font-size: 11px;">
+                                <input type="number" id="test-withdraw-visa" placeholder="Visa" style="padding: 4px 6px; font-size: 11px;">
+                            </div>
+                            <button type="button" id="test-withdraw-formula" class="btn secondary" style="margin-top: 6px; width: 100%; padding: 4px 10px; font-size: 11px;">Test</button>
+                            <div id="test-withdraw-result" style="margin-top: 6px; font-weight: 600; font-size: 12px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Display Tab -->
+        <div class="settings-tab-content" data-content="display">
+            <section class="settings-section">
+                <h3>🎨 Cài Đặt Hiển Thị</h3>
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h4>Định dạng số</h4>
+                        <label>
+                            Chế độ làm tròn
+                            <select id="display-rounding">
+                                <option value="round">Làm tròn chuẩn (27,856.4 → 27,856)</option>
+                                <option value="floor">Làm tròn xuống (27,856.9 → 27,856)</option>
+                                <option value="ceil">Làm tròn lên (27,856.1 → 27,857)</option>
+                            </select>
+                        </label>
+                        <label>
+                            Hiển thị số 0
+                            <select id="display-show-zero">
+                                <option value="true">Hiển thị (0₫)</option>
+                                <option value="false">Ẩn (để trống)</option>
+                            </select>
+                        </label>
+                        <label>
+                            Màu số âm
+                            <div class="input-with-addon">
+                                <input type="color" id="display-negative-color" value="#dc2626">
+                                <span class="input-addon" id="color-preview">#dc2626</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="settings-card">
+                        <h4>Chế độ chỉnh sửa</h4>
+                        <label>
+                            Khi focus vào ô
+                            <span class="help-tooltip">?
+                                <span class="tooltiptext">Chọn hiển thị số thuần để dễ chỉnh sửa, hoặc giữ format để thấy rõ hơn</span>
+                            </span>
+                            <select id="display-edit-mode">
+                                <option value="raw">Hiện số thuần (27856)</option>
+                                <option value="formatted">Giữ format (27,856₫)</option>
+                            </select>
+                        </label>
+                        <label>
+                            Tự động format khi blur
+                            <select id="display-auto-format">
+                                <option value="true">Có - Tự động thêm ký hiệu</option>
+                                <option value="false">Không - Giữ nguyên</option>
+                            </select>
+                        </label>
+                        <label>
+                            Độ cao dòng
+                            <select id="display-row-height">
+                                <option value="compact">Gọn (32px)</option>
+                                <option value="normal">Bình thường (40px)</option>
+                                <option value="comfortable">Rộng rãi (48px)</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- P2P Tab -->
+        <div class="settings-tab-content" data-content="p2p">
+            <section class="settings-section">
+                <h3>📈 Cấu Hình P2P Rate</h3>
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h4>Hệ số điều chỉnh</h4>
+                        <label>
+                            P2P Adjustment (%)
+                            <span class="help-tooltip">?
+                                <span class="tooltiptext">Phần trăm tăng thêm so với tỷ giá USD/VND spot. VD: 11% = tăng 11% so với giá ngân hàng</span>
+                            </span>
+                            <div class="input-with-addon">
+                                <input type="number" id="p2p-adjustment" step="0.1" value="11" min="0" max="50">
+                                <span class="input-addon">%</span>
+                            </div>
+                        </label>
+                        <label>
+                            Spread (%)
+                            <span class="help-tooltip">?
+                                <span class="tooltiptext">Chênh lệch giữa giá mua và giá bán. VD: 0.3% = giá bán cao hơn giá mua 0.3%</span>
+                            </span>
+                            <div class="input-with-addon">
+                                <input type="number" id="p2p-spread" step="0.01" value="0.3" min="0" max="5">
+                                <span class="input-addon">%</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="settings-card">
+                        <h4>Giá thủ công</h4>
+                        <label>
+                            Giá mua USDT
+                            <div class="input-with-addon">
+                                <input type="number" id="manual-buy-price" placeholder="27700" step="1">
+                                <span class="input-addon">VND</span>
+                            </div>
+                        </label>
+                        <label>
+                            Giá bán USDT
+                            <div class="input-with-addon">
+                                <input type="number" id="manual-sell-price" placeholder="27800" step="1">
+                                <span class="input-addon">VND</span>
+                            </div>
+                        </label>
+                        <button type="button" id="save-manual-rate" class="btn">💾 Lưu Giá Thủ Công</button>
+                        <span class="field-hint">Để trống để dùng giá tự động từ API</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- History Tab -->
+        <div class="settings-tab-content" data-content="history">
+            <section class="settings-section">
+                <h3>📜 Lịch Sử Thay Đổi</h3>
+                <div class="table-responsive">
+                    <table id="history-table">
+                        <thead>
+                            <tr>
+                                <th>Thời gian</th>
+                                <th>Trang</th>
+                                <th>Ngày</th>
+                                <th>Tiền làm (VND)</th>
+                                <th>Tên</th>
+                                <th>Chia</th>
+                                <th>Khóa</th>
+                                <th>VNĐ (VND)</th>
+                                <th>Ghi chú</th>
+                                <th>Tổng tiền (VND)</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Rows inserted by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <button id="clear-history" class="btn btn-danger btn-spacing">Xóa tất cả lịch sử</button>
+                <div id="history-export-container"></div>
+            </section>
+        </div>
+
+        <!-- Advanced Tab -->
+        <div class="settings-tab-content" data-content="advanced">
+            <section class="settings-section">
+                <h3>🔧 Cài Đặt Nâng Cao</h3>
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h4>Dữ liệu & Bộ nhớ</h4>
+                        <label>
+                            Tự động lưu
+                            <select id="auto-save">
+                                <option value="true">Bật - Lưu tự động mỗi thay đổi</option>
+                                <option value="false">Tắt - Lưu thủ công</option>
+                            </select>
+                        </label>
+                        <label>
+                            Số dòng mặc định
+                            <input type="number" id="default-rows" min="10" max="200" value="50" step="10">
+                            <span class="field-hint">Số dòng khởi tạo cho bảng AE, AE-QT</span>
+                        </label>
+                        <button type="button" id="clear-cache" class="btn btn-danger">🗑️ Xóa Bộ Nhớ Cache</button>
+                    </div>
+
+                    <div class="settings-card">
+                        <h4>Ngôn ngữ & Múi giờ</h4>
+                        <label>
+                            Ngôn ngữ
+                            <select id="language">
+                                <option value="vi">🇻🇳 Tiếng Việt</option>
+                                <option value="en">🇬🇧 English</option>
+                            </select>
+                        </label>
+                        <label>
+                            Múi giờ
+                            <select id="timezone">
+                                <option value="Asia/Ho_Chi_Minh">Việt Nam (GMT+7)</option>
+                                <option value="Asia/Bangkok">Bangkok (GMT+7)</option>
+                                <option value="Asia/Singapore">Singapore (GMT+8)</option>
+                            </select>
+                        </label>
+                        <label>
+                            Định dạng ngày
+                            <select id="date-format">
+                                <option value="DD/MM/YYYY">DD/MM/YYYY (02/12/2025)</option>
+                                <option value="MM/DD/YYYY">MM/DD/YYYY (12/02/2025)</option>
+                                <option value="YYYY-MM-DD">YYYY-MM-DD (2025-12-02)</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="settings-actions">
+            <button type="button" id="save-settings" class="btn">💾 Lưu Tất Cả Cài Đặt</button>
+            <button type="button" id="reset-settings" class="btn btn-danger">🔄 Khôi Phục Mặc Định</button>
+            <button type="button" id="export-settings" class="btn secondary">📥 Xuất Cài Đặt</button>
+            <button type="button" id="import-settings" class="btn secondary">📤 Nhập Cài Đặt</button>
+            <input type="file" id="import-settings-file" accept=".json" style="display: none;" aria-label="Import settings file">
+        </div>
+
+        <div id="settings-status" class="settings-status"></div>
+    </div>
+
+    <script src="assets/js/formulas.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/button-effects.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="assets/js/export.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-sync.js"></script>
+    <script src="assets/js/settings.js"></script>
+    
+    <!-- History Tab Logic -->
+    <script>
+    (function() {
+        const tbody = document.querySelector('#history-table tbody');
+        const clearBtn = document.getElementById('clear-history');
+
+        if (!tbody || !clearBtn) return; // Exit if elements don't exist
+
+        function renderHistory() {
+            const history = loadData('history');
+            tbody.innerHTML = '';
+            history.forEach((record, index) => {
+                const tr = document.createElement('tr');
+                const rowTotal = computeRowTotal(record);
+                const cells = [
+                    // Format timestamp using Hanoi time zone (UTC+7) for consistency
+                    (function() {
+                        try {
+                            return new Date(record.timestamp).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+                        } catch (e) {
+                            return new Date(record.timestamp).toLocaleString('vi-VN');
+                        }
+                    })(),
+                    record.page || '',
+                    record.date || '',
+                    // Format money as VND (header indicates VND)
+                    (record.money !== undefined && record.money !== null ? formatVND(record.money) : ''),
+                    record.name || '',
+                    record.chia || '',
+                    record.khoa || '',
+                    record.vnd ? formatVND(record.vnd) : '',
+                    record.note || '',
+                    formatVND(rowTotal)
+                ];
+                cells.forEach(text => {
+                    const td = document.createElement('td');
+                    td.textContent = text;
+                    tr.appendChild(td);
+                });
+                // actions
+                const actionTd = document.createElement('td');
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Xóa';
+                deleteBtn.className = 'btn btn-danger';
+                deleteBtn.addEventListener('click', () => {
+                    deleteHistoryRecord(index);
+                });
+                actionTd.appendChild(deleteBtn);
+                tr.appendChild(actionTd);
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deleteHistoryRecord(index) {
+            const history = loadData('history');
+            history.splice(index, 1);
+            saveData('history', history);
+            renderHistory();
+        }
+
+        clearBtn.addEventListener('click', () => {
+            if (confirm('Bạn có chắc muốn xóa toàn bộ lịch sử?')) {
+                saveData('history', []);
+                renderHistory();
+            }
+        });
+
+        // Render when history tab is clicked
+        document.querySelectorAll('.settings-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                if (tab.dataset.tab === 'history') {
+                    renderHistory();
+                    // Add export buttons if they don't exist
+                    const exportContainer = document.getElementById('history-export-container');
+                    if (exportContainer && exportContainer.children.length === 0) {
+                        createExportButtons('history-export-container', 'history', 'LichSu_' + new Date().toISOString().split('T')[0], 'Lịch Sử');
+                    }
+                }
+            });
+        });
+
+        // Initial render if history tab is active on page load
+        const activeTab = document.querySelector('.settings-tab.active');
+        if (activeTab && activeTab.dataset.tab === 'history') {
+            renderHistory();
+            createExportButtons('history-export-container', 'history', 'LichSu_' + new Date().toISOString().split('T')[0], 'Lịch Sử');
+        }
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng Giá Nhập USDT - Hệ Thống Quản Lý</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="assets/css/sheet.css" />
+    <!-- API Configuration -->
+    <script src="config.js"></script>
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="index.html">🏠 Trang Chủ</a>
+        <a href="dashboard.html">📊 Bảng Chính</a>
+        <a href="AE.html">💼 Bảng AE</a>
+        <a href="AE-QT.html">🌐 Bảng AE-QT</a>
+        <a href="rate.html">💱 Tỷ Giá USD</a>
+        <a href="usdt-purchase.html" class="active">💰 Giá Nhập USDT</a>
+        <a href="balance.html">👥 Danh Sách Theo Tên</a>
+        <a href="settings.html">⚙️ Cài Đặt</a>
+        <a href="system.html">🔧 Quản Lý</a>
+    </nav>
+
+    <div class="container">
+        <!-- Header với thống kê -->
+        <div style="margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h1 style="margin: 0; color: #1f2937; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 32px;">💰</span>
+                    Bảng Giá Nhập USDT
+                </h1>
+                <button id="export-usdt-btn" style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <span>📥</span> Xuất Excel
+                </button>
+            </div>
+
+            <!-- Thống kê nhanh -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 16px; border-radius: 10px; color: white;">
+                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Tổng Tiền Nhập</div>
+                    <div id="stat-total-input" style="font-size: 24px; font-weight: 700;">0₫</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 16px; border-radius: 10px; color: white;">
+                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Tổng USDT Mua</div>
+                    <div id="stat-total-usdt" style="font-size: 24px; font-weight: 700;">0 $</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 16px; border-radius: 10px; color: white;">
+                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Giá Nhập TB</div>
+                    <div id="stat-avg-price" style="font-size: 24px; font-weight: 700;">0₫</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 16px; border-radius: 10px; color: white;">
+                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Tổng Cộng</div>
+                    <div id="stat-total-final" style="font-size: 24px; font-weight: 700;">0₫</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bảng dữ liệu -->
+        <div class="table-container" style="background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden;">
+            <table id="usdt-purchase-table">
+                <thead>
+                    <tr>
+                        <th style="width: 120px;">Ngày Nhập</th>
+                        <th style="width: 150px;">Tiền Nhập (VND)</th>
+                        <th style="width: 150px;">Giá Nhập (VND)</th>
+                        <th style="width: 150px;">USDT ($)</th>
+                        <th style="width: 150px;">VND (VND)</th>
+                        <th style="width: 150px;">Tiền Làm (VND)</th>
+                        <th style="width: 150px;">Tổng Cộng (VND)</th>
+                        <th style="width: 100px;">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody id="usdt-purchase-tbody">
+                    <!-- Dữ liệu sẽ được thêm động -->
+                </tbody>
+            </table>
+
+            <!-- Nút thêm hàng mới -->
+            <div style="padding: 16px; background: #f9fafb; border-top: 1px solid #e5e7eb;">
+                <button id="add-row-btn" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 16px;">+</span> Thêm Dòng Mới
+                </button>
+            </div>
+        </div>
+
+        <!-- Hướng dẫn sử dụng -->
+        <div style="margin-top: 24px; padding: 16px; background: #f0f9ff; border-left: 4px solid #3b82f6; border-radius: 8px;">
+            <h3 style="margin: 0 0 12px 0; color: #1e40af; font-size: 16px;">📖 Hướng Dẫn Sử Dụng</h3>
+            <ul style="margin: 0; padding-left: 20px; color: #1e40af; line-height: 1.8;">
+                <li><strong>Ngày Nhập:</strong> Chọn ngày mua USDT</li>
+                <li><strong>Tiền Nhập:</strong> Số tiền VND đã chuyển để mua USDT</li>
+                <li><strong>Giá Nhập:</strong> Giá mua 1 USDT tại thời điểm nhập (VND)</li>
+                <li><strong>USDT:</strong> Số lượng USDT thực nhận (tự động tính = Tiền Nhập ÷ Giá Nhập)</li>
+                <li><strong>VND:</strong> Giá trị hiện tại của USDT theo giá P2P mới nhất (tự động cập nhật)</li>
+                <li><strong>Tiền Làm:</strong> Chi phí phát sinh, phí giao dịch</li>
+                <li><strong>Tổng Cộng:</strong> Lợi nhuận/lỗ = VND - Tiền Làm</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/button-effects.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-sync.js"></script>
+    <script src="assets/js/usdt-purchase.js"></script>
+    <script src="assets/js/note-manager.js"></script>
+    <script src="assets/js/export.js"></script>
+</body>
+</html>

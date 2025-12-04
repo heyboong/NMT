@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tỷ Giá USD</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html">🏠 Trang Chủ</a>
+        <a href="dashboard.html">📊 Bảng Chính</a>
+        <a href="AE.html">💼 Bảng AE</a>
+        <a href="AE-QT.html">🌐 Bảng AE-QT</a>
+        <a href="rate.html" class="active">💱 Tỷ Giá USD</a>
+        <a href="usdt-purchase.html">💰 Giá Nhập USDT</a>
+        <a href="balance.html">👥 Danh Sách Tên</a>
+        <a href="settings.html">⚙️ Cài Đặt</a>
+        <a href="system.html">🔧 Quản Lý</a>
+    </nav>
+
+    <div class="container">
+        <h2>💱 Tỷ Giá USD</h2>
+        <!-- Hiển thị tỷ giá hiện tại tự động cập nhật -->
+        <!-- Hiển thị tỷ giá tham khảo từ API làm mặc định; người dùng có thể sửa lại giá mua/bán theo P2P -->
+        <p id="current-rate-info" class="info-text">Giá P2P tham khảo (VND): <span id="rate-current-price">Đang tải…</span></p>
+        <p class="status-line">Trạng thái kết nối: <span id="rate-fetch-status" data-status="loading">Đang tải tỷ giá…</span></p>
+        <form id="rate-form">
+            <div class="form-grid">
+                <label class="hidden-row">
+                    Giá bán (₫/USDT)
+                    <input type="number" id="rate-sell-price" step="0.01" min="0" placeholder="VND" />
+                </label>
+                <label>
+                    Giá mua (₫/USDT)
+                    <input type="number" id="rate-buy-price" step="0.01" min="0" placeholder="VND" />
+                </label>
+                <label class="hidden-row">
+                    Loại giao dịch
+                    <select id="rate-type">
+                        <option value="sell">Bán USDT</option>
+                        <option value="buy" selected>Mua USDT</option>
+                    </select>
+                </label>
+                <label>
+                    Số lượng (USDT)
+                    <input type="number" id="rate-amount" step="0.01" min="0" placeholder="0.00 USDT" />
+                </label>
+                <div class="form-actions">
+                    <button type="submit" class="btn" id="rate-convert-btn">Chuyển đổi</button>
+                </div>
+            </div>
+        </form>
+        <h3>Kết quả (VND): <span id="rate-result">0 ₫</span></h3>
+        <h3>Lịch Sử chuyển đổi</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div>
+                <p style="margin: 0 0 4px 0; color: #1f2937; font-weight: 600; font-size: 15px;">
+                    Tất cả giao dịch (<span id="rate-history-count">0</span>)
+                </p>
+                <p style="margin: 0; color: #6b7280; font-size: 13px;">
+                    Tổng giá trị: <span id="rate-history-total" style="font-weight: 600; color: #10b981;">0₫</span>
+                </p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <select id="rate-history-filter" style="padding: 6px 12px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; cursor: pointer;">
+                    <option value="all">Tất cả</option>
+                    <option value="buy">Chỉ Mua</option>
+                    <option value="sell">Chỉ Bán</option>
+                </select>
+                <select id="rate-history-sort" style="padding: 6px 12px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; cursor: pointer;">
+                    <option value="newest">Mới nhất</option>
+                    <option value="oldest">Cũ nhất</option>
+                    <option value="highest">Giá cao nhất</option>
+                    <option value="lowest">Giá thấp nhất</option>
+                </select>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="rate-history-table">
+                <thead>
+                    <tr>
+                        <th>Thời gian</th>
+                        <th>Loại</th>
+                        <th>Số lượng (USDT)</th>
+                        <th>Giá (₫/USDT)</th>
+                        <th>Thành tiền (₫)</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <button id="clear-rate-history" class="btn btn-danger btn-spacing">Xóa lịch sử</button>
+        <div id="rate-export-container"></div>
+
+        <section id="system-embed-root" data-page="rate" class="system-embed-section"></section>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/button-effects.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="assets/js/export.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-sync.js"></script>
+    <script>
+    (function() {
+        // References to form fields
+        const sellPriceInput = document.getElementById('rate-sell-price');
+        const buyPriceInput  = document.getElementById('rate-buy-price');
+        const typeSelect    = document.getElementById('rate-type');
+        const amountInput   = document.getElementById('rate-amount');
+        const resultEl      = document.getElementById('rate-result');
+        const form          = document.getElementById('rate-form');
+        const tbody         = document.querySelector('#rate-history-table tbody');
+        const clearBtn      = document.getElementById('clear-rate-history');
+        const currentPriceEl= document.getElementById('rate-current-price');
+        const statusEl      = document.getElementById('rate-fetch-status');
+        const historyKey    = 'rate-history';
+        const settingsKey   = 'rate-settings';
+        const BACKEND_URL   = 'https://nmt-qj4t.onrender.com';
+        const proxyEndpoint = BACKEND_URL + '/api/p2p-rate';
+        let crossRate       = 0; // fallback rate from API
+        let currentFilter   = 'all';
+        let currentSort     = 'newest';
+
+        // Use global formatVND from app.js
+
+        function updateFetchStatus(message, level = 'info') {
+            if (!statusEl) return;
+            statusEl.textContent = message;
+            statusEl.setAttribute('data-status', level);
+        }
+
+        async function fetchRates() {
+            try {
+                updateFetchStatus('Đang lấy tỷ giá từ Binance P2P…', 'loading');
+                const response = await fetch(proxyEndpoint, { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error(`P2P proxy failed (${response.status})`);
+                }
+                const payload = await response.json();
+                const sell = parseFloat(payload.sellPrice) || 0;
+                const buy  = parseFloat(payload.buyPrice) || 0;
+                crossRate = sell || buy;
+                if (crossRate > 0) {
+                    currentPriceEl.textContent = formatVND(crossRate);
+                }
+                prefillPrices();
+                updateFetchStatus('Đã lấy tỷ giá P2P mới nhất từ Binance.', 'success');
+            } catch (err) {
+                console.error('Failed to fetch P2P rate via proxy:', err);
+                updateFetchStatus('Không lấy được tỷ giá P2P, đang dùng nguồn dự phòng.', 'warning');
+                await fetchFallbackRates();
+            }
+        }
+
+        async function fetchFallbackRates() {
+            try {
+                const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BUSDUSDT');
+                const busdData = await res.json();
+                const busdPrice = parseFloat(busdData.price);
+                const usdtToUsd = busdPrice > 0 ? 1 / busdPrice : 1;
+                const fxRes = await fetch('https://open.er-api.com/v6/latest/USD');
+                const fxData = await fxRes.json();
+                const usdToVnd = fxData && fxData.rates && fxData.rates.VND ? fxData.rates.VND : 0;
+                crossRate = usdtToUsd * usdToVnd;
+                if (crossRate > 0) {
+                    currentPriceEl.textContent = formatVND(crossRate);
+                }
+                prefillPrices();
+                updateFetchStatus('Đã lấy tỷ giá dự phòng từ API công khai.', 'success');
+            } catch (err) {
+                console.error('Fallback rate fetch failed:', err);
+                currentPriceEl.textContent = 'N/A';
+                updateFetchStatus('Không lấy được tỷ giá từ bất kỳ nguồn nào.', 'error');
+            }
+        }
+
+        /** Prefill price inputs from settings or cross rate */
+        function prefillPrices() {
+            const settings = loadData(settingsKey);
+            let sell = null;
+            let buy  = null;
+            if (settings && typeof settings === 'object' && !Array.isArray(settings)) {
+                sell = parseFloat(settings.sellPrice);
+                buy  = parseFloat(settings.buyPrice);
+            }
+            // Use stored settings if available, otherwise use crossRate
+            // Only prefill if input is currently empty to avoid overriding user edits
+            if (!sellPriceInput.value) {
+                if (sell && sell > 0) {
+                    sellPriceInput.value = sell.toFixed(2);
+                } else if (crossRate > 0) {
+                    sellPriceInput.value = crossRate.toFixed(2);
+                }
+            }
+            if (!buyPriceInput.value) {
+                if (buy && buy > 0) {
+                    buyPriceInput.value = buy.toFixed(2);
+                } else if (crossRate > 0) {
+                    buyPriceInput.value = crossRate.toFixed(2);
+                }
+            }
+            updateResult();
+
+            if (crossRate <= 0 && !sell && !buy) {
+                updateFetchStatus('Không có tỷ giá tham khảo, hãy nhập giá bán/mua thủ công.', 'warning');
+            }
+        /** Render history rows with filter and sort */
+        function renderHistory() {
+            let conversions = loadData(historyKey);
+            
+            // Apply filter
+            if (currentFilter !== 'all') {
+                conversions = conversions.filter(item => item.type === currentFilter);
+            }
+            
+            // Apply sort
+            conversions.sort((a, b) => {
+                switch(currentSort) {
+                    case 'newest':
+                        return new Date(b.timestamp) - new Date(a.timestamp);
+                    case 'oldest':
+                        return new Date(a.timestamp) - new Date(b.timestamp);
+                    case 'highest':
+                        return b.vnd - a.vnd;
+                    case 'lowest':
+                        return a.vnd - b.vnd;
+                    default:
+                        return 0;
+                }
+            });
+            
+            // Update count and total
+            const totalVnd = conversions.reduce((sum, item) => sum + (item.vnd || 0), 0);
+            document.getElementById('rate-history-count').textContent = conversions.length;
+            document.getElementById('rate-history-total').textContent = formatVND(totalVnd);
+            
+            tbody.innerHTML = '';
+            conversions.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                // Format type (sell/buy) to Vietnamese label
+                const typeLabel = item.type === 'buy' ? 'Mua' : 'Bán';
+                const typeBadgeColor = item.type === 'buy' ? '#10b981' : '#f59e0b';
+                const cells = [
+                    // Format timestamp using Hanoi time zone (UTC+7) for consistency
+                    (function() {
+                        try {
+                            return new Date(item.timestamp).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+                        } catch (e) {
+                            return new Date(item.timestamp).toLocaleString('vi-VN');
+                        }
+                    })(),
+                    typeLabel,
+                    item.amount,
+                    formatVND(item.price),
+                    formatVND(item.vnd)
+                ];
+                cells.forEach((text, i) => {
+                    const td = document.createElement('td');
+                    // Add badge style for type column
+                    if (i === 1) {
+                        td.innerHTML = `<span style="display: inline-block; padding: 4px 10px; background: ${typeBadgeColor}; color: white; border-radius: 4px; font-size: 12px; font-weight: 600;">${text}</span>`;
+                    } else {
+                        td.textContent = text;
+                    }
+                    tr.appendChild(td);
+                });
+                // Delete button - need to find original index
+                const originalIndex = loadData(historyKey).findIndex(original => 
+                    original.timestamp === item.timestamp && 
+                    original.vnd === item.vnd
+                );
+                const actionTd = document.createElement('td');
+                const delBtn = document.createElement('button');
+                delBtn.textContent = 'Xóa';
+                delBtn.className = 'btn btn-danger';
+                delBtn.addEventListener('click', () => deleteConversion(originalIndex));
+                actionTd.appendChild(delBtn);
+                tr.appendChild(actionTd);
+                tbody.appendChild(tr);
+            });
+        }       tbody.appendChild(tr);
+            });
+        }
+
+        /** Delete a conversion from history */
+        function deleteConversion(index) {
+            const conversions = loadData(historyKey);
+            conversions.splice(index, 1);
+            saveData(historyKey, conversions);
+            renderHistory();
+        }
+
+        /** Compute and update result based on current inputs */
+        function updateResult() {
+            const sellPrice = parseFloat(sellPriceInput.value) || 0;
+            const buyPrice  = parseFloat(buyPriceInput.value) || 0;
+            const amount    = parseFloat(amountInput.value) || 0;
+            const type      = typeSelect.value;
+            let priceUsed   = 0;
+            if (type === 'sell') {
+                priceUsed = sellPrice;
+            } else {
+                priceUsed = buyPrice;
+            }
+            const vnd = priceUsed * amount;
+            resultEl.textContent = formatVND(vnd);
+        }
+
+        // Listen for input changes to update result dynamically
+        sellPriceInput.addEventListener('input', updateResult);
+        buyPriceInput.addEventListener('input', updateResult);
+        amountInput.addEventListener('input', updateResult);
+        typeSelect.addEventListener('change', updateResult);
+
+        // Initialize page: fetch cross rate then render history
+        fetchRates();
+        renderHistory();
+        
+        // Add filter and sort event listeners
+        document.getElementById('rate-history-filter')?.addEventListener('change', (e) => {
+            currentFilter = e.target.value;
+            renderHistory();
+        });
+        
+        document.getElementById('rate-history-sort')?.addEventListener('change', (e) => {
+            currentSort = e.target.value;
+            renderHistory();
+        });
+        
+        // Auto-refresh rate every 1 hour (3600000 ms)
+        setInterval(fetchRates, 3600000);
+        
+        // Add export buttons
+        createExportButtons('rate-export-container', 'rate-history', 'TyGia_' + new Date().toISOString().split('T')[0], 'Tỷ Giá');
+    })();   resultEl.textContent = formatVND(vnd);
+            const conversions = loadData(historyKey);
+            conversions.push({
+                type: type,
+                price: price,
+                amount: amount,
+                vnd: vnd,
+                timestamp: new Date().toISOString()
+            });
+            saveData(historyKey, conversions);
+            // Save current prices to settings so dashboard can read
+            const settings = {
+                sellPrice: sellPrice,
+                buyPrice: buyPrice,
+                updatedAt: new Date().toISOString()
+            };
+            saveData(settingsKey, settings);
+            renderHistory();
+        });
+
+        // Clear history button
+        clearBtn.addEventListener('click', () => {
+            if (confirm('Bạn có muốn xóa toàn bộ lịch sử chuyển đổi?')) {
+                saveData(historyKey, []);
+                renderHistory();
+            }
+        });
+
+        // Initialize page: fetch cross rate then render history
+        fetchRates();
+        renderHistory();
+        
+        // Auto-refresh rate every 1 hour (3600000 ms)
+        setInterval(fetchRates, 3600000);
+        
+        // Add export buttons
+        createExportButtons('rate-export-container', 'rate-history', 'TyGia_' + new Date().toISOString().split('T')[0], 'Tỷ Giá');
+    })();
+    </script>
+    <script src="assets/js/system-embed.js"></script>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng Chính</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <!-- Spreadsheet style for dashboard tables -->
+    <link rel="stylesheet" href="assets/css/sheet.css" />
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html">🏠 Trang Chủ</a>
+        <a href="dashboard.html" class="active">📊 Bảng Chính</a>
+        <a href="AE.html">💼 Bảng AE</a>
+        <a href="AE-QT.html">🌐 Bảng AE-QT</a>
+        <a href="rate.html">💱 Tỷ Giá USD</a>
+        <a href="usdt-purchase.html">💰 Giá Nhập USDT</a>
+        <a href="balance.html">👥 Danh Sách Tên</a>
+        <a href="settings.html">⚙️ Cài Đặt</a>
+        <a href="system.html">🔧 Quản Lý</a>
+    </nav>
+    <div class="container">
+        <h2>📊 Tổng quan</h2>
+        <div class="alert-banner" id="rate-alert-banner" data-status="idle">
+            <span class="alert-banner__message" id="rate-alert-message">Đang chờ dữ liệu cảnh báo...</span>
+            <span class="alert-banner__badge" id="rate-alert-badge">Đang cập nhật</span>
+        </div>
+
+        <!-- 3 Bảng tổng quan ngang -->
+        <div class="dashboard-summary-grid">
+            <!-- Cột 1: Bảng tỷ giá USDT → VND -->
+            <div class="rate-box dashboard-rate-box">
+                <table id="dashboard-rate-table">
+                    <thead>
+                        <tr><th colspan="2">BẢNG TỶ GIÁ USDT → VND</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Ngày hôm nay</td>
+                            <td id="dash-today-date"></td>
+                        </tr>
+                        <tr class="hidden-row">
+                            <td>Giá bán (VND)</td>
+                            <td id="dash-sell-price"></td>
+                        </tr>
+                        <tr>
+                            <td>Giá mua (VND)</td>
+                            <td id="dash-buy-price"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="dash-usdt-amount" id="dash-usdt-amount-label">Nhập số USDT (USDT)</label></td>
+                            <td><input type="number" id="dash-usdt-amount" step="0.01" min="0" title="Nhập số lượng USDT" placeholder="0.00 USDT" aria-labelledby="dash-usdt-amount-label"></td>
+                        </tr>
+                        <tr class="hidden-row">
+                            <td>Giá trị bán (VND)</td>
+                            <td id="dash-usdt-value-sell"></td>
+                        </tr>
+                        <tr>
+                            <td>Giá trị mua (VND)</td>
+                            <td id="dash-usdt-value-buy"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Cột 2: Bảng tổng NGÀY ĐỔI -->
+            <div class="rate-box dashboard-rate-box">
+                <table id="dashboard-conversion-summary">
+                    <thead>
+                        <tr><th colspan="2">BẢNG TỔNG NGÀY ĐỔI</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Tổng USDT (USDT)</td>
+                            <td id="total-usdt">0.00 USDT</td>
+                        </tr>
+                        <tr>
+                            <td>Tổng USD (USD)</td>
+                            <td id="total-usd">0.00 USD</td>
+                        </tr>
+                        <tr>
+                            <td>Tổng VND (₫)</td>
+                            <td id="total-conv-vnd">0 ₫</td>
+                        </tr>
+                        <tr>
+                            <td>Giá TB Tháng (₫/USDT)</td>
+                            <td id="total-conv-month">0 ₫</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Cột 3: Bảng tổng NGÀY LẤY -->
+            <div class="rate-box dashboard-rate-box">
+                <table id="dashboard-withdraw-summary">
+                    <thead>
+                        <tr><th colspan="2">BẢNG TỔNG NGÀY LẤY</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Tổng Bank Đẹp (₫)</td>
+                            <td id="total-bank-dep">0 ₫</td>
+                        </tr>
+                        <tr>
+                            <td>Tổng Bank Xấu (₫)</td>
+                            <td id="total-bank-bad">0 ₫</td>
+                        </tr>
+                        <tr>
+                            <td>Tổng VISA (₫)</td>
+                            <td id="total-visa">0 ₫</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tổng Toàn Bộ (₫)</strong></td>
+                            <td id="total-withdraw-all"><strong>0 ₫</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Các bảng nhập dữ liệu trực tiếp giống mẫu -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+            <h2 style="margin:0;">📝 Bảng nhập dữ liệu</h2>
+        </div>
+        <div class="sheet-grid">
+            <!-- Conversion table (NGÀY ĐỔI) -->
+            <div>
+                <table id="conversion-table" class="sheet">
+                    <thead>
+                        <tr>
+                            <th class="row-header"></th>
+                            <th>A</th>
+                            <th>B</th>
+                            <th>C</th>
+                            <th>D</th>
+                            <th>E</th>
+                            <th>F</th>
+                        </tr>
+                        <tr>
+                            <th class="row-header">1</th>
+                            <th>Ngày đổi</th>
+                            <th>USDT ($)</th>
+                            <th>USD ($)</th>
+                            <th>Giá (VND)</th>
+                            <th>VND (VND)</th>
+                            <th>Tên NV</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows populated by JS -->
+                    </tbody>
+                </table>
+                <p id="conversion-total-display" class="total-display">Tổng cộng: 0</p>
+            </div>
+            <!-- Withdraw table (NGÀY LẤY) -->
+            <div>
+                <table id="withdraw-table" class="sheet">
+                    <thead>
+                        <tr>
+                            <th class="row-header"></th>
+                            <th>A</th>
+                            <th>B</th>
+                            <th>C</th>
+                            <th>D</th>
+                            <th>E</th>
+                        </tr>
+                        <tr>
+                            <th class="row-header">1</th>
+                            <th>Ngày lấy</th>
+                            <th>Bank đẹp (VND)</th>
+                            <th>Bank xấu (VND)</th>
+                            <th>Visa (VND)</th>
+                            <th>Tên NV</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows populated by JS -->
+                    </tbody>
+                </table>
+                <p id="withdraw-total-display" class="total-display">Tổng cộng: 0</p>
+            </div>
+        </div>
+        <p class="text-hint">Nhập dữ liệu trực tiếp vào ô. Cột VND ở bảng Quy đổi được tính bằng USDT × Giá hoặc USD × Giá nếu không nhập giá trị VND thủ công.</p>
+    </div>
+
+    <!-- Load shared utilities and dashboard logic -->
+    <script src="assets/js/formulas.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/note-manager.js"></script>
+    <script src="assets/js/button-effects.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="assets/js/export.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-sync.js"></script>
+    <script src="assets/js/dashboard.js"></script>
+    <script>
+        // Initialize Supabase sync
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Initialize Supabase first
+            await window.SupabaseSync.init();
+            
+            // Auto sync is active - no manual button needed
+        });
+        
+        // Add export all data button
+        window.addEventListener('DOMContentLoaded', () => {
+            const container = document.querySelector('.container');
+            
+            // Export/Import section
+            const exportContainer = document.createElement('div');
+            exportContainer.id = 'dashboard-export-container';
+            exportContainer.style.cssText = 'margin-top:24px; padding-top:16px; border-top:1px solid #ddd;';
+            
+            const title = document.createElement('h3');
+            title.textContent = 'Tải dữ liệu';
+            title.style.marginBottom = '8px';
+            exportContainer.appendChild(title);
+            
+            const btnWrapper = document.createElement('div');
+            btnWrapper.style.cssText = 'display:flex; gap:8px; flex-wrap:wrap;';
+            
+            // Export all button
+            const exportAllBtn = document.createElement('button');
+            exportAllBtn.className = 'btn';
+            exportAllBtn.textContent = '📥 Tải xuống dữ liệu';
+            exportAllBtn.addEventListener('click', () => {
+                exportAllData('QuanLy_ToanBoDuLieu_' + new Date().toISOString().split('T')[0]);
+            });
+            btnWrapper.appendChild(exportAllBtn);
+            
+            // Import button
+            const importBtn = document.createElement('button');
+            importBtn.className = 'btn';
+            importBtn.style.backgroundColor = '#10b981';
+            importBtn.textContent = '📤 Nhập dữ liệu';
+            importBtn.addEventListener('click', () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        try {
+                            const data = JSON.parse(event.target.result);
+                            Object.entries(data).forEach(([key, value]) => {
+                                localStorage.setItem(key, value);
+                            });
+                            alert('✅ Đã nhập dữ liệu thành công! Trang sẽ tự động tải lại.');
+                            location.reload();
+                        } catch (err) {
+                            alert('❌ Lỗi: File không đúng định dạng JSON!');
+                        }
+                    };
+                    reader.readAsText(file);
+                };
+                input.click();
+            });
+            btnWrapper.appendChild(importBtn);
+            
+            exportContainer.appendChild(btnWrapper);
+            
+            // Share instructions
+            const shareInfo = document.createElement('p');
+            shareInfo.style.cssText = 'margin-top:12px; font-size:14px; color:#666;';
+            shareInfo.innerHTML = '💡 <strong>Chia sẻ:</strong> "Tải xuống" để export file. Dữ liệu tự động đồng bộ cloud.';
+            exportContainer.appendChild(shareInfo);
+            
+            container.appendChild(exportContainer);
+        });
+    </script>
+    <script src="assets/js/universal-autocomplete.js"></script>
+</body>
+</html>

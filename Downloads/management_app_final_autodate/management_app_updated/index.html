@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Quản Lý</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="assets/css/index-enhancements.css" />
+    <!-- API Configuration -->
+    <script src="config.js"></script>
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="index.html" class="active">🏠 Trang Chủ</a>
+        <a href="dashboard.html">📊 Bảng Chính</a>
+        <a href="AE.html">💼 Bảng AE</a>
+        <a href="AE-QT.html">🌐 Bảng AE-QT</a>
+        <a href="rate.html">💱 Tỷ Giá USD</a>
+        <a href="usdt-purchase.html">💰 Giá Nhập USDT</a>
+        <a href="balance.html">👥 Danh Sách Theo Tên</a>
+        <a href="settings.html">⚙️ Cài Đặt</a>
+        <a href="system.html">🔧 Quản Lý</a>
+    </nav>
+
+    <div class="container">
+        <!-- Thống kê tổng quan -->
+        <div style="margin-bottom: 48px;">
+            <div class="cards-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+                <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; position: relative; overflow: hidden; transition: all 0.3s ease;">
+                    <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                    <div style="position: relative; z-index: 1;">
+                        <h3 style="color: white; font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 8px;">
+                            <span style="font-size: 24px; margin-right: 8px;">📅</span> NGÀY ĐỔI
+                        </h3>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span style="color: rgba(255,255,255,0.9); font-size: 12px;">Tổng USDT:</span>
+                            <span id="home-conversion-usdt" style="color: white; font-size: 13px; font-weight: 600;">0 USDT</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span style="color: rgba(255,255,255,0.9); font-size: 12px;">Tổng USD:</span>
+                            <span id="home-conversion-usd" style="color: white; font-size: 13px; font-weight: 600;">0 USD</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span style="color: rgba(255,255,255,0.9); font-size: 12px;">Giá TB tháng này:</span>
+                            <span id="home-conversion-price" style="color: white; font-size: 13px; font-weight: 600;">0₫</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.3);">
+                            <span style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 600;">Tổng đổi VND:</span>
+                            <span id="home-conversion-total" style="color: white; font-size: 18px; font-weight: 700;">0₫</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border: none; position: relative; overflow: hidden; transition: all 0.3s ease;">
+                    <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                    <div style="position: relative; z-index: 1;">
+                        <h3 style="color: white; font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 8px;">
+                            <span style="font-size: 24px; margin-right: 8px;">📤</span> NGÀY LẤY
+                        </h3>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="color: rgba(255,255,255,0.9); font-size: 12px;">Tổng đổi VND:</span>
+                            <span id="home-withdraw-conversion" style="color: white; font-size: 13px; font-weight: 600;">0₫</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="color: rgba(255,255,255,0.9); font-size: 12px;">Tổng lấy VND:</span>
+                            <span id="home-withdraw-total" style="color: white; font-size: 13px; font-weight: 600;">0₫</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.3);">
+                            <span style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 600;">Tổng toàn bộ VND:</span>
+                            <span id="home-withdraw-total-all" style="color: white; font-size: 18px; font-weight: 700;">0₫</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border: none; position: relative; overflow: hidden; transition: all 0.3s ease;">
+                    <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                    <div style="position: relative; z-index: 1;">
+                        <h3 style="color: white; font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 8px;">
+                            <span style="font-size: 24px; margin-right: 8px;">💼</span> AE
+                        </h3>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 600;">Tổng cộng:</span>
+                            <span id="home-ae-total" style="color: white; font-size: 20px; font-weight: 700;">0₫</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.3);">
+                            <span style="color: rgba(255,255,255,0.9); font-size: 12px;">Tổng khóa:</span>
+                            <span id="home-ae-locked" style="color: white; font-size: 13px; font-weight: 600;">0₫</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); border: none; position: relative; overflow: hidden; transition: all 0.3s ease;">
+                    <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                    <div style="position: relative; z-index: 1;">
+                        <h3 style="color: white; font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 8px;">
+                            <span style="font-size: 24px; margin-right: 8px;">🌐</span> AE-QT
+                        </h3>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 600;">Tổng cộng:</span>
+                            <span id="home-aeqt-total" style="color: white; font-size: 20px; font-weight: 700;">0₫</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.3);">
+                            <span style="color: rgba(255,255,255,0.9); font-size: 12px;">Tổng khóa:</span>
+                            <span id="home-aeqt-locked" style="color: white; font-size: 13px; font-weight: 600;">0₫</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); border: none; position: relative; overflow: hidden; transition: all 0.3s ease;">
+                    <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                    <div style="position: relative; z-index: 1;">
+                        <h3 style="color: white; font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 8px;">
+                            <span style="font-size: 24px; margin-right: 8px;">💱</span> GIÁ P2P
+                        </h3>
+                        <div style="text-align: center; margin: 20px 0;">
+                            <div style="color: rgba(255,255,255,0.9); font-size: 12px; margin-bottom: 6px;">Giá Mua USDT Hôm Nay</div>
+                            <div id="home-rate-avg" style="color: white; font-size: 28px; font-weight: 700;">0₫</div>
+                            <div id="p2p-source-label" style="color: rgba(255,255,255,0.7); font-size: 10px; margin-top: 4px;">⏳ Đang tải...</div>
+                            <div id="p2p-update-time" style="color: rgba(255,255,255,0.6); font-size: 9px; margin-top: 2px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Biểu đồ và thống kê theo tháng -->
+        <div style="margin-bottom: 48px;">
+            <h2 style="font-size: 28px; font-weight: 700; color: #1e293b; margin-bottom: 24px; display: flex; align-items: center;">
+                <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 4px; height: 32px; border-radius: 2px; margin-right: 12px;"></span>
+                📊 Thống Kê Theo Tháng
+            </h2>
+            
+            <!-- Bảng thống kê tháng -->
+            <div style="margin-bottom: 32px; overflow-x: auto; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); background: white;">
+                <table id="monthly-stats-table" style="width: 100%; border-collapse: separate; border-spacing: 0; background: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                    <thead>
+                        <tr style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <th style="padding: 18px 20px; text-align: left; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; border-top-left-radius: 16px; position: relative;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 16px;">📅</span>
+                                    <span>Tháng</span>
+                                </div>
+                            </th>
+                            <th style="padding: 18px 20px; text-align: right; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+                                    <span>₮ USDT</span>
+                                </div>
+                            </th>
+                            <th style="padding: 18px 20px; text-align: right; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+                                    <span>$ USD</span>
+                                </div>
+                            </th>
+                            <th style="padding: 18px 20px; text-align: right; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+                                    <span style="font-size: 14px;">📊</span>
+                                    <span>Giá TB</span>
+                                </div>
+                            </th>
+                            <th style="padding: 18px 20px; text-align: right; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+                                    <span style="font-size: 14px;">💱</span>
+                                    <span>VND Đổi</span>
+                                </div>
+                            </th>
+                            <th style="padding: 18px 20px; text-align: right; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+                                    <span style="font-size: 14px;">💰</span>
+                                    <span>VND Lấy</span>
+                                </div>
+                            </th>
+                            <th style="padding: 18px 20px; text-align: right; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; background: rgba(5, 150, 105, 0.95); position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+                                    <span style="font-size: 14px;">💼</span>
+                                    <span>AE</span>
+                                </div>
+                            </th>
+                            <th style="padding: 18px 20px; text-align: right; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; background: rgba(8, 145, 178, 0.95); position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+                                    <span style="font-size: 14px;">🌐</span>
+                                    <span>AE-QT</span>
+                                </div>
+                            </th>
+                            <th style="padding: 18px 20px; text-align: right; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; background: rgba(220, 38, 38, 0.95); border-top-right-radius: 16px; position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+                                    <span style="font-size: 14px;">💸</span>
+                                    <span>Tiền Làm</span>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="monthly-stats-body">
+                        <!-- Data will be populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Biểu đồ -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px;">
+                <div style="background: white; padding: 28px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s ease;">
+                    <h3 style="margin: 0 0 20px 0; font-size: 18px; font-weight: 700; color: #1e293b; display: flex; align-items: center;">
+                        <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 4px; height: 24px; border-radius: 2px; margin-right: 10px;"></span>
+                        📈 Biểu đồ VND theo tháng
+                    </h3>
+                    <canvas id="vnd-chart"></canvas>
+                </div>
+                <div style="background: white; padding: 28px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s ease;">
+                    <h3 style="margin: 0 0 20px 0; font-size: 18px; font-weight: 700; color: #1e293b; display: flex; align-items: center;">
+                        <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 4px; height: 24px; border-radius: 2px; margin-right: 10px;"></span>
+                        💵 Biểu đồ USD/USDT theo tháng
+                    </h3>
+                    <canvas id="usd-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/js/formulas.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/button-effects.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-sync.js"></script>
+    <script src="assets/js/monthly-stats.js"></script>
+    <script>
+        // Wait for all scripts to load before defining functions
+        (function() {
+            'use strict';
+            
+            // Ensure app.js functions are available
+            if (typeof loadData === 'undefined' || typeof formatVND === 'undefined') {
+                console.error('❌ Required functions not loaded. Retrying...');
+                setTimeout(() => location.reload(), 1000);
+                return;
+            }
+            
+            console.log('✅ All required functions loaded');
+            
+        // Fetch Binance P2P Rate
+        window.fetchBinanceP2PRate = async function() {
+            try {
+                const apiUrl = window.RATE_PROXY_URL || 'http://localhost:3001/api/p2p-rate';
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch P2P rate');
+                }
+                
+                const data = await response.json();
+                return {
+                    sellPrice: parseFloat(data.sellPrice) || 0,
+                    buyPrice: parseFloat(data.buyPrice) || 0,
+                    source: data.source || 'unknown',
+                    lastFetchedAt: data.lastFetchedAt
+                };
+            } catch (error) {
+                console.warn('⚠️ Cannot fetch P2P rate from API, using fallback:', error.message);
+                // Fallback to rate-settings if API fails
+                const rateSettings = loadData('rate-settings') || {};
+                const fallbackPrice = parseFloat(rateSettings.sellPrice) || 27500; // Default 27500
+                console.log('📌 Using fallback price:', fallbackPrice);
+                return {
+                    sellPrice: fallbackPrice,
+                    buyPrice: parseFloat(rateSettings.buyPrice) || fallbackPrice,
+                    source: 'fallback',
+                    lastFetchedAt: null
+                };
+            }
+        }
+
+        // Load summary data
+        window.loadHomeSummary = async function() {
+            console.log('🔄 Loading home summary...');
+            
+            try {
+                // Get latest rate from rate-settings (Tỷ Giá USD page)
+                const rateSettings = loadData('rate-settings') || {};
+                const latestP2PPrice = parseFloat(rateSettings.buyPrice) || 0; // Giá mua USDT mới nhất
+                console.log('💱 Latest P2P rate from settings:', latestP2PPrice);
+                
+                // Conversion data (NGÀY ĐỔI)
+                const conversionData = loadData('dashboard_conversion') || [];
+                console.log('📅 Conversion data:', conversionData.length, 'records');
+                
+                // Tính giá trung bình tháng hiện tại từ cột D (Giá VND)
+                const now = new Date();
+                const currentMonth = now.getMonth() + 1;
+                const currentYear = now.getFullYear();
+                
+                let monthlyPriceSum = 0;
+                let monthlyPriceCount = 0;
+                let totalUSDT = 0, totalUSD = 0, totalVND = 0;
+                
+                conversionData.forEach(item => {
+                    totalUSDT += parseFloat(item.usdt) || 0;
+                    totalUSD += parseFloat(item.usd) || 0;
+                    totalVND += parseFloat(item.vnd) || 0;
+                    
+                    // Kiểm tra xem date có thuộc tháng hiện tại không
+                    const price = parseFloat(item.price) || 0;
+                    if (price > 0 && item.date) {
+                        const dateParts = item.date.split('/');
+                        if (dateParts.length === 3) {
+                            const itemMonth = parseInt(dateParts[1], 10);
+                            const itemYear = parseInt(dateParts[2], 10);
+                            
+                            if (itemMonth === currentMonth && itemYear === currentYear) {
+                                monthlyPriceSum += price;
+                                monthlyPriceCount++;
+                            }
+                        }
+                    }
+                });
+                
+                const monthlyAvgPrice = monthlyPriceCount > 0 ? monthlyPriceSum / monthlyPriceCount : 0;
+                console.log('📊 Monthly average price:', monthlyAvgPrice, 'from', monthlyPriceCount, 'records');
+                console.log('📊 Conversion totals - USDT:', totalUSDT, 'USD:', totalUSD, 'VND:', totalVND);
+                
+                document.getElementById('home-conversion-usdt').textContent = totalUSDT.toFixed(2) + ' USDT';
+                document.getElementById('home-conversion-usd').textContent = totalUSD.toFixed(2) + ' USD';
+                document.getElementById('home-conversion-price').textContent = formatVND(monthlyAvgPrice);
+                document.getElementById('home-conversion-total').textContent = formatVND(totalVND);
+
+                // Withdraw data (NGÀY LẤY)
+                const withdrawData = loadData('dashboard_withdraw') || [];
+                console.log('📤 Withdraw data:', withdrawData.length, 'records');
+                let totalWithdraw = 0;
+                
+                withdrawData.forEach(item => {
+                    const bankdep = parseFloat(item.bankdep) || 0;
+                    const bankbad = parseFloat(item.bankbad) || 0;
+                    const visa = parseFloat(item.visa) || 0;
+                    totalWithdraw += bankdep + bankbad + visa;
+                });
+                
+                console.log('📊 Withdraw total:', totalWithdraw);
+                
+                // Tổng đổi VND từ conversion
+                document.getElementById('home-withdraw-conversion').textContent = formatVND(totalVND);
+                document.getElementById('home-withdraw-total').textContent = formatVND(totalWithdraw);
+                document.getElementById('home-withdraw-total-all').textContent = formatVND(totalVND + totalWithdraw);
+
+                // AE data
+                const aeData = loadData('AE_sheet') || [];
+                console.log('💼 AE data:', aeData.length, 'records');
+                let aeTotal = 0, aeLocked = 0;
+                
+                aeData.forEach(item => {
+                    const money = parseFloat(item.money) || 0;
+                    aeTotal += money;
+                    
+                    // Kiểm tra nếu khóa = 1
+                    if (parseInt(item.khoa) === 1) {
+                        aeLocked += money;
+                    }
+                });
+                
+                console.log('📊 AE totals - Total:', aeTotal, 'Locked:', aeLocked);
+                
+                document.getElementById('home-ae-total').textContent = formatVND(aeTotal);
+                document.getElementById('home-ae-locked').textContent = formatVND(aeLocked);
+
+                // AE-QT data
+                const aeqtData = loadData('AEQT_sheet') || [];
+                console.log('🌐 AE-QT data:', aeqtData.length, 'records');
+                let aeqtTotal = 0, aeqtLocked = 0;
+                
+                aeqtData.forEach(item => {
+                    const money = parseFloat(item.money) || 0;
+                    aeqtTotal += money;
+                    
+                    // Kiểm tra nếu khóa = 1
+                    if (parseInt(item.khoa) === 1) {
+                        aeqtLocked += money;
+                    }
+                });
+                
+                console.log('📊 AE-QT totals - Total:', aeqtTotal, 'Locked:', aeqtLocked);
+                
+                document.getElementById('home-aeqt-total').textContent = formatVND(aeqtTotal);
+                document.getElementById('home-aeqt-locked').textContent = formatVND(aeqtLocked);
+
+                // P2P Rate - Hiển thị giá mới nhất từ Tỷ Giá USD
+                document.getElementById('home-rate-avg').textContent = formatVND(latestP2PPrice);
+                
+                // Hiển thị nguồn dữ liệu
+                const sourceLabel = document.getElementById('p2p-source-label');
+                if (sourceLabel) {
+                    sourceLabel.textContent = latestP2PPrice > 0 ? '🟢 Tỷ Giá USD' : '🟡 Chưa cập nhật';
+                }
+                
+                const updateTimeLabel = document.getElementById('p2p-update-time');
+                if (updateTimeLabel) {
+                    const now = new Date();
+                    const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                    updateTimeLabel.textContent = 'Cập nhật: ' + timeStr;
+                }
+                
+                console.log('✅ Home summary loaded successfully');
+            } catch (error) {
+                console.error('❌ Error loading home summary:', error);
+            }
+        }
+        
+        // Check if data exists and show warning if not
+        window.checkDataAvailability = function() {
+            const conversionData = loadData('dashboard_conversion') || [];
+            const withdrawData = loadData('dashboard_withdraw') || [];
+            const aeData = loadData('AE_sheet') || [];
+            const aeqtData = loadData('AEQT_sheet') || [];
+            
+            const totalRecords = conversionData.length + withdrawData.length + aeData.length + aeqtData.length;
+            
+            if (totalRecords === 0) {
+                console.warn('⚠️ WARNING: No data found in localStorage!');
+                console.log('💡 Please add data in the following pages:');
+                console.log('   - 📊 Bảng Điều Khiển: Add NGÀY ĐỔI and NGÀY LẤY data');
+                console.log('   - 💼 Bảng AE: Add AE data');
+                console.log('   - 🌐 Bảng AE-QT: Add AE-QT data');
+            } else {
+                console.log(`✅ Data found: ${totalRecords} total records`);
+            }
+        }
+        
+        // Initialize
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Page loaded, initializing...');
+            
+            // Initialize Supabase sync
+            if (window.SupabaseSync && window.SupabaseSync.init) {
+                await window.SupabaseSync.init();
+            }
+            
+            // Load summary data
+            await window.loadHomeSummary();
+            
+            // Check data availability
+            window.checkDataAvailability();
+            
+            // Auto refresh P2P rate every 5 minutes (or custom interval)
+            const refreshInterval = window.P2P_REFRESH_INTERVAL || (5 * 60 * 1000);
+            setInterval(() => {
+                window.loadHomeSummary();
+                console.log('Auto-refreshed P2P rate at', new Date().toLocaleTimeString('vi-VN'));
+            }, refreshInterval);
+            
+            // Initialize monthly statistics
+            setTimeout(() => {
+                if (window.initMonthlyStats) {
+                    window.initMonthlyStats();
+                }
+            }, 500);
+            
+            // Refresh data when storage changes
+            window.addEventListener('storage', window.loadHomeSummary);
+        });
+        
+        })(); // End of IIFE
+    </script>
+</body>
+</html>

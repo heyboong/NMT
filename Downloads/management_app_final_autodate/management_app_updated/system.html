@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Hệ Thống</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="assets/css/sheet.css" />
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html">🏠 Trang Chủ</a>
+        <a href="dashboard.html">📊 Bảng Chính</a>
+        <a href="AE.html">💼 Bảng AE</a>
+        <a href="AE-QT.html">🌐 Bảng AE-QT</a>
+        <a href="rate.html">💱 Tỷ Giá USD</a>
+        <a href="usdt-purchase.html">💰 Giá Nhập USDT</a>
+        <a href="balance.html">👥 Danh Sách Theo Tên</a>
+        <a href="settings.html">⚙️ Cài Đặt</a>
+        <a href="system.html" class="active">🔧 Quản Lý</a>
+    </nav>
+
+    <div class="container system-page">
+        <h2>🔧 Quản Lý Hệ Thống</h2>
+        <p>Thiết lập các danh mục tùy chỉnh và quản lý bảng dữ liệu động theo nhu cầu riêng.</p>
+
+        <section class="system-grid">
+            <div class="rate-box system-form-box">
+                <h3>Tạo danh mục mới</h3>
+                <form id="system-category-form" class="system-form">
+                    <label>
+                        Tên danh mục *
+                        <input type="text" id="category-name" placeholder="VD: Quỹ marketing" required />
+                    </label>
+                    <label>
+                        Mô tả
+                        <textarea id="category-description" rows="2" placeholder="Ghi chú ngắn gọn về mục này"></textarea>
+                    </label>
+                    <div class="system-display-options">
+                        <h4>Vị trí hiển thị</h4>
+                        <p class="system-columns-hint">Chọn trang và thứ tự hiển thị. Bạn có thể cho cùng một danh mục xuất hiện trên nhiều trang.</p>
+                        <div class="system-display-pages">
+                            <label class="checkbox-inline">
+                                <input type="checkbox" name="category-pages" value="system" checked />
+                                Trang Quản Lý Hệ Thống
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" name="category-pages" value="dashboard" />
+                                Trang Bảng Điều Khiển
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" name="category-pages" value="ae" />
+                                Trang Bảng AE
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" name="category-pages" value="aeqt" />
+                                Trang Bảng AE-QT
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" name="category-pages" value="history" />
+                                Trang Lịch Sử
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" name="category-pages" value="rate" />
+                                Trang Tỷ Giá USD
+                            </label>
+                        </div>
+                        <label class="system-display-order-label">
+                            Thứ tự hiển thị (số nhỏ hiển thị trước)
+                            <input type="number" id="category-display-order" min="1" max="999" value="1" />
+                        </label>
+                    </div>
+                    <div class="system-number-row">
+                        <label>
+                            Số dòng ban đầu
+                            <input type="number" id="category-initial-rows" min="5" max="200" value="20" />
+                        </label>
+                        <label>
+                            Số dòng tối đa
+                            <input type="number" id="category-max-rows" min="10" max="500" value="200" />
+                        </label>
+                    </div>
+                    <div class="system-columns">
+                        <div class="system-columns-header">
+                            <h4>Cấu hình cột</h4>
+                            <button type="button" id="system-add-column" class="link">+ Thêm cột</button>
+                        </div>
+                        <p class="system-columns-hint">Đặt tên và loại dữ liệu cho từng cột. Đánh dấu “Tính tổng” với các cột số.</p>
+                        <div id="system-columns-container"></div>
+                    </div>
+                    <div class="system-form-actions">
+                        <button type="submit" class="primary">Tạo danh mục</button>
+                        <span id="system-form-status" class="system-form-status"></span>
+                    </div>
+                </form>
+            </div>
+
+            <div class="rate-box system-category-box">
+                <h3>Danh mục hiện có</h3>
+                <div class="system-category-controls" style="margin-bottom: 12px; display: flex; gap: 8px; justify-content: flex-end;">
+                    <button type="button" id="import-category-btn" class="btn" style="font-size: 13px; padding: 6px 12px;">
+                        📂 Nhập danh mục từ file
+                    </button>
+                    <button type="button" id="export-all-btn" class="btn" style="font-size: 13px; padding: 6px 12px;">
+                        💾 Xuất tất cả
+                    </button>
+                </div>
+                <div id="system-category-list" class="system-category-list">
+                    <p class="system-empty-note">Chưa có danh mục. Hãy tạo mới ở khung bên cạnh.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="system-table-section">
+            <div class="rate-box">
+                <div class="system-table-header">
+                    <div>
+                        <h3 id="system-table-title">Chưa chọn danh mục</h3>
+                        <p id="system-table-subtitle">Chọn hoặc tạo một danh mục để bắt đầu nhập dữ liệu.</p>
+                    </div>
+                    <div class="system-table-actions">
+                        <button type="button" id="system-add-rows" disabled>+ Thêm 10 dòng</button>
+                    </div>
+                </div>
+                <div id="system-empty-state" class="system-empty-state">
+                    Không có dữ liệu hiển thị. Vui lòng chọn danh mục ở danh sách bên trên.
+                </div>
+                <div id="system-table-wrapper" class="system-table-wrapper" hidden>
+                    <table id="system-table" class="sheet adjustable-table" data-row-resize="true">
+                        <thead></thead>
+                        <tbody></tbody>
+                    </table>
+                    <p id="system-total-display" class="total-display">Tổng sẽ hiển thị tại đây.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/button-effects.js"></script>
+    <script src="assets/js/table-resize.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-sync.js"></script>
+    <script src="assets/js/system-import-export.js"></script>
+    <script src="assets/js/system.js"></script>
+    <script src="assets/js/universal-autocomplete.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Sử</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html">🏠 Trang Chủ</a>
+        <a href="dashboard.html">📊 Bảng Điều Khiển</a>
+        <a href="AE.html">💼 Bảng AE</a>
+        <a href="AE-QT.html">🌐 Bảng AE-QT</a>
+        <a href="history.html" class="active">📜 Lịch Sử</a>
+        <a href="rate.html">💱 Tỷ Giá USD</a>
+        <a href="usdt-purchase.html">💰 Giá Nhập USDT</a>
+        <a href="balance.html">👥 Danh Sách Theo Tên</a>
+        <a href="settings.html">⚙️ Cài Đặt</a>
+        <a href="system.html">🔧 Quản Lý</a>
+    </nav>
+
+    <div class="container">
+        <h2>📜 Lịch Sử</h2>
+        <div class="table-responsive">
+            <table id="history-table">
+                <thead>
+                    <tr>
+                        <th>Thời gian</th>
+                        <th>Trang</th>
+                        <th>Ngày</th>
+                        <th>Tiền làm (VND)</th>
+                        <th>Tên</th>
+                        <th>Chia</th>
+                        <th>Khóa</th>
+                        <th>VNĐ (VND)</th>
+                        <th>Ghi chú</th>
+                        <th>Tổng tiền (VND)</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Rows inserted by JS -->
+                </tbody>
+            </table>
+        </div>
+        <button id="clear-history" class="btn btn-danger btn-spacing">Xóa tất cả lịch sử</button>
+        <div id="history-export-container"></div>
+
+        <section id="system-embed-root" data-page="history" class="system-embed-section"></section>
+    </div>
+
+    <script src="assets/js/formulas.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/button-effects.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="assets/js/export.js"></script>
+    <script src="assets/js/supabase-sync.js"></script>
+    <script>
+    (function() {
+        const tbody = document.querySelector('#history-table tbody');
+        const clearBtn = document.getElementById('clear-history');
+
+        // Use global formatVND from app.js
+
+        function render() {
+            const history = loadData('history');
+            tbody.innerHTML = '';
+            history.forEach((record, index) => {
+                const tr = document.createElement('tr');
+                const rowTotal = computeRowTotal(record);
+                const cells = [
+                    // Format timestamp using Hanoi time zone (UTC+7) for consistency
+                    (function() {
+                        try {
+                            return new Date(record.timestamp).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+                        } catch (e) {
+                            return new Date(record.timestamp).toLocaleString('vi-VN');
+                        }
+                    })(),
+                    record.page || '',
+                    record.date || '',
+                    // Format money as VND (header indicates VND)
+                    (record.money !== undefined && record.money !== null ? formatVND(record.money) : ''),
+                    record.name || '',
+                    record.chia || '',
+                    record.khoa || '',
+                    record.vnd ? formatVND(record.vnd) : '',
+                    record.note || '',
+                    formatVND(rowTotal)
+                ];
+                cells.forEach(text => {
+                    const td = document.createElement('td');
+                    td.textContent = text;
+                    tr.appendChild(td);
+                });
+                // actions
+                const actionTd = document.createElement('td');
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Xóa';
+                deleteBtn.className = 'btn btn-danger';
+                deleteBtn.addEventListener('click', () => {
+                    deleteRecord(index);
+                });
+                actionTd.appendChild(deleteBtn);
+                tr.appendChild(actionTd);
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deleteRecord(index) {
+            const history = loadData('history');
+            history.splice(index, 1);
+            saveData('history', history);
+            render();
+        }
+
+        clearBtn.addEventListener('click', () => {
+            if (confirm('Bạn có chắc muốn xóa toàn bộ lịch sử?')) {
+                saveData('history', []);
+                render();
+            }
+        });
+
+        render();
+        
+        // Add export buttons
+        createExportButtons('history-export-container', 'history', 'LichSu_' + new Date().toISOString().split('T')[0], 'Lịch Sử');
+    })();
+    </script>
+    <script src="assets/js/system-embed.js"></script>
+</body>
+</html>

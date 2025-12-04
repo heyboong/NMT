@@ -1,0 +1,262 @@
+/*
+ * Styles for spreadsheet‑like tables used on AE and AE‑QT pages.
+ * Designed to evoke the look of the provided templates: Times New Roman
+ * typography, green headers, alternating row backgrounds and a highlighted
+ * total column. Cells are editable where appropriate.
+ */
+
+table.sheet {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+/* Đảm bảo các bảng adjustable có thể resize */
+.adjustable-table {
+    table-layout: auto;
+    width: 100%;
+    min-width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+/* Đảm bảo tất cả các cột đều hiển thị */
+.adjustable-table th,
+.adjustable-table td {
+    min-width: 80px !important;
+    display: table-cell !important;
+    visibility: visible !important;
+    box-sizing: border-box;
+}
+
+/* Đảm bảo các cột không bị ẩn khi table quá nhỏ */
+.adjustable-table thead th,
+.adjustable-table tbody td {
+    min-width: 100px !important;
+}
+
+table.sheet th,
+table.sheet td {
+    border: 1px solid #d9d9d9;
+    font-family: "Times New Roman", serif;
+    font-size: 14px;
+    padding: 4px 6px;
+    vertical-align: middle;
+    overflow: visible;
+    word-wrap: break-word;
+    word-break: break-word;
+    text-align: center;
+    font-weight: 600;
+    color: #000000;
+}
+
+/* Header cells - cho phép wrap text để hiển thị đầy đủ */
+table.sheet th {
+    white-space: normal;
+    overflow: visible;
+    padding: 6px 8px;
+    min-width: 80px;
+}
+
+/* Data cells - giữ nguyên nowrap cho dữ liệu */
+table.sheet td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Column letter row and header row */
+table.sheet thead tr:first-child th {
+    background-color: #356854;
+    color: #ffffff;
+    text-align: center;
+    font-weight: bold;
+    font-size: 13px;
+    white-space: normal;
+    overflow: visible;
+    word-wrap: break-word;
+    padding: 6px 8px;
+}
+
+table.sheet thead tr:nth-child(2) th {
+    background-color: #356854;
+    color: #ffffff;
+    text-align: center;
+    font-weight: bold;
+    font-size: 15px;
+    white-space: normal;
+    overflow: visible;
+    word-wrap: break-word;
+    padding: 6px 8px;
+}
+
+/* Row header cells */
+table.sheet .row-header {
+    background-color: #f6f8f9;
+    color: #434343;
+    text-align: center;
+    font-weight: normal;
+    width: 40px;
+}
+
+/* Alternating row colours */
+table.sheet tbody tr:nth-child(odd) td {
+    background-color: #ffffff;
+}
+
+table.sheet tbody tr:nth-child(even) td {
+    background-color: #f6f8f9;
+}
+
+/* Editable cells highlight on focus */
+table.sheet td[contenteditable="true"]:focus {
+    outline: 2px solid #284e3f;
+    background-color: #e9f3ef;
+}
+
+/* Total cell style for each row */
+table.sheet td.total-cell {
+    background-color: #ffffe0;
+    text-align: center;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+/* Style cho các cột tiền VND - in đậm */
+table.sheet td[data-col="money"],
+table.sheet td[data-col="chia"],
+table.sheet td[data-col="tt"],
+table.sheet td[data-col="total"] {
+    font-weight: 700;
+    color: #000000;
+    text-align: center;
+}
+
+/* Cột tiền làm (money) - nổi bật nhất */
+table.sheet td[data-col="money"] {
+    font-weight: 700;
+    font-size: 15px;
+    color: #000000;
+}
+
+/* Total sum cell style */
+table.sheet th.total-sum,
+table.sheet td.total-sum {
+    background-color: #ffff00;
+    color: #000000;
+    font-weight: bold;
+    text-align: right;
+}
+
+/* Display for the overall total below the table */
+.total-display {
+    font-family: "Times New Roman", serif;
+    font-size: 16px;
+    color: #c00;
+    font-weight: bold;
+    margin-top: 8px;
+}
+
+/* Column resize handle */
+.adjustable-table th {
+    position: relative;
+    white-space: normal !important;
+    overflow: visible !important;
+    word-wrap: break-word !important;
+    min-width: 100px !important;
+    max-width: none !important;
+    padding: 6px 8px !important;
+    display: table-cell !important;
+    visibility: visible !important;
+}
+
+/* Đảm bảo tất cả các cột trong tbody cũng hiển thị */
+.adjustable-table tbody td {
+    min-width: 80px !important;
+    display: table-cell !important;
+    visibility: visible !important;
+}
+
+.adjustable-table th .resize-handle {
+    position: absolute;
+    top: 0;
+    width: 8px;
+    height: 100%;
+    cursor: col-resize;
+    background-color: transparent;
+    z-index: 100;
+    user-select: none;
+    /* Tăng vùng click bằng cách mở rộng vùng tương tác */
+    margin-left: -4px;
+    margin-right: -4px;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+/* Resize handle bên phải */
+.adjustable-table th .resize-handle-right {
+    right: -4px;
+}
+
+/* Resize handle bên trái */
+.adjustable-table th .resize-handle-left {
+    left: -4px;
+}
+
+/* Visual indicator khi hover */
+.adjustable-table th .resize-handle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 100%;
+    background-color: transparent;
+    transition: background-color 0.2s;
+}
+
+.adjustable-table th .resize-handle:hover::before {
+    background-color: #284e3f;
+}
+
+.adjustable-table th .resize-handle:hover {
+    background-color: rgba(40, 78, 63, 0.1);
+}
+
+.adjustable-table th.resizing {
+    user-select: none;
+}
+
+.adjustable-table th.resizing .resize-handle {
+    background-color: rgba(40, 78, 63, 0.2);
+}
+
+.adjustable-table th.resizing .resize-handle::before {
+    background-color: #284e3f;
+    width: 3px;
+}
+
+.adjustable-table tbody tr {
+    position: relative;
+}
+
+.row-resize-handle {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 6px;
+    cursor: row-resize;
+    background-color: transparent;
+    z-index: 5;
+    user-select: none;
+}
+
+.row-resize-handle:hover {
+    background-color: rgba(40, 78, 63, 0.2);
+}
+
+.adjustable-table tbody tr.resizing {
+    user-select: none;
+}

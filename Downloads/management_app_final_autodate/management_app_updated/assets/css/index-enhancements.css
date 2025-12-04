@@ -1,0 +1,172 @@
+/* Index Page Enhancements */
+
+/* Card Hover Effects */
+.cards-grid .card {
+    cursor: pointer;
+    transform: translateY(0);
+}
+
+.cards-grid .card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
+}
+
+/* Table Enhancements */
+#monthly-stats-table {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#monthly-stats-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Chart Container Hover */
+div[style*="canvas"] {
+    transition: all 0.3s ease;
+}
+
+div:has(canvas):hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12) !important;
+}
+
+/* Hero Section Animation */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.container > div:first-child h1 {
+    animation: fadeInDown 0.6s ease-out;
+}
+
+.container > div:first-child p {
+    animation: fadeInUp 0.6s ease-out 0.2s backwards;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Card Animation */
+.cards-grid .card {
+    animation: fadeInScale 0.5s ease-out backwards;
+}
+
+.cards-grid .card:nth-child(1) { animation-delay: 0.1s; }
+.cards-grid .card:nth-child(2) { animation-delay: 0.2s; }
+.cards-grid .card:nth-child(3) { animation-delay: 0.3s; }
+.cards-grid .card:nth-child(4) { animation-delay: 0.4s; }
+.cards-grid .card:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .cards-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .container > div:first-child {
+        padding: 32px 20px !important;
+    }
+    
+    .container > div:first-child h1 {
+        font-size: 32px !important;
+    }
+    
+    .container > div:first-child p {
+        font-size: 16px !important;
+    }
+}
+
+/* Smooth Scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Section Titles */
+h2[style*="font-size: 28px"] {
+    animation: fadeInLeft 0.6s ease-out;
+}
+
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Loading State */
+.card p[id^="home-"] {
+    transition: all 0.3s ease;
+}
+
+/* Tooltip Enhancement */
+[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    margin-bottom: 8px;
+}
+
+/* Print Styles */
+@media print {
+    .navbar, .hero-section {
+        display: none;
+    }
+    
+    .card {
+        break-inside: avoid;
+    }
+    
+    canvas {
+        max-height: 300px;
+    }
+}

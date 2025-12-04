@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Tên - Hệ Thống Quản Lý</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="assets/css/sheet.css" />
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="index.html">🏠 Trang Chủ</a>
+        <a href="dashboard.html">📊 Bảng Chính</a>
+        <a href="AE.html">💼 Bảng AE</a>
+        <a href="AE-QT.html">🌐 Bảng AE-QT</a>
+        <a href="rate.html">💱 Tỷ Giá USD</a>
+        <a href="usdt-purchase.html">💰 Giá Nhập USDT</a>
+        <a href="balance.html" class="active">👥 Danh Sách Tên</a>
+        <a href="settings.html">⚙️ Cài Đặt</a>
+        <a href="system.html">🔧 Quản Lý</a>
+    </nav>
+
+    <div class="container">
+        <!-- Header -->
+        <div style="margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h1 style="margin: 0; color: #1f2937; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 32px;">👥</span>
+                    Danh Sách Tên
+                </h1>
+                <div style="display: flex; gap: 12px;">
+                    <button id="manage-staff-btn" style="padding: 10px 20px; background: #8b5cf6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <span>👤</span> Quản Lý Nhân Viên
+                    </button>
+                    <button id="refresh-btn" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <span>🔄</span> Làm mới
+                    </button>
+                    <button id="export-balance-btn" style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <span>📥</span> Xuất Excel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Thống kê tổng quan -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 16px; border-radius: 10px; color: white;">
+                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Tổng Số Người</div>
+                    <div id="stat-total-people" style="font-size: 24px; font-weight: 700;">0</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 16px; border-radius: 10px; color: white;">
+                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Số Dương</div>
+                    <div id="stat-positive" style="font-size: 24px; font-weight: 700;">0</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); padding: 16px; border-radius: 10px; color: white;">
+                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Số Âm</div>
+                    <div id="stat-negative" style="font-size: 24px; font-weight: 700;">0</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 16px; border-radius: 10px; color: white;">
+                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Cân Bằng (0)</div>
+                    <div id="stat-zero" style="font-size: 24px; font-weight: 700;">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bộ lọc và tìm kiếm -->
+        <div style="background: white; padding: 16px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #374151;">🔍 Tìm kiếm tên</label>
+                    <input type="text" id="search-name" placeholder="Nhập tên để tìm kiếm..." style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px;">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #374151;">📊 Lọc theo trạng thái</label>
+                    <select id="filter-status" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px;">
+                        <option value="all">Tất cả</option>
+                        <option value="positive">Số dương (Nợ cho)</option>
+                        <option value="negative">Số âm (Nợ người khác)</option>
+                        <option value="zero">Cân bằng (0)</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #374151;">🔢 Sắp xếp</label>
+                    <select id="sort-by" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px;">
+                        <option value="name-asc">Tên (A-Z)</option>
+                        <option value="name-desc">Tên (Z-A)</option>
+                        <option value="balance-desc">Số dư (Cao → Thấp)</option>
+                        <option value="balance-asc">Số dư (Thấp → Cao)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Danh sách người -->
+        <div id="people-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+            <!-- Cards sẽ được thêm động -->
+        </div>
+
+        <!-- Empty state -->
+        <div id="empty-state" style="display: none; text-align: center; padding: 60px 20px; background: white; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+            <div style="font-size: 64px; margin-bottom: 16px;">📋</div>
+            <h3 style="color: #6b7280; margin-bottom: 8px;">Chưa có dữ liệu</h3>
+            <p style="color: #9ca3af;">Dữ liệu sẽ tự động tải từ bảng Ngày Đổi và Ngày Lấy</p>
+        </div>
+
+        <!-- Modal chi tiết -->
+        <div id="detail-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+            <div style="background: white; border-radius: 12px; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
+                <div style="padding: 24px; border-bottom: 2px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+                    <h2 id="modal-title" style="margin: 0; color: #1f2937; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 28px;">👤</span>
+                        <span id="modal-name">Tên người</span>
+                    </h2>
+                    <button onclick="closeDetailModal()" style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">✕ Đóng</button>
+                </div>
+                <div style="padding: 24px;">
+                    <!-- Tổng quan -->
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;">
+                        <div style="background: #f0f9ff; padding: 12px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                            <div style="font-size: 11px; color: #1e40af; margin-bottom: 4px;">Tổng Ngày Đổi</div>
+                            <div id="modal-total-doi" style="font-size: 16px; font-weight: 700; color: #1e40af;">0₫</div>
+                        </div>
+                        <div style="background: #fef3c7; padding: 12px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                            <div style="font-size: 11px; color: #92400e; margin-bottom: 4px;">Tổng Ngày Lấy</div>
+                            <div id="modal-total-lay" style="font-size: 16px; font-weight: 700; color: #92400e;">0₫</div>
+                        </div>
+                        <div style="background: #dbeafe; padding: 12px; border-radius: 8px; border-left: 4px solid #2563eb;">
+                            <div style="font-size: 11px; color: #1e40af; margin-bottom: 4px;">💼 Nhận AE (×0.5)</div>
+                            <div id="modal-total-tt-ae" style="font-size: 16px; font-weight: 700; color: #1e40af;">0₫</div>
+                        </div>
+                        <div style="background: #fce7f3; padding: 12px; border-radius: 8px; border-left: 4px solid #ec4899;">
+                            <div style="font-size: 11px; color: #9f1239; margin-bottom: 4px;">🌐 Nhận AE-QT (×0.8)</div>
+                            <div id="modal-total-tt-aeqt" style="font-size: 16px; font-weight: 700; color: #9f1239;">0₫</div>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid #e5e7eb; overflow-x: auto;">
+                        <button class="modal-tab active" data-tab="doi" onclick="switchModalTab('doi')" style="padding: 10px 16px; background: none; border: none; border-bottom: 3px solid #3b82f6; color: #3b82f6; font-weight: 600; cursor: pointer; white-space: nowrap; font-size: 13px;">
+                            📅 Ngày Đổi (<span id="count-doi">0</span>)
+                        </button>
+                        <button class="modal-tab" data-tab="lay" onclick="switchModalTab('lay')" style="padding: 10px 16px; background: none; border: none; border-bottom: 3px solid transparent; color: #6b7280; font-weight: 600; cursor: pointer; white-space: nowrap; font-size: 13px;">
+                            💰 Ngày Lấy (<span id="count-lay">0</span>)
+                        </button>
+                        <button class="modal-tab" data-tab="ae" onclick="switchModalTab('ae')" style="padding: 10px 16px; background: none; border: none; border-bottom: 3px solid transparent; color: #6b7280; font-weight: 600; cursor: pointer; white-space: nowrap; font-size: 13px;">
+                            💼 Bảng AE (<span id="count-ae">0</span>)
+                        </button>
+                        <button class="modal-tab" data-tab="aeqt" onclick="switchModalTab('aeqt')" style="padding: 10px 16px; background: none; border: none; border-bottom: 3px solid transparent; color: #6b7280; font-weight: 600; cursor: pointer; white-space: nowrap; font-size: 13px;">
+                            🌐 Bảng AE-QT (<span id="count-aeqt">0</span>)
+                        </button>
+                    </div>
+
+                    <!-- Nội dung tabs -->
+                    <div id="modal-tab-doi" class="modal-tab-content">
+                        <div id="modal-list-doi" style="display: flex; flex-direction: column; gap: 8px;">
+                            <!-- Danh sách Ngày Đổi -->
+                        </div>
+                    </div>
+                    <div id="modal-tab-lay" class="modal-tab-content" style="display: none;">
+                        <div id="modal-list-lay" style="display: flex; flex-direction: column; gap: 8px;">
+                            <!-- Danh sách Ngày Lấy -->
+                        </div>
+                    </div>
+                    <div id="modal-tab-ae" class="modal-tab-content" style="display: none;">
+                        <div id="modal-list-ae" style="display: flex; flex-direction: column; gap: 8px;">
+                            <!-- Danh sách Bảng AE -->
+                        </div>
+                    </div>
+                    <div id="modal-tab-aeqt" class="modal-tab-content" style="display: none;">
+                        <div id="modal-list-aeqt" style="display: flex; flex-direction: column; gap: 8px;">
+                            <!-- Danh sách Bảng AE-QT -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Quản Lý Nhân Viên -->
+        <div id="staff-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+            <div style="background: white; border-radius: 12px; width: 95%; max-width: 1200px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
+                <div style="padding: 24px; border-bottom: 2px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="margin: 0; color: #1f2937; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 28px;">👤</span>
+                        Quản Lý Nhân Viên
+                    </h2>
+                    <button onclick="closeStaffModal()" style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">✕ Đóng</button>
+                </div>
+                <div style="padding: 24px;">
+                    <!-- Two columns layout -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        
+                        <!-- Column 1: Bảng AE -->
+                        <div style="border: 2px solid #3b82f6; border-radius: 12px; padding: 20px; background: #f0f9ff;">
+                            <h3 style="margin: 0 0 16px 0; color: #1e40af; display: flex; align-items: center; gap: 8px; font-size: 18px;">
+                                <span style="font-size: 24px;">💼</span>
+                                Nhân Viên Bảng AE
+                            </h3>
+                            
+                            <!-- Form thêm AE -->
+                            <div style="background: white; padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #bfdbfe;">
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e40af; font-size: 13px;">➕ Thêm NV Mới</label>
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="text" id="new-staff-ae" placeholder="Nhập tên (có thể nhiều tên, cách nhau bằng dấu phẩy)" style="flex: 1; padding: 8px 10px; border: 1px solid #bfdbfe; border-radius: 6px; font-size: 13px;">
+                                    <button onclick="addStaffFromModal('ae')" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; white-space: nowrap;">Thêm</button>
+                                </div>
+                                <div style="font-size: 11px; color: #6b7280; margin-top: 6px;">💡 Ví dụ: An, Bình, Châu</div>
+                            </div>
+
+                            <!-- Tìm kiếm AE -->
+                            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                                <input type="text" id="staff-search-ae" placeholder="🔍 Tìm kiếm..." style="flex: 1; padding: 8px; border: 1px solid #bfdbfe; border-radius: 6px; font-size: 13px; background: white;">
+                                <button onclick="sortStaffListInModal('ae')" style="padding: 8px 12px; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px;">A-Z</button>
+                                <button onclick="exportStaffListFromModal('ae')" style="padding: 8px 12px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px;">📥</button>
+                            </div>
+
+                            <!-- Danh sách AE -->
+                            <div id="staff-list-ae" style="display: flex; flex-direction: column; gap: 6px; max-height: 450px; overflow-y: auto; padding: 4px;">
+                                <!-- AE staff items -->
+                            </div>
+
+                            <!-- Empty state AE -->
+                            <div id="staff-empty-ae" style="display: none; text-align: center; padding: 30px 15px; background: white; border-radius: 8px; border: 1px dashed #bfdbfe;">
+                                <div style="font-size: 40px; margin-bottom: 8px;">💼</div>
+                                <p style="color: #6b7280; margin: 0; font-size: 13px;">Chưa có nhân viên AE</p>
+                            </div>
+                        </div>
+
+                        <!-- Column 2: Bảng AE-QT -->
+                        <div style="border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; background: #fffbeb;">
+                            <h3 style="margin: 0 0 16px 0; color: #92400e; display: flex; align-items: center; gap: 8px; font-size: 18px;">
+                                <span style="font-size: 24px;">🌐</span>
+                                Nhân Viên Bảng AE-QT
+                            </h3>
+                            
+                            <!-- Form thêm AE-QT -->
+                            <div style="background: white; padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #fde68a;">
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #92400e; font-size: 13px;">➕ Thêm NV Mới</label>
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="text" id="new-staff-aeqt" placeholder="Nhập tên (có thể nhiều tên, cách nhau bằng dấu phẩy)" style="flex: 1; padding: 8px 10px; border: 1px solid #fde68a; border-radius: 6px; font-size: 13px;">
+                                    <button onclick="addStaffFromModal('aeqt')" style="padding: 8px 16px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; white-space: nowrap;">Thêm</button>
+                                </div>
+                                <div style="font-size: 11px; color: #6b7280; margin-top: 6px;">💡 Ví dụ: An, Bình, Châu</div>
+                            </div>
+
+                            <!-- Tìm kiếm AE-QT -->
+                            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                                <input type="text" id="staff-search-aeqt" placeholder="🔍 Tìm kiếm..." style="flex: 1; padding: 8px; border: 1px solid #fde68a; border-radius: 6px; font-size: 13px; background: white;">
+                                <button onclick="sortStaffListInModal('aeqt')" style="padding: 8px 12px; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px;">A-Z</button>
+                                <button onclick="exportStaffListFromModal('aeqt')" style="padding: 8px 12px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px;">📥</button>
+                            </div>
+
+                            <!-- Danh sách AE-QT -->
+                            <div id="staff-list-aeqt" style="display: flex; flex-direction: column; gap: 6px; max-height: 450px; overflow-y: auto; padding: 4px;">
+                                <!-- AE-QT staff items -->
+                            </div>
+
+                            <!-- Empty state AE-QT -->
+                            <div id="staff-empty-aeqt" style="display: none; text-align: center; padding: 30px 15px; background: white; border-radius: 8px; border: 1px dashed #fde68a;">
+                                <div style="font-size: 40px; margin-bottom: 8px;">🌐</div>
+                                <p style="color: #6b7280; margin: 0; font-size: 13px;">Chưa có nhân viên AE-QT</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Info box -->
+                    <div style="margin-top: 20px; padding: 12px 16px; background: #e0f2fe; border-left: 4px solid #0284c7; border-radius: 6px;">
+                        <p style="margin: 0; color: #0c4a6e; font-size: 13px; line-height: 1.6;">
+                            <strong>💡 Lưu ý:</strong> Hai danh sách riêng biệt giúp tránh nhầm lẫn khi chọn nhân viên. Danh sách bên trái cho Bảng AE, bên phải cho Bảng AE-QT.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hướng dẫn -->
+        <div style="margin-top: 24px; padding: 16px; background: #f0f9ff; border-left: 4px solid #3b82f6; border-radius: 8px;">
+            <h3 style="margin: 0 0 12px 0; color: #1e40af; font-size: 16px;">📖 Hướng Dẫn Sử Dụng</h3>
+            <ul style="margin: 0; padding-left: 20px; color: #1e40af; line-height: 1.8;">
+                <li><strong>Số Dương (Xanh):</strong> Người này đang nợ bạn tiền (Ngày Lấy > Ngày Đổi)</li>
+                <li><strong>Số Âm (Đỏ):</strong> Bạn đang nợ người này tiền (Ngày Đổi > Ngày Lấy)</li>
+                <li><strong>Số 0 (Xám):</strong> Không có công nợ, đã thanh toán đủ</li>
+                <li><strong>Click vào card:</strong> Xem chi tiết giao dịch Ngày Đổi và Ngày Lấy</li>
+                <li><strong>Dữ liệu tự động:</strong> Lấy từ bảng Dashboard (Ngày Đổi, Ngày Lấy)</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/js/formulas.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/button-effects.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-sync.js"></script>
+    <script src="assets/js/balance.js"></script>
+    <script src="assets/js/note-manager.js"></script>
+    <script src="assets/js/export.js"></script>
+    
+    <script>
+        // ====================================
+        // Staff Manager - Two Separate Lists
+        // ====================================
+        const STAFF_AE_KEY = 'staff_list_ae';
+        const STAFF_AEQT_KEY = 'staff_list_aeqt';
+        let staffListAE = [];
+        let staffListAEQT = [];
+        let staffSortAscendingAE = true;
+        let staffSortAscendingAEQT = true;
+
+        // Load staff lists from localStorage
+        function loadStaffListData() {
+            try {
+                const storedAE = localStorage.getItem(STAFF_AE_KEY);
+                const storedAEQT = localStorage.getItem(STAFF_AEQT_KEY);
+                staffListAE = storedAE ? JSON.parse(storedAE) : [];
+                staffListAEQT = storedAEQT ? JSON.parse(storedAEQT) : [];
+                console.log('📋 Staff AE loaded:', staffListAE.length);
+                console.log('📋 Staff AE-QT loaded:', staffListAEQT.length);
+            } catch (e) {
+                console.error('Error loading staff lists:', e);
+                staffListAE = [];
+                staffListAEQT = [];
+            }
+        }
+
+        // Save staff list to localStorage
+        function saveStaffListData(type) {
+            try {
+                if (type === 'ae') {
+                    localStorage.setItem(STAFF_AE_KEY, JSON.stringify(staffListAE));
+                    console.log('✅ Staff AE saved:', staffListAE);
+                } else {
+                    localStorage.setItem(STAFF_AEQT_KEY, JSON.stringify(staffListAEQT));
+                    console.log('✅ Staff AE-QT saved:', staffListAEQT);
+                }
+            } catch (e) {
+                console.error('Error saving staff list:', e);
+                alert('Lỗi khi lưu danh sách!');
+            }
+        }
+
+        // Get staff list (public API for autocomplete)
+        window.getStaffList = function(type) {
+            loadStaffListData();
+            if (type === 'ae') {
+                return [...staffListAE];
+            } else if (type === 'aeqt') {
+                return [...staffListAEQT];
+            } else {
+                // For backward compatibility, return combined list
+                return [...staffListAE, ...staffListAEQT];
+            }
+        }
+
+        // Add staff (silent mode for batch operations)
+        window.addStaff = function(name, type, silent = false) {
+            loadStaffListData();
+            
+            if (!name || name.trim() === '') {
+                if (!silent) alert('Vui lòng nhập tên nhân viên!');
+                return false;
+            }
+
+            const trimmedName = name.trim();
+            const list = type === 'ae' ? staffListAE : staffListAEQT;
+            
+            // Check duplicate (case-insensitive)
+            if (list.some(s => s.toLowerCase() === trimmedName.toLowerCase())) {
+                return false; // Silently fail for duplicates in batch mode
+            }
+
+            if (type === 'ae') {
+                staffListAE.push(trimmedName);
+            } else {
+                staffListAEQT.push(trimmedName);
+            }
+            
+            saveStaffListData(type);
+            if (!silent) {
+                showStaffNotification('✅ Đã thêm: ' + trimmedName + ' (' + (type === 'ae' ? 'AE' : 'AE-QT') + ')');
+            }
+            return true;
+        }
+
+        // Edit staff
+        window.editStaff = function(oldName, newName, type) {
+            loadStaffListData();
+            
+            if (!newName || newName.trim() === '') {
+                alert('Vui lòng nhập tên mới!');
+                return false;
+            }
+
+            const trimmedNewName = newName.trim();
+            const list = type === 'ae' ? staffListAE : staffListAEQT;
+            
+            // Check if new name already exists (excluding current)
+            if (list.some(s => s !== oldName && s.toLowerCase() === trimmedNewName.toLowerCase())) {
+                alert('Tên này đã tồn tại!');
+                return false;
+            }
+
+            const index = list.indexOf(oldName);
+            if (index > -1) {
+                if (type === 'ae') {
+                    staffListAE[index] = trimmedNewName;
+                } else {
+                    staffListAEQT[index] = trimmedNewName;
+                }
+                saveStaffListData(type);
+                showStaffNotification('✅ Đã sửa: ' + trimmedNewName);
+                return true;
+            }
+            return false;
+        }
+
+        // Delete staff
+        window.deleteStaff = function(name, type) {
+            loadStaffListData();
+            
+            const list = type === 'ae' ? staffListAE : staffListAEQT;
+            const index = list.indexOf(name);
+            
+            if (index > -1) {
+                if (type === 'ae') {
+                    staffListAE.splice(index, 1);
+                } else {
+                    staffListAEQT.splice(index, 1);
+                }
+                saveStaffListData(type);
+                showStaffNotification('🗑️ Đã xóa: ' + name);
+                return true;
+            }
+            return false;
+        }
+
+        // Sort staff list
+        window.sortStaffList = function(type) {
+            loadStaffListData();
+            
+            if (type === 'ae') {
+                staffListAE.sort((a, b) => {
+                    return staffSortAscendingAE 
+                        ? a.localeCompare(b, 'vi') 
+                        : b.localeCompare(a, 'vi');
+                });
+                staffSortAscendingAE = !staffSortAscendingAE;
+                saveStaffListData('ae');
+            } else {
+                staffListAEQT.sort((a, b) => {
+                    return staffSortAscendingAEQT 
+                        ? a.localeCompare(b, 'vi') 
+                        : b.localeCompare(a, 'vi');
+                });
+                staffSortAscendingAEQT = !staffSortAscendingAEQT;
+                saveStaffListData('aeqt');
+            }
+        }
+
+        // Export staff list
+        window.exportStaffList = function(type) {
+            loadStaffListData();
+            
+            const list = type === 'ae' ? staffListAE : staffListAEQT;
+            const label = type === 'ae' ? 'AE' : 'AE-QT';
+            
+            if (list.length === 0) {
+                alert('Danh sách trống!');
+                return;
+            }
+
+            const csvContent = '\uFEFF' + 'STT,Tên Nhân Viên ' + label + '\n' + 
+                list.map((name, i) => `${i + 1},"${name}"`).join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'Staff_' + label + '_' + new Date().toISOString().split('T')[0] + '.csv');
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showStaffNotification('📥 Đã xuất file CSV - ' + label);
+        }
+
+        // Show notification
+        function showStaffNotification(message) {
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #10b981;
+                color: white;
+                padding: 16px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                font-weight: 600;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        }
+
+        // ====================================
+        // Modal Management
+        // ====================================
+        
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Balance page loaded');
+            
+            // Load staff data on init
+            loadStaffListData();
+            
+            // Open staff management modal
+            const manageStaffBtn = document.getElementById('manage-staff-btn');
+            
+            if (manageStaffBtn) {
+                manageStaffBtn.addEventListener('click', function() {
+                    console.log('👆 Button clicked!');
+                    const modal = document.getElementById('staff-modal');
+                    
+                    if (modal) {
+                        modal.style.display = 'flex';
+                        console.log('✅ Modal display set to flex');
+                        renderStaffListInModal('ae');
+                        renderStaffListInModal('aeqt');
+                    }
+                });
+            }
+            
+            // Enter key support for new staff inputs
+            document.getElementById('new-staff-ae')?.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addStaffFromModal('ae');
+            });
+            
+            document.getElementById('new-staff-aeqt')?.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addStaffFromModal('aeqt');
+            });
+
+            // Search staff
+            document.getElementById('staff-search-ae')?.addEventListener('input', function() {
+                renderStaffListInModal('ae');
+            });
+            
+            document.getElementById('staff-search-aeqt')?.addEventListener('input', function() {
+                renderStaffListInModal('aeqt');
+            });
+            
+            // Close modal on outside click
+            const staffModal = document.getElementById('staff-modal');
+            if (staffModal) {
+                staffModal.addEventListener('click', function(e) {
+                    if (e.target.id === 'staff-modal') {
+                        closeStaffModal();
+                    }
+                });
+            }
+        });
+
+        // Close staff modal
+        window.closeStaffModal = function() {
+            const modal = document.getElementById('staff-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                console.log('✅ Modal closed');
+            }
+        }
+
+        // Add staff from modal
+        window.addStaffFromModal = function(type) {
+            const inputId = type === 'ae' ? 'new-staff-ae' : 'new-staff-aeqt';
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            
+            const inputValue = input.value.trim();
+            if (!inputValue) {
+                alert('Vui lòng nhập tên nhân viên!');
+                return;
+            }
+            
+            // Split by comma and process each name
+            const names = inputValue.split(',').map(name => name.trim()).filter(name => name.length > 0);
+            
+            if (names.length === 0) {
+                alert('Vui lòng nhập tên hợp lệ!');
+                return;
+            }
+            
+            let addedCount = 0;
+            let duplicateCount = 0;
+            const addedNames = [];
+            
+            names.forEach(name => {
+                if (addStaff(name, type)) {
+                    addedCount++;
+                    addedNames.push(name);
+                } else {
+                    duplicateCount++;
+                }
+            });
+            
+            // Clear input and refresh list
+            input.value = '';
+            renderStaffListInModal(type);
+            
+            // Show summary notification
+            if (addedCount > 0) {
+                const typeLabel = type === 'ae' ? 'AE' : 'AE-QT';
+                if (addedCount === 1) {
+                    showStaffNotification(`✅ Đã thêm: ${addedNames[0]} (${typeLabel})`);
+                } else {
+                    showStaffNotification(`✅ Đã thêm ${addedCount} nhân viên vào ${typeLabel}${duplicateCount > 0 ? ` (${duplicateCount} trùng)` : ''}`);
+                }
+            } else if (duplicateCount > 0) {
+                alert('Tất cả tên đã tồn tại trong danh sách!');
+            }
+        }
+
+        // Render staff list in modal
+        window.renderStaffListInModal = function(type) {
+            console.log('🎨 Rendering staff list for:', type);
+            loadStaffListData();
+            
+            const searchId = type === 'ae' ? 'staff-search-ae' : 'staff-search-aeqt';
+            const containerId = type === 'ae' ? 'staff-list-ae' : 'staff-list-aeqt';
+            const emptyStateId = type === 'ae' ? 'staff-empty-ae' : 'staff-empty-aeqt';
+            const buttonColor = type === 'ae' ? '#3b82f6' : '#f59e0b';
+            
+            const searchInput = document.getElementById(searchId);
+            const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+            
+            const list = type === 'ae' ? staffListAE : staffListAEQT;
+            const filteredList = list.filter(name => 
+                name.toLowerCase().includes(searchTerm)
+            );
+
+            const container = document.getElementById(containerId);
+            const emptyState = document.getElementById(emptyStateId);
+
+            if (!container || !emptyState) {
+                console.error('❌ Container or empty state not found for', type);
+                return;
+            }
+
+            if (filteredList.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                console.log('📭 No staff to display for', type);
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            container.innerHTML = filteredList.map(name => `
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: white; border: 1px solid #e5e7eb; border-radius: 6px; transition: all 0.2s;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 16px;">${type === 'ae' ? '💼' : '🌐'}</span>
+                        <span style="font-weight: 600; color: #1f2937; font-size: 13px;">${name}</span>
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <button onclick="editStaffFromModal('${name.replace(/'/g, "\\'")}', '${type}')" style="padding: 5px 10px; background: ${buttonColor}; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;">✏️ Sửa</button>
+                        <button onclick="deleteStaffFromModal('${name.replace(/'/g, "\\'")}', '${type}')" style="padding: 5px 10px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            console.log('✅ Rendered', filteredList.length, type, 'staff members');
+        }
+
+        // Edit staff from modal
+        window.editStaffFromModal = function(oldName, type) {
+            const newName = prompt('Sửa tên nhân viên:', oldName);
+            if (newName && newName.trim() && newName.trim() !== oldName) {
+                if (editStaff(oldName, newName.trim(), type)) {
+                    renderStaffListInModal(type);
+                }
+            }
+        }
+
+        // Delete staff from modal
+        window.deleteStaffFromModal = function(name, type) {
+            if (confirm(`Xác nhận xóa nhân viên "${name}"?`)) {
+                if (deleteStaff(name, type)) {
+                    renderStaffListInModal(type);
+                }
+            }
+        }
+
+        // Sort staff list
+        window.sortStaffListInModal = function(type) {
+            sortStaffList(type);
+            renderStaffListInModal(type);
+        }
+
+        // Export staff list
+        window.exportStaffListFromModal = function(type) {
+            exportStaffList(type);
+        }
+
+        // Close modal on ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeStaffModal();
+            }
+        });
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
