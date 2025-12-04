@@ -126,11 +126,25 @@
     const ALERT_REFRESH_INTERVAL = 5 * 60 * 1000;
 
     async function fetchRates() {
+        // Hiển thị loading
+        if (buyPriceEl) {
+            buyPriceEl.textContent = '⏳ Đang tải...';
+            buyPriceEl.style.color = '#6b7280';
+        }
+        
         let fetchedFromAPI = false;
         try {
-            const res = await fetch(p2pProxy);
+            console.log('🔄 Fetching P2P rates from API...');
+            const res = await fetch(p2pProxy, {
+                cache: 'no-cache',
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            });
             if (!res.ok) throw new Error('Backend proxy failed');
             const data = await res.json();
+            console.log('📊 API Response:', data);
             if (data && data.sellPrice && data.buyPrice) {
                 sellPrice = data.sellPrice;
                 buyPrice = data.buyPrice;
@@ -139,11 +153,12 @@
                 console.log('✅ P2P rates fetched successfully:', { sellPrice, buyPrice });
             }
         } catch (err) {
-            console.warn('Proxy fetch failed, using fallback:', err);
+            console.warn('❌ Proxy fetch failed, using fallback:', err);
             await fetchFallbackRates();
         }
         // Chỉ dùng giá từ localStorage nếu không lấy được từ API
         if (!fetchedFromAPI) {
+            console.warn('⚠️ Using stored prices from localStorage');
             applyStoredPrices();
         }
         updateRateWidget();
@@ -197,7 +212,11 @@
         const now = new Date();
         const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
         buyPriceEl.textContent  = formatVND(roundedBuyPrice);
-        buyPriceEl.title = `Cập nhật lúc ${timeStr}`;
+        buyPriceEl.style.color = '#059669';
+        buyPriceEl.style.fontWeight = '700';
+        buyPriceEl.title = `Cập nhật lúc ${timeStr} - Giá P2P thực tế từ Binance`;
+        
+        console.log(`✅ Rate widget updated: ${formatVND(roundedBuyPrice)} (at ${timeStr})`);
         
         computeUsdtValue();
     }
@@ -1019,11 +1038,11 @@
         setInterval(fetchAlertState, ALERT_REFRESH_INTERVAL);
     }
     
-    // Tự động cập nhật giá P2P USDT mỗi 1 giờ
+    // Tự động cập nhật giá P2P USDT mỗi 10 phút
     setInterval(() => {
-        console.log('🔄 Auto-refreshing P2P USDT rates...');
+        console.log('🔄 Auto-refreshing P2P USDT rates (10-minute interval)...');
         fetchRates();
-    }, 60 * 60 * 1000); // 1 giờ = 60 phút × 60 giây × 1000ms
+    }, 10 * 60 * 1000); // 10 phút = 10 × 60 giây × 1000ms
     
     // Thêm nút làm mới thủ công
     const refreshBtn = document.getElementById('refresh-p2p-btn');
