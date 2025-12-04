@@ -16,11 +16,10 @@
         <a href="dashboard.html">📊 Bảng Chính</a>
         <a href="AE.html">💼 Bảng AE</a>
         <a href="AE-QT.html">🌐 Bảng AE-QT</a>
-        <a href="rate.html">💱 Tỷ Giá USD</a>
-        <a href="usdt-purchase.html">💰 Giá Nhập USDT</a>
         <a href="balance.html" class="active">👥 Danh Sách Tên</a>
+        <a href="usdt-purchase.html">💰 Giá Nhập USDT</a>
+        <a href="rate.html">💱 Tỷ Giá USD</a>
         <a href="settings.html">⚙️ Cài Đặt</a>
-        <a href="system.html">🔧 Quản Lý</a>
     </nav>
 
     <div class="container">
@@ -106,8 +105,11 @@
                 </div>
                 <div id="empty-state-ae" style="display: none; text-align: center; padding: 40px 15px; background: white; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
                     <div style="font-size: 48px; margin-bottom: 12px;">💼</div>
-                    <h3 style="color: #6b7280; margin-bottom: 6px; font-size: 16px;">Chưa có nhân viên AE</h3>
-                    <p style="color: #9ca3af; font-size: 13px; margin: 0;">Dữ liệu từ Bảng AE sẽ hiển thị tại đây</p>
+                    <h3 style="color: #6b7280; margin-bottom: 8px; font-size: 16px;">Chưa có nhân viên AE</h3>
+                    <p style="color: #9ca3af; font-size: 13px; margin: 0 0 12px 0;">Vui lòng thêm nhân viên để bắt đầu theo dõi công nợ</p>
+                    <button onclick="document.getElementById('manage-staff-btn').click()" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px;">
+                        👤 Thêm Nhân Viên AE
+                    </button>
                 </div>
             </div>
 
@@ -122,8 +124,11 @@
                 </div>
                 <div id="empty-state-aeqt" style="display: none; text-align: center; padding: 40px 15px; background: white; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
                     <div style="font-size: 48px; margin-bottom: 12px;">🌐</div>
-                    <h3 style="color: #6b7280; margin-bottom: 6px; font-size: 16px;">Chưa có nhân viên AE-QT</h3>
-                    <p style="color: #9ca3af; font-size: 13px; margin: 0;">Dữ liệu từ Bảng AE-QT sẽ hiển thị tại đây</p>
+                    <h3 style="color: #6b7280; margin-bottom: 8px; font-size: 16px;">Chưa có nhân viên AE-QT</h3>
+                    <p style="color: #9ca3af; font-size: 13px; margin: 0 0 12px 0;">Vui lòng thêm nhân viên để bắt đầu theo dõi công nợ</p>
+                    <button onclick="document.getElementById('manage-staff-btn').click()" style="padding: 8px 16px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px;">
+                        👤 Thêm Nhân Viên AE-QT
+                    </button>
                 </div>
             </div>
         </div>
@@ -143,7 +148,7 @@
                 </div>
                 <div style="padding: 24px;">
                     <!-- Tổng quan -->
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px;">
                         <div style="background: #f0f9ff; padding: 12px; border-radius: 8px; border-left: 4px solid #3b82f6;">
                             <div style="font-size: 11px; color: #1e40af; margin-bottom: 4px;">Tổng Ngày Đổi</div>
                             <div id="modal-total-doi" style="font-size: 16px; font-weight: 700; color: #1e40af;">0₫</div>
@@ -152,11 +157,13 @@
                             <div style="font-size: 11px; color: #92400e; margin-bottom: 4px;">Tổng Ngày Lấy</div>
                             <div id="modal-total-lay" style="font-size: 16px; font-weight: 700; color: #92400e;">0₫</div>
                         </div>
-                        <div style="background: #dbeafe; padding: 12px; border-radius: 8px; border-left: 4px solid #2563eb;">
+                        <!-- Thẻ cho nhân viên AE -->
+                        <div id="modal-card-ae" style="display: none; background: #dbeafe; padding: 12px; border-radius: 8px; border-left: 4px solid #2563eb;">
                             <div style="font-size: 11px; color: #1e40af; margin-bottom: 4px;">💼 Nhận AE (×0.5)</div>
                             <div id="modal-total-tt-ae" style="font-size: 16px; font-weight: 700; color: #1e40af;">0₫</div>
                         </div>
-                        <div style="background: #fce7f3; padding: 12px; border-radius: 8px; border-left: 4px solid #ec4899;">
+                        <!-- Thẻ cho nhân viên AE-QT -->
+                        <div id="modal-card-aeqt" style="display: none; background: #fce7f3; padding: 12px; border-radius: 8px; border-left: 4px solid #ec4899;">
                             <div style="font-size: 11px; color: #9f1239; margin-bottom: 4px;">🌐 Nhận AE-QT (×0.8)</div>
                             <div id="modal-total-tt-aeqt" style="font-size: 16px; font-weight: 700; color: #9f1239;">0₫</div>
                         </div>
@@ -304,13 +311,15 @@
         <!-- Hướng dẫn -->
         <div style="margin-top: 24px; padding: 16px; background: #f0f9ff; border-left: 4px solid #3b82f6; border-radius: 8px;">
             <h3 style="margin: 0 0 12px 0; color: #1e40af; font-size: 16px;">📖 Hướng Dẫn Sử Dụng</h3>
-            <ul style="margin: 0; padding-left: 20px; color: #1e40af; line-height: 1.8;">
-                <li><strong>Số Dương (Xanh):</strong> Người này đang nợ bạn tiền (Ngày Lấy > Ngày Đổi)</li>
-                <li><strong>Số Âm (Đỏ):</strong> Bạn đang nợ người này tiền (Ngày Đổi > Ngày Lấy)</li>
+            <ol style="margin: 0; padding-left: 20px; color: #1e40af; line-height: 1.8;">
+                <li><strong>Bước 1 - Thêm nhân viên:</strong> Click nút "👤 Quản Lý Nhân Viên" ở trên → Thêm tên vào danh sách AE hoặc AE-QT</li>
+                <li><strong>Bước 2 - Nhập dữ liệu:</strong> Vào các bảng (AE, AE-QT, Bảng Chính) và nhập giao dịch với tên nhân viên</li>
+                <li><strong>Bước 3 - Xem kết quả:</strong> Quay lại trang này để xem công nợ được tính tự động</li>
+                <li><strong>Số Dương (Xanh):</strong> Người này đang nợ bạn tiền (Công > Ngày Đổi + Ngày Lấy)</li>
+                <li><strong>Số Âm (Đỏ):</strong> Bạn đang nợ người này tiền (Ngày Đổi + Ngày Lấy > Công)</li>
                 <li><strong>Số 0 (Xám):</strong> Không có công nợ, đã thanh toán đủ</li>
-                <li><strong>Click vào card:</strong> Xem chi tiết giao dịch Ngày Đổi và Ngày Lấy</li>
-                <li><strong>Dữ liệu tự động:</strong> Lấy từ bảng Dashboard (Ngày Đổi, Ngày Lấy)</li>
-            </ul>
+                <li><strong>Click vào card:</strong> Xem chi tiết đầy đủ các giao dịch Ngày Đổi, Ngày Lấy, Bảng AE, Bảng AE-QT</li>
+            </ol>
         </div>
     </div>
 
