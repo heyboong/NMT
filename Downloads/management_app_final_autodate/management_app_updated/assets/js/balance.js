@@ -205,11 +205,11 @@ function loadAndCalculateBalances() {
     });
     
     // Calculate final balance for each person
-    // Balance = Total Lấy - Total Đổi
+    // Balance = Total Lấy - Total Đổi - Total TT_AE - Total TT_AEQT
     // Positive = They owe us (they took more than they should give back)
-    // Negative = We owe them (we gave them more crypto than they withdrew)
+    // Negative = We owe them (we gave them more crypto than they withdrew + what they earned from AE/AEQT)
     Object.keys(peopleBalances).forEach(name => {
-        peopleBalances[name].balance = peopleBalances[name].totalLay - peopleBalances[name].totalDoi;
+        peopleBalances[name].balance = peopleBalances[name].totalLay - peopleBalances[name].totalDoi - peopleBalances[name].totalTT_AE - peopleBalances[name].totalTT_AEQT;
     });
     
     console.log('✅ Calculated balances for', Object.keys(peopleBalances).length, 'people');
