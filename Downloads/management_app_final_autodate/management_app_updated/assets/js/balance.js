@@ -60,7 +60,7 @@ function loadAndCalculateBalances() {
     // Reset balances
     peopleBalances = {};
     
-    // Process Bảng AE - Lấy Chia và Tiền làm
+    // Process Bảng AE - Tự động lấy tất cả tên từ dữ liệu
     aeData.forEach(row => {
         if (row.name && row.name.trim()) {
             const nameField = row.name.trim();
@@ -75,6 +75,7 @@ function loadAndCalculateBalances() {
                 if (!peopleBalances[name]) {
                     peopleBalances[name] = {
                         name: name,
+                        type: 'ae', // Mark as AE staff
                         totalDoi: 0,
                         totalLay: 0,
                         totalChia: 0,
@@ -88,6 +89,9 @@ function loadAndCalculateBalances() {
                         aeTransactions: [],
                         aeqtTransactions: []
                     };
+                } else {
+                    // If person already exists, set type to 'ae'
+                    peopleBalances[name].type = 'ae';
                 }
                 
                 // Bảng AE: Nhận (VND) = Chia × 0.5 (nếu Chia > 0), ngược lại = Tiền làm × 0.5
@@ -123,6 +127,7 @@ function loadAndCalculateBalances() {
                 if (!peopleBalances[name]) {
                     peopleBalances[name] = {
                         name: name,
+                        type: 'aeqt', // Mark as AE-QT staff
                         totalDoi: 0,
                         totalLay: 0,
                         totalChia: 0,
@@ -136,6 +141,9 @@ function loadAndCalculateBalances() {
                         aeTransactions: [],
                         aeqtTransactions: []
                     };
+                } else {
+                    // If person already exists, set type to 'aeqt'
+                    peopleBalances[name].type = 'aeqt';
                 }
                 
                 // Bảng AE-QT: Nhận (VND) = Chia × 0.8 (nếu Chia > 0), ngược lại = Tiền làm × 0.8
@@ -163,6 +171,7 @@ function loadAndCalculateBalances() {
             if (!peopleBalances[name]) {
                 peopleBalances[name] = {
                     name: name,
+                    type: null, // Type will be determined by AE/AEQT data
                     totalDoi: 0,
                     totalLay: 0,
                     totalChia: 0,
@@ -198,7 +207,6 @@ function loadAndCalculateBalances() {
             });
         }
     });
-    
     // Process Ngày Lấy (Withdraw) - Money they took
     withdrawData.forEach(row => {
         if (row.staff && row.staff.trim()) {
@@ -206,6 +214,7 @@ function loadAndCalculateBalances() {
             if (!peopleBalances[name]) {
                 peopleBalances[name] = {
                     name: name,
+                    type: null, // Type will be determined by AE/AEQT data
                     totalDoi: 0,
                     totalLay: 0,
                     totalChia: 0,
@@ -306,103 +315,128 @@ function applyFiltersAndSort() {
 // Render People List
 // ====================================
 function renderPeopleList() {
-    const container = document.getElementById('people-list');
-    const emptyState = document.getElementById('empty-state');
+    const containerAE = document.getElementById('people-list-ae');
+    const containerAEQT = document.getElementById('people-list-aeqt');
+    const emptyStateAE = document.getElementById('empty-state-ae');
+    const emptyStateAEQT = document.getElementById('empty-state-aeqt');
     
-    if (!container) return;
+    if (!containerAE || !containerAEQT) return;
     
-    if (filteredPeople.length === 0) {
-        container.style.display = 'none';
-        if (emptyState) emptyState.style.display = 'block';
-        return;
+    // Separate people by type
+    const aeStaff = filteredPeople.filter(p => p.type === 'ae');
+    const aeqtStaff = filteredPeople.filter(p => p.type === 'aeqt');
+    
+    // Render AE staff
+    if (aeStaff.length === 0) {
+        containerAE.innerHTML = '';
+        if (emptyStateAE) emptyStateAE.style.display = 'block';
+    } else {
+        if (emptyStateAE) emptyStateAE.style.display = 'none';
+        containerAE.innerHTML = aeStaff.map(person => renderPersonCard(person)).join('');
     }
     
-    container.style.display = 'grid';
-    if (emptyState) emptyState.style.display = 'none';
-    
-    container.innerHTML = filteredPeople.map(person => {
-        const balanceColor = person.balance > 0 ? '#10b981' : person.balance < 0 ? '#ef4444' : '#6b7280';
-        const balanceBg = person.balance > 0 ? '#d1fae5' : person.balance < 0 ? '#fee2e2' : '#f3f4f6';
-        const statusIcon = person.balance > 0 ? '💰' : person.balance < 0 ? '⚠️' : '✅';
-        const statusText = person.balance > 0 ? 'Còn nợ NV' : person.balance < 0 ? 'NV nợ' : 'Cân bằng';
-        
-        return `
-            <div class="person-card" onclick="showPersonDetail('${person.name.replace(/'/g, "\\'")}')" 
-                style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s ease; border-left: 4px solid ${balanceColor};">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px;">
-                    <div>
-                        <div style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 4px;">
-                            👤 ${person.name}
-                        </div>
-                        <div style="font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 4px;">
-                            ${statusIcon} ${statusText}
-                        </div>
-                    </div>
-                    <div style="background: ${balanceBg}; padding: 8px 12px; border-radius: 6px;">
-                        <div style="font-size: 16px; font-weight: 700; color: ${balanceColor};">
-                            ${formatCurrency(Math.abs(person.balance))}
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
-                    <div>
-                        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 2px;">Ngày Đổi</div>
-                        <div style="font-size: 14px; font-weight: 600; color: #3b82f6;">
-                            ${formatCurrency(person.totalDoi)}
-                        </div>
-                        <div style="font-size: 10px; color: #9ca3af; margin-top: 2px;">
-                            ${person.doiTransactions.length} giao dịch
-                        </div>
-                    </div>
-                    <div>
-                        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 2px;">Ngày Lấy</div>
-                        <div style="font-size: 14px; font-weight: 600; color: #f59e0b;">
-                            ${formatCurrency(person.totalLay)}
-                        </div>
-                        <div style="font-size: 10px; color: #9ca3af; margin-top: 2px;">
-                            ${person.layTransactions.length} giao dịch
-                        </div>
-                    </div>
-                </div>
-                
-                ${(person.totalTT_AE > 0 || person.totalTT_AEQT > 0) ? `
-                <div style="display: grid; grid-template-columns: ${person.totalTT_AE > 0 && person.totalTT_AEQT > 0 ? '1fr 1fr' : '1fr'}; gap: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
-                    ${person.totalTT_AE > 0 ? `
-                    <div>
-                        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 2px;">💼 Nhận AE (×0.5)</div>
-                        <div style="font-size: 14px; font-weight: 600; color: #8b5cf6;">
-                            ${formatCurrency(person.totalTT_AE)}
-                        </div>
-                        <div style="font-size: 10px; color: #9ca3af; margin-top: 2px;">
-                            ${person.aeTransactions ? person.aeTransactions.length : 0} giao dịch
-                        </div>
-                    </div>
-                    ` : ''}
-                    ${person.totalTT_AEQT > 0 ? `
-                    <div>
-                        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 2px;">🌐 Nhận AE-QT (×0.8)</div>
-                        <div style="font-size: 14px; font-weight: 600; color: #ec4899;">
-                            ${formatCurrency(person.totalTT_AEQT)}
-                        </div>
-                        <div style="font-size: 10px; color: #9ca3af; margin-top: 2px;">
-                            ${person.aeqtTransactions ? person.aeqtTransactions.length : 0} giao dịch
-                        </div>
-                    </div>
-                    ` : ''}
-                </div>
-                ` : ''}
-                
-                <div style="margin-top: 12px; text-align: center; padding-top: 12px; border-top: 1px solid #e5e7eb;">
-                    <span style="font-size: 12px; color: #6b7280; font-weight: 600;">
-                        👆 Click để xem chi tiết
-                    </span>
-                </div>
-            </div>
-        `;
-    }).join('');
+    // Render AE-QT staff
+    if (aeqtStaff.length === 0) {
+        containerAEQT.innerHTML = '';
+        if (emptyStateAEQT) emptyStateAEQT.style.display = 'block';
+    } else {
+        if (emptyStateAEQT) emptyStateAEQT.style.display = 'none';
+        containerAEQT.innerHTML = aeqtStaff.map(person => renderPersonCard(person)).join('');
+    }
     
     // Add hover effects
+    addCardHoverEffects();
+}
+
+// ====================================
+// Render Person Card (Helper)
+// ====================================
+function renderPersonCard(person) {
+    const balanceColor = person.balance > 0 ? '#10b981' : person.balance < 0 ? '#ef4444' : '#6b7280';
+    const balanceBg = person.balance > 0 ? '#d1fae5' : person.balance < 0 ? '#fee2e2' : '#f3f4f6';
+    const statusIcon = person.balance > 0 ? '💰' : person.balance < 0 ? '⚠️' : '✅';
+    const statusText = person.balance > 0 ? 'Còn nợ NV' : person.balance < 0 ? 'NV nợ' : 'Cân bằng';
+    
+    return `
+        <div class="person-card" onclick="showPersonDetail('${person.name.replace(/'/g, "\\'")}')" 
+            style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s ease; border-left: 4px solid ${balanceColor};">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px;">
+                <div>
+                    <div style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 4px;">
+                        👤 ${person.name}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 4px;">
+                        ${statusIcon} ${statusText}
+                    </div>
+                </div>
+                <div style="background: ${balanceBg}; padding: 8px 12px; border-radius: 6px;">
+                    <div style="font-size: 16px; font-weight: 700; color: ${balanceColor};">
+                        ${formatCurrency(Math.abs(person.balance))}
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                <div>
+                    <div style="font-size: 11px; color: #9ca3af; margin-bottom: 2px;">Ngày Đổi</div>
+                    <div style="font-size: 14px; font-weight: 600; color: #3b82f6;">
+                        ${formatCurrency(person.totalDoi)}
+                    </div>
+                    <div style="font-size: 10px; color: #9ca3af; margin-top: 2px;">
+                        ${person.doiTransactions.length} giao dịch
+                    </div>
+                </div>
+                <div>
+                    <div style="font-size: 11px; color: #9ca3af; margin-bottom: 2px;">Ngày Lấy</div>
+                    <div style="font-size: 14px; font-weight: 600; color: #f59e0b;">
+                        ${formatCurrency(person.totalLay)}
+                    </div>
+                    <div style="font-size: 10px; color: #9ca3af; margin-top: 2px;">
+                        ${person.layTransactions.length} giao dịch
+                    </div>
+                </div>
+            </div>
+            
+            ${(person.totalTT_AE > 0 || person.totalTT_AEQT > 0) ? `
+            <div style="display: grid; grid-template-columns: ${person.totalTT_AE > 0 && person.totalTT_AEQT > 0 ? '1fr 1fr' : '1fr'}; gap: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                ${person.totalTT_AE > 0 ? `
+                <div>
+                    <div style="font-size: 11px; color: #9ca3af; margin-bottom: 2px;">💼 Nhận AE (×0.5)</div>
+                    <div style="font-size: 14px; font-weight: 600; color: #8b5cf6;">
+                        ${formatCurrency(person.totalTT_AE)}
+                    </div>
+                    <div style="font-size: 10px; color: #9ca3af; margin-top: 2px;">
+                        ${person.aeTransactions ? person.aeTransactions.length : 0} giao dịch
+                    </div>
+                </div>
+                ` : ''}
+                ${person.totalTT_AEQT > 0 ? `
+                <div>
+                    <div style="font-size: 11px; color: #9ca3af; margin-bottom: 2px;">🌐 Nhận AE-QT (×0.8)</div>
+                    <div style="font-size: 14px; font-weight: 600; color: #ec4899;">
+                        ${formatCurrency(person.totalTT_AEQT)}
+                    </div>
+                    <div style="font-size: 10px; color: #9ca3af; margin-top: 2px;">
+                        ${person.aeqtTransactions ? person.aeqtTransactions.length : 0} giao dịch
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+            ` : ''}
+            
+            <div style="margin-top: 12px; text-align: center; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                <span style="font-size: 12px; color: #6b7280; font-weight: 600;">
+                    👆 Click để xem chi tiết
+                </span>
+            </div>
+        </div>
+    `;
+}
+
+// ====================================
+// Add Card Hover Effects
+// ====================================
+function addCardHoverEffects() {
     document.querySelectorAll('.person-card').forEach(card => {
         card.addEventListener('mouseenter', function() {
             this.style.transform = 'translateY(-4px)';
@@ -444,8 +478,35 @@ function showPersonDetail(name) {
     document.getElementById('modal-name').textContent = person.name;
     document.getElementById('modal-total-doi').textContent = formatCurrency(person.totalDoi);
     document.getElementById('modal-total-lay').textContent = formatCurrency(person.totalLay);
-    document.getElementById('modal-total-tt-ae').textContent = formatCurrency(person.totalTT_AE);
-    document.getElementById('modal-total-tt-aeqt').textContent = formatCurrency(person.totalTT_AEQT);
+    
+    // Hiển thị thẻ tương ứng với loại nhân viên
+    const cardAE = document.getElementById('modal-card-ae');
+    const cardAEQT = document.getElementById('modal-card-aeqt');
+    
+    if (person.type === 'ae') {
+        // Nhân viên AE: Hiển thị thẻ AE, ẩn thẻ AE-QT
+        if (cardAE) {
+            cardAE.style.display = 'block';
+            document.getElementById('modal-total-tt-ae').textContent = formatCurrency(person.totalTT_AE);
+        }
+        if (cardAEQT) {
+            cardAEQT.style.display = 'none';
+        }
+    } else if (person.type === 'aeqt') {
+        // Nhân viên AE-QT: Hiển thị thẻ AE-QT, ẩn thẻ AE
+        if (cardAEQT) {
+            cardAEQT.style.display = 'block';
+            document.getElementById('modal-total-tt-aeqt').textContent = formatCurrency(person.totalTT_AEQT);
+        }
+        if (cardAE) {
+            cardAE.style.display = 'none';
+        }
+    } else {
+        // Ẩn cả hai nếu không xác định
+        if (cardAE) cardAE.style.display = 'none';
+        if (cardAEQT) cardAEQT.style.display = 'none';
+    }
+    
     document.getElementById('count-doi').textContent = person.doiTransactions.length;
     document.getElementById('count-lay').textContent = person.layTransactions.length;
     document.getElementById('count-ae').textContent = person.aeTransactions.length;
