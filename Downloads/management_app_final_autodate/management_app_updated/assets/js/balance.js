@@ -13,6 +13,23 @@ let currentDetailPerson = null;
 document.addEventListener('DOMContentLoaded', function() {
     loadAndCalculateBalances();
     setupEventListeners();
+    
+    // Tự động làm mới dữ liệu mỗi 30 giây
+    setInterval(() => {
+        console.log('🔄 Auto-refreshing balance data...');
+        loadAndCalculateBalances();
+    }, 30 * 1000); // 30 giây
+    
+    // Lắng nghe thay đổi localStorage từ các tab khác
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'dashboard_conversion' || 
+            e.key === 'dashboard_withdraw' || 
+            e.key === 'AE_sheet' || 
+            e.key === 'AEQT_sheet') {
+            console.log('📦 Storage changed:', e.key);
+            loadAndCalculateBalances();
+        }
+    });
 });
 
 // ====================================
@@ -58,7 +75,8 @@ function loadAndCalculateBalances() {
                     };
                 }
                 
-                const tt = parseFloat(row.tt) || 0;
+                // Bảng AE: Nhận (VND) = Chia × 0.5 (nếu Chia > 0), ngược lại = Tiền làm × 0.5
+                const tt = chia > 0 ? (chia * 0.5) : (money * 0.5);
                 peopleBalances[name].totalChia += chia;
                 peopleBalances[name].totalKhoa += khoa;
                 peopleBalances[name].totalTienLam += money;
@@ -105,7 +123,8 @@ function loadAndCalculateBalances() {
                     };
                 }
                 
-                const tt = parseFloat(row.tt) || 0;
+                // Bảng AE-QT: Nhận (VND) = Chia × 0.8 (nếu Chia > 0), ngược lại = Tiền làm × 0.8
+                const tt = chia > 0 ? (chia * 0.8) : (money * 0.8);
                 peopleBalances[name].totalChia += chia;
                 peopleBalances[name].totalKhoa += khoa;
                 peopleBalances[name].totalTienLam += money;
@@ -205,11 +224,14 @@ function loadAndCalculateBalances() {
     });
     
     // Calculate final balance for each person
-    // Balance = Total Lấy - Total Đổi - Total TT_AE - Total TT_AEQT
-    // Positive = They owe us (they took more than they should give back)
-    // Negative = We owe them (we gave them more crypto than they withdrew + what they earned from AE/AEQT)
+    // Balance = (Nhận AE + Nhận AE-QT) - Ngày Đổi - Ngày Lấy
+    // Nhận VND: Tiền công NV kiếm được
+    // Ngày Đổi: Tiền NV đổi crypto (trừ đi)
+    // Ngày Lấy: Tiền NV đã ứng (trừ đi)
+    // Positive = We owe them (Còn nợ NV)
+    // Negative = They owe us (NV nợ)
     Object.keys(peopleBalances).forEach(name => {
-        peopleBalances[name].balance = peopleBalances[name].totalLay - peopleBalances[name].totalDoi - peopleBalances[name].totalTT_AE - peopleBalances[name].totalTT_AEQT;
+        peopleBalances[name].balance = peopleBalances[name].totalTT_AE + peopleBalances[name].totalTT_AEQT - peopleBalances[name].totalDoi - peopleBalances[name].totalLay;
     });
     
     console.log('✅ Calculated balances for', Object.keys(peopleBalances).length, 'people');
@@ -287,7 +309,7 @@ function renderPeopleList() {
         const balanceColor = person.balance > 0 ? '#10b981' : person.balance < 0 ? '#ef4444' : '#6b7280';
         const balanceBg = person.balance > 0 ? '#d1fae5' : person.balance < 0 ? '#fee2e2' : '#f3f4f6';
         const statusIcon = person.balance > 0 ? '💰' : person.balance < 0 ? '⚠️' : '✅';
-        const statusText = person.balance > 0 ? 'Nợ cho bạn' : person.balance < 0 ? 'Bạn nợ' : 'Cân bằng';
+        const statusText = person.balance > 0 ? 'Còn nợ NV' : person.balance < 0 ? 'NV nợ' : 'Cân bằng';
         
         return `
             <div class="person-card" onclick="showPersonDetail('${person.name.replace(/'/g, "\\'")}')" 
