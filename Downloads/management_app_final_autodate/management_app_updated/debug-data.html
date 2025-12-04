@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Data - Kiểm Tra Dữ Liệu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        .data-info {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        .data-info strong {
+            color: #333;
+            display: inline-block;
+            min-width: 200px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+        }
+        .data-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .data-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        .empty {
+            color: #dc3545;
+            font-style: italic;
+        }
+        .has-data {
+            color: #28a745;
+            font-weight: 600;
+        }
+        .btn-refresh {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 20px auto;
+            display: block;
+        }
+        .btn-refresh:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Data - Kiểm Tra Dữ Liệu</h1>
+        
+        <button class="btn-refresh" onclick="location.reload()">🔄 Làm mới</button>
+
+        <!-- Staff Lists -->
+        <div class="section">
+            <h2>👥 Danh Sách Nhân Viên</h2>
+            <div id="staff-info"></div>
+        </div>
+
+        <!-- AE Sheet Data -->
+        <div class="section">
+            <h2>📊 Dữ Liệu Bảng AE</h2>
+            <div id="ae-info"></div>
+            <div id="ae-table-container"></div>
+        </div>
+
+        <!-- AE-QT Sheet Data -->
+        <div class="section">
+            <h2>📊 Dữ Liệu Bảng AE-QT</h2>
+            <div id="aeqt-info"></div>
+            <div id="aeqt-table-container"></div>
+        </div>
+
+        <!-- Dashboard Data -->
+        <div class="section">
+            <h2>📊 Dữ Liệu Bảng Chính (Dashboard)</h2>
+            <div id="dashboard-info"></div>
+            <div id="dashboard-table-container"></div>
+        </div>
+
+        <!-- Balance Calculation -->
+        <div class="section">
+            <h2>💰 Tính Toán Công Nợ</h2>
+            <div id="balance-calculation"></div>
+        </div>
+    </div>
+
+    <script>
+        // Load data from localStorage
+        function loadData(key) {
+            try {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // Display staff lists
+        function displayStaffLists() {
+            const staffAE = loadData('staff_list_ae') || [];
+            const staffAEQT = loadData('staff_list_aeqt') || [];
+            
+            const html = `
+                <div class="data-info">
+                    <strong>Nhân viên AE:</strong>
+                    <span class="${staffAE.length > 0 ? 'has-data' : 'empty'}">
+                        ${staffAE.length > 0 ? staffAE.join(', ') : 'Chưa có nhân viên nào'}
+                    </span>
+                    (Tổng: ${staffAE.length} người)
+                </div>
+                <div class="data-info">
+                    <strong>Nhân viên AE-QT:</strong>
+                    <span class="${staffAEQT.length > 0 ? 'has-data' : 'empty'}">
+                        ${staffAEQT.length > 0 ? staffAEQT.join(', ') : 'Chưa có nhân viên nào'}
+                    </span>
+                    (Tổng: ${staffAEQT.length} người)
+                </div>
+            `;
+            
+            document.getElementById('staff-info').innerHTML = html;
+        }
+
+        // Display table data
+        function displayTableData(containerId, infoId, data, tableName) {
+            const validRows = data ? data.filter(row => {
+                // Row has data if any field (except rowIndex) has a value
+                return row.name || row.money || row.date || row.chia || row.khoa || row.note;
+            }) : [];
+            
+            const nameCount = {};
+            validRows.forEach(row => {
+                if (row.name) {
+                    nameCount[row.name] = (nameCount[row.name] || 0) + 1;
+                }
+            });
+            
+            const uniqueNames = Object.keys(nameCount).sort();
+            
+            const infoHtml = `
+                <div class="data-info">
+                    <strong>Tổng số dòng có dữ liệu:</strong>
+                    <span class="${validRows.length > 0 ? 'has-data' : 'empty'}">
+                        ${validRows.length} dòng
+                    </span>
+                </div>
+                <div class="data-info">
+                    <strong>Tên nhân viên xuất hiện:</strong>
+                    <span class="${uniqueNames.length > 0 ? 'has-data' : 'empty'}">
+                        ${uniqueNames.length > 0 ? uniqueNames.map(name => 
+                            `<span class="highlight">${name}</span> (${nameCount[name]} lần)`
+                        ).join(', ') : 'Chưa có tên nào'}
+                    </span>
+                </div>
+            `;
+            
+            document.getElementById(infoId).innerHTML = infoHtml;
+            
+            if (validRows.length > 0) {
+                const tableHtml = `
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Ngày</th>
+                                <th>Tiền ($)</th>
+                                <th>Tên</th>
+                                <th>Chia</th>
+                                <th>Khoa</th>
+                                <th>Ghi Chú</th>
+                                <th>TT (VNĐ)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${validRows.map((row, idx) => `
+                                <tr>
+                                    <td>${idx + 1}</td>
+                                    <td>${row.date || '-'}</td>
+                                    <td>${row.money || '-'}</td>
+                                    <td><span class="highlight">${row.name || '-'}</span></td>
+                                    <td>${row.chia || '-'}</td>
+                                    <td>${row.khoa || '-'}</td>
+                                    <td>${row.note || '-'}</td>
+                                    <td>${row.tt || '-'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                document.getElementById(containerId).innerHTML = tableHtml;
+            } else {
+                document.getElementById(containerId).innerHTML = '<div class="data-info empty">Không có dữ liệu trong bảng này</div>';
+            }
+        }
+
+        // Display dashboard data (different structure)
+        function displayDashboardData() {
+            const data = loadData('sheet_data');
+            const validRows = data ? data.filter(row => {
+                return row.name || row.ngayDoi || row.ngayLay;
+            }) : [];
+            
+            const nameCount = {};
+            validRows.forEach(row => {
+                if (row.name) {
+                    nameCount[row.name] = (nameCount[row.name] || 0) + 1;
+                }
+            });
+            
+            const uniqueNames = Object.keys(nameCount).sort();
+            
+            const infoHtml = `
+                <div class="data-info">
+                    <strong>Tổng số dòng có dữ liệu:</strong>
+                    <span class="${validRows.length > 0 ? 'has-data' : 'empty'}">
+                        ${validRows.length} dòng
+                    </span>
+                </div>
+                <div class="data-info">
+                    <strong>Tên nhân viên xuất hiện:</strong>
+                    <span class="${uniqueNames.length > 0 ? 'has-data' : 'empty'}">
+                        ${uniqueNames.length > 0 ? uniqueNames.map(name => 
+                            `<span class="highlight">${name}</span> (${nameCount[name]} lần)`
+                        ).join(', ') : 'Chưa có tên nào'}
+                    </span>
+                </div>
+            `;
+            
+            document.getElementById('dashboard-info').innerHTML = infoHtml;
+            
+            if (validRows.length > 0) {
+                const tableHtml = `
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên</th>
+                                <th>Ngày Đổi (VNĐ)</th>
+                                <th>Ngày Lấy (VNĐ)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${validRows.map((row, idx) => `
+                                <tr>
+                                    <td>${idx + 1}</td>
+                                    <td><span class="highlight">${row.name || '-'}</span></td>
+                                    <td>${row.ngayDoi ? parseInt(row.ngayDoi).toLocaleString('vi-VN') : '-'}</td>
+                                    <td>${row.ngayLay ? parseInt(row.ngayLay).toLocaleString('vi-VN') : '-'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                document.getElementById('dashboard-table-container').innerHTML = tableHtml;
+            } else {
+                document.getElementById('dashboard-table-container').innerHTML = '<div class="data-info empty">Không có dữ liệu trong bảng chính</div>';
+            }
+        }
+
+        // Calculate and display balance
+        function calculateBalance() {
+            const staffAE = loadData('staff_list_ae') || [];
+            const staffAEQT = loadData('staff_list_aeqt') || [];
+            const aeData = loadData('AE_sheet') || [];
+            const aeqtData = loadData('AEQT_sheet') || [];
+            const dashboardData = loadData('sheet_data') || [];
+            
+            const allStaff = [...new Set([...staffAE, ...staffAEQT])];
+            
+            if (allStaff.length === 0) {
+                document.getElementById('balance-calculation').innerHTML = 
+                    '<div class="data-info empty">⚠️ Chưa có nhân viên trong danh sách quản lý. Vui lòng thêm nhân viên trước.</div>';
+                return;
+            }
+            
+            const balances = {};
+            
+            allStaff.forEach(name => {
+                balances[name] = {
+                    nhanAE: 0,
+                    nhanAEQT: 0,
+                    ngayDoi: 0,
+                    ngayLay: 0,
+                    cong: 0,
+                    type: staffAE.includes(name) ? 'ae' : 'aeqt'
+                };
+            });
+            
+            // Calculate Nhận AE
+            aeData.forEach(row => {
+                if (row.name && row.tt && balances[row.name]) {
+                    balances[row.name].nhanAE += parseFloat(row.tt) || 0;
+                }
+            });
+            
+            // Calculate Nhận AE-QT
+            aeqtData.forEach(row => {
+                if (row.name && row.tt && balances[row.name]) {
+                    balances[row.name].nhanAEQT += parseFloat(row.tt) || 0;
+                }
+            });
+            
+            // Calculate Ngày Đổi and Ngày Lấy
+            dashboardData.forEach(row => {
+                if (row.name && balances[row.name]) {
+                    balances[row.name].ngayDoi += parseFloat(row.ngayDoi) || 0;
+                    balances[row.name].ngayLay += parseFloat(row.ngayLay) || 0;
+                }
+            });
+            
+            // Calculate Công
+            Object.keys(balances).forEach(name => {
+                const b = balances[name];
+                b.cong = (b.nhanAE + b.nhanAEQT) - b.ngayDoi - b.ngayLay;
+            });
+            
+            const tableHtml = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Tên NV</th>
+                            <th>Loại</th>
+                            <th>Nhận AE (VNĐ)</th>
+                            <th>Nhận AE-QT (VNĐ)</th>
+                            <th>Ngày Đổi (VNĐ)</th>
+                            <th>Ngày Lấy (VNĐ)</th>
+                            <th>Công (VNĐ)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Object.keys(balances).map(name => {
+                            const b = balances[name];
+                            const congStyle = b.cong > 0 ? 'color: #28a745' : b.cong < 0 ? 'color: #dc3545' : 'color: #6c757d';
+                            return `
+                                <tr>
+                                    <td><span class="highlight">${name}</span></td>
+                                    <td><span style="background: ${b.type === 'ae' ? '#3b82f6' : '#f59e0b'}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">${b.type === 'ae' ? 'AE' : 'AE-QT'}</span></td>
+                                    <td>${b.nhanAE.toLocaleString('vi-VN')}</td>
+                                    <td>${b.nhanAEQT.toLocaleString('vi-VN')}</td>
+                                    <td>${b.ngayDoi.toLocaleString('vi-VN')}</td>
+                                    <td>${b.ngayLay.toLocaleString('vi-VN')}</td>
+                                    <td style="${congStyle}; font-weight: 600;">${b.cong.toLocaleString('vi-VN')}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+                <div class="data-info" style="margin-top: 20px;">
+                    <strong>Công thức:</strong> Công = (Nhận AE + Nhận AE-QT) - Ngày Đổi - Ngày Lấy
+                </div>
+            `;
+            
+            document.getElementById('balance-calculation').innerHTML = tableHtml;
+        }
+
+        // Initialize
+        displayStaffLists();
+        displayTableData('ae-table-container', 'ae-info', loadData('AE_sheet'), 'AE');
+        displayTableData('aeqt-table-container', 'aeqt-info', loadData('AEQT_sheet'), 'AE-QT');
+        displayDashboardData();
+        calculateBalance();
+    </script>
+</body>
+</html>
