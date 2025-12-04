@@ -93,17 +93,43 @@
             </div>
         </div>
 
-        <!-- Danh sách người -->
-        <div id="people-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
-            <!-- Cards sẽ được thêm động -->
+        <!-- Danh sách người - Hai cột riêng biệt -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <!-- Cột trái: Bảng AE -->
+            <div>
+                <h2 style="margin: 0 0 16px 0; color: #1e40af; display: flex; align-items: center; gap: 8px; padding: 12px; background: #dbeafe; border-radius: 8px; font-size: 18px;">
+                    <span style="font-size: 24px;">💼</span>
+                    Nhân Viên Bảng AE
+                </h2>
+                <div id="people-list-ae" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                    <!-- Cards AE sẽ được thêm động -->
+                </div>
+                <div id="empty-state-ae" style="display: none; text-align: center; padding: 40px 15px; background: white; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                    <div style="font-size: 48px; margin-bottom: 12px;">💼</div>
+                    <h3 style="color: #6b7280; margin-bottom: 6px; font-size: 16px;">Chưa có nhân viên AE</h3>
+                    <p style="color: #9ca3af; font-size: 13px; margin: 0;">Dữ liệu từ Bảng AE sẽ hiển thị tại đây</p>
+                </div>
+            </div>
+
+            <!-- Cột phải: Bảng AE-QT -->
+            <div>
+                <h2 style="margin: 0 0 16px 0; color: #92400e; display: flex; align-items: center; gap: 8px; padding: 12px; background: #fef3c7; border-radius: 8px; font-size: 18px;">
+                    <span style="font-size: 24px;">🌐</span>
+                    Nhân Viên Bảng AE-QT
+                </h2>
+                <div id="people-list-aeqt" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                    <!-- Cards AE-QT sẽ được thêm động -->
+                </div>
+                <div id="empty-state-aeqt" style="display: none; text-align: center; padding: 40px 15px; background: white; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                    <div style="font-size: 48px; margin-bottom: 12px;">🌐</div>
+                    <h3 style="color: #6b7280; margin-bottom: 6px; font-size: 16px;">Chưa có nhân viên AE-QT</h3>
+                    <p style="color: #9ca3af; font-size: 13px; margin: 0;">Dữ liệu từ Bảng AE-QT sẽ hiển thị tại đây</p>
+                </div>
+            </div>
         </div>
 
         <!-- Empty state -->
-        <div id="empty-state" style="display: none; text-align: center; padding: 60px 20px; background: white; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
-            <div style="font-size: 64px; margin-bottom: 16px;">📋</div>
-            <h3 style="color: #6b7280; margin-bottom: 8px;">Chưa có dữ liệu</h3>
-            <p style="color: #9ca3af;">Dữ liệu sẽ tự động tải từ bảng Ngày Đổi và Ngày Lấy</p>
-        </div>
+        <!-- Removed - now using separate empty states for AE and AE-QT -->
 
         <!-- Modal chi tiết -->
         <div id="detail-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
@@ -296,6 +322,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="assets/js/supabase-sync.js"></script>
     <script src="assets/js/balance.js"></script>
+    <script src="assets/js/balance-split.js"></script>
     <script src="assets/js/note-manager.js"></script>
     <script src="assets/js/export.js"></script>
     

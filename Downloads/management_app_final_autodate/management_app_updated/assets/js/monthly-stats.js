@@ -57,7 +57,8 @@ function calculateMonthlyStats() {
                 aeTotal: 0,
                 aeqtTotal: 0,
                 count: 0,
-                totalPrice: 0
+                totalPrice: 0,
+                totalSum: 0
             };
         }
 
@@ -93,7 +94,8 @@ function calculateMonthlyStats() {
                 aeTotal: 0,
                 aeqtTotal: 0,
                 count: 0,
-                totalPrice: 0
+                totalPrice: 0,
+                totalSum: 0
             };
         }
 
@@ -121,7 +123,8 @@ function calculateMonthlyStats() {
                 aeTotal: 0,
                 aeqtTotal: 0,
                 count: 0,
-                totalPrice: 0
+                totalPrice: 0,
+                totalSum: 0
             };
         }
 
@@ -145,12 +148,20 @@ function calculateMonthlyStats() {
                 aeTotal: 0,
                 aeqtTotal: 0,
                 count: 0,
-                totalPrice: 0
+                totalPrice: 0,
+                totalSum: 0
             };
         }
 
         const money = parseFloat(row.money) || 0;
         monthlyData[monthKey].aeqtTotal += money;
+    });
+
+    // Calculate totalSum for each month: (VND Đổi + VND Lấy) - Tổng Tiền Làm
+    Object.keys(monthlyData).forEach(monthKey => {
+        const data = monthlyData[monthKey];
+        const totalWork = data.aeTotal + data.aeqtTotal;
+        data.totalSum = (data.vndConversion + data.vndWithdraw) - totalWork;
     });
 
     return monthlyData;
@@ -240,6 +251,11 @@ function renderMonthlyTable() {
             <td style="padding: 18px 20px; text-align: right; border: none; white-space: nowrap;">
                 <div style="display: inline-block; padding: 10px 16px; background: linear-gradient(135deg, #fca5a5, #dc2626); border-radius: 10px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); border: 2px solid #b91c1c;">
                     <span style="color: white; font-weight: 800; font-size: 16px; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">${formatVND(totalWork)}</span>
+                </div>
+            </td>
+            <td style="padding: 18px 20px; text-align: right; border: none; white-space: nowrap;">
+                <div style="display: inline-block; padding: 10px 16px; background: linear-gradient(135deg, ${data.totalSum >= 0 ? '#10b981, #059669' : '#ef4444, #dc2626'}); border-radius: 10px; box-shadow: 0 4px 12px ${data.totalSum >= 0 ? 'rgba(5, 150, 105, 0.3)' : 'rgba(220, 38, 38, 0.3)'}; border: 2px solid ${data.totalSum >= 0 ? '#059669' : '#b91c1c'};">
+                    <span style="color: white; font-weight: 800; font-size: 16px; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">${formatVND(data.totalSum)}</span>
                 </div>
             </td>
         `;
