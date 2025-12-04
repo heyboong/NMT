@@ -37,8 +37,7 @@ function loadData() {
             usdtPurchaseData.push({
                 date: '',
                 purchaseAmount: 0,      // Tiền Nhập (VND)
-                usdtBuy: 0,             // USDT mua ($)
-                usdtSell: 0,            // USDT bán ($)
+                usdtBuy: 0,             // USDT ($)
                 sellPrice: 0            // Giá Bán (VND)
             });
         }
@@ -100,11 +99,11 @@ function renderTable() {
     if (!tbody) return;
 
     tbody.innerHTML = usdtPurchaseData.map((row, index) => {
-        // Calculate Giá Nhập = Tiền Nhập / USDT Mua
+        // Calculate Giá Nhập = Tiền Nhập / USDT
         const buyPrice = row.usdtBuy > 0 ? (row.purchaseAmount / row.usdtBuy) : 0;
         
-        // Calculate Tiền Bán = USDT Bán × Giá Bán
-        const sellAmount = (row.usdtSell || 0) * (row.sellPrice || 0);
+        // Calculate Tiền Bán = USDT × Giá Bán
+        const sellAmount = (row.usdtBuy || 0) * (row.sellPrice || 0);
         
         // Calculate Tổng Cộng = Tiền Bán - Tiền Nhập
         const total = sellAmount - (row.purchaseAmount || 0);
@@ -138,14 +137,6 @@ function renderTable() {
                         readonly
                         placeholder="0"
                         style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right; background: #f3f4f6; font-weight: 600; color: #6b7280; cursor: not-allowed;">
-                </td>
-                <td>
-                    <input type="number" 
-                        value="${row.usdtSell || ''}" 
-                        onchange="updateCell(${index}, 'usdtSell', parseFloat(this.value) || 0)"
-                        placeholder="0"
-                        step="0.01"
-                        style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right; background: #fef3c7; font-weight: 600; color: #f59e0b;">
                 </td>
                 <td>
                     <div style="display: flex; gap: 4px; align-items: center;">
@@ -227,7 +218,6 @@ function addNewRow() {
         date: today,
         purchaseAmount: 0,
         usdtBuy: 0,
-        usdtSell: 0,
         sellPrice: currentP2PRate  // Tự động điền giá P2P hiện tại
     });
     
