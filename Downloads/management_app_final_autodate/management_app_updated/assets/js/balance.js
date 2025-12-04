@@ -14,11 +14,11 @@ document.addEventListener('DOMContentLoaded', function() {
     loadAndCalculateBalances();
     setupEventListeners();
     
-    // Tự động làm mới dữ liệu mỗi 30 giây
+    // Tự động làm mới dữ liệu mỗi 10 giây (thay vì 30s)
     setInterval(() => {
         console.log('🔄 Auto-refreshing balance data...');
         loadAndCalculateBalances();
-    }, 30 * 1000); // 30 giây
+    }, 10 * 1000); // 10 giây
     
     // Lắng nghe thay đổi localStorage từ các tab khác
     window.addEventListener('storage', (e) => {
@@ -30,6 +30,21 @@ document.addEventListener('DOMContentLoaded', function() {
             loadAndCalculateBalances();
         }
     });
+    
+    // Override localStorage.setItem để bắt thay đổi trong cùng tab
+    const originalSetItem = localStorage.setItem;
+    localStorage.setItem = function(key, value) {
+        originalSetItem.apply(this, arguments);
+        
+        // Nếu là dữ liệu liên quan, refresh balance
+        if (key === 'dashboard_conversion' || 
+            key === 'dashboard_withdraw' || 
+            key === 'AE_sheet' || 
+            key === 'AEQT_sheet') {
+            console.log('💾 Data saved:', key, '- Refreshing balance...');
+            setTimeout(() => loadAndCalculateBalances(), 100);
+        }
+    };
 });
 
 // ====================================
