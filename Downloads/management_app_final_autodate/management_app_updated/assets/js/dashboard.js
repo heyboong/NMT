@@ -399,9 +399,20 @@
 
     function renderConversionTable() {
         convTableBody.innerHTML = '';
+        
+        // Sắp xếp dữ liệu theo ngày để dòng kẻ xanh hoạt động đúng
+        const sortedData = [...convData].sort((a, b) => {
+            const dateA = a.date ? a.date.trim() : '';
+            const dateB = b.date ? b.date.trim() : '';
+            if (!dateA) return 1;
+            if (!dateB) return -1;
+            return dateA.localeCompare(dateB);
+        });
+        
         let previousDate = null; // Theo dõi ngày trước đó
         
-        convData.forEach((row, rowIndex) => {
+        sortedData.forEach((row, rowIndex) => {
+            const originalIndex = convData.indexOf(row);
             const tr = document.createElement('tr');
             
             // Kiểm tra nếu ngày thay đổi so với dòng trước
@@ -418,7 +429,7 @@
             tr.appendChild(header);
             convColumns.forEach(col => {
                 const td = document.createElement('td');
-                td.dataset.row = rowIndex;
+                td.dataset.row = originalIndex;
                 td.dataset.col = col;
                 td.setAttribute('contenteditable', 'true');
                 
@@ -456,7 +467,7 @@
                 
                 // Add blur event to reformat after editing
                 td.addEventListener('blur', function() {
-                    const savedValue = convData[rowIndex][col];
+                    const savedValue = convData[originalIndex][col];
                     if (savedValue && ['price', 'vnd'].includes(col)) {
                         const numValue = parseFloat(savedValue);
                         if (!isNaN(numValue)) {
@@ -475,7 +486,7 @@
                 
                 // Add focus event to show raw number for easier editing
                 td.addEventListener('focus', function() {
-                    const savedValue = convData[rowIndex][col];
+                    const savedValue = convData[originalIndex][col];
                     if (savedValue && ['price', 'vnd', 'usdt', 'usd'].includes(col)) {
                         td.textContent = savedValue;
                     }
@@ -844,9 +855,20 @@
      */
     function renderWithdrawTable() {
         wTableBody.innerHTML = '';
+        
+        // Sắp xếp dữ liệu theo ngày để dòng kẻ xanh hoạt động đúng
+        const sortedData = [...wData].sort((a, b) => {
+            const dateA = a.date ? a.date.trim() : '';
+            const dateB = b.date ? b.date.trim() : '';
+            if (!dateA) return 1;
+            if (!dateB) return -1;
+            return dateA.localeCompare(dateB);
+        });
+        
         let previousDate = null; // Theo dõi ngày trước đó
         
-        wData.forEach((row, rowIndex) => {
+        sortedData.forEach((row, rowIndex) => {
+            const originalIndex = wData.indexOf(row);
             const tr = document.createElement('tr');
             
             // Kiểm tra nếu ngày thay đổi so với dòng trước
@@ -863,7 +885,7 @@
             tr.appendChild(header);
             wColumns.forEach(col => {
                 const td = document.createElement('td');
-                td.dataset.row = rowIndex;
+                td.dataset.row = originalIndex;
                 td.dataset.col = col;
                 td.setAttribute('contenteditable', 'true');
                 
@@ -886,7 +908,7 @@
                 
                 // Add blur event to reformat after editing
                 td.addEventListener('blur', function() {
-                    const savedValue = wData[rowIndex][col];
+                    const savedValue = wData[originalIndex][col];
                     if (savedValue && ['bankdep', 'bankbad', 'visa'].includes(col)) {
                         const numValue = parseFloat(savedValue);
                         if (!isNaN(numValue)) {
@@ -897,7 +919,7 @@
                 
                 // Add focus event to show raw number for easier editing
                 td.addEventListener('focus', function() {
-                    const savedValue = wData[rowIndex][col];
+                    const savedValue = wData[originalIndex][col];
                     if (savedValue && ['bankdep', 'bankbad', 'visa'].includes(col)) {
                         td.textContent = savedValue;
                     }
@@ -982,6 +1004,13 @@
         fetchAlertState();
         setInterval(fetchAlertState, ALERT_REFRESH_INTERVAL);
     }
+    
+    // Tự động cập nhật giá P2P USDT mỗi 1 giờ
+    setInterval(() => {
+        console.log('🔄 Auto-refreshing P2P USDT rates...');
+        fetchRates();
+    }, 60 * 60 * 1000); // 1 giờ = 60 phút × 60 giây × 1000ms
+    
     renderConversionTable();
     renderWithdrawTable();
     // Cập nhật bảng tổng lần đầu
