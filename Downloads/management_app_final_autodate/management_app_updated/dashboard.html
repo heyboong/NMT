@@ -37,7 +37,12 @@
             <div class="rate-box dashboard-rate-box">
                 <table id="dashboard-rate-table">
                     <thead>
-                        <tr><th colspan="2">BẢNG TỶ GIÁ USDT → VND</th></tr>
+                        <tr>
+                            <th colspan="2" style="position: relative;">
+                                BẢNG TỶ GIÁ USDT → VND
+                                <button id="refresh-p2p-btn" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); padding: 4px 8px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;" title="Làm mới giá P2P">🔄</button>
+                            </th>
+                        </tr>
                     </thead>
                     <tbody>
                         <tr>
@@ -49,8 +54,8 @@
                             <td id="dash-sell-price"></td>
                         </tr>
                         <tr>
-                            <td>Giá mua (VND)</td>
-                            <td id="dash-buy-price"></td>
+                            <td>Giá mua P2P (VND)</td>
+                            <td id="dash-buy-price" style="font-weight: 700; color: #059669;"></td>
                         </tr>
                         <tr>
                             <td><label for="dash-usdt-amount" id="dash-usdt-amount-label">Nhập số USDT (USDT)</label></td>

@@ -126,6 +126,7 @@
     const ALERT_REFRESH_INTERVAL = 5 * 60 * 1000;
 
     async function fetchRates() {
+        let fetchedFromAPI = false;
         try {
             const res = await fetch(p2pProxy);
             if (!res.ok) throw new Error('Backend proxy failed');
@@ -134,12 +135,17 @@
                 sellPrice = data.sellPrice;
                 buyPrice = data.buyPrice;
                 crossRate = data.crossRate || data.sellPrice;
+                fetchedFromAPI = true;
+                console.log('✅ P2P rates fetched successfully:', { sellPrice, buyPrice });
             }
         } catch (err) {
             console.warn('Proxy fetch failed, using fallback:', err);
             await fetchFallbackRates();
         }
-        applyStoredPrices();
+        // Chỉ dùng giá từ localStorage nếu không lấy được từ API
+        if (!fetchedFromAPI) {
+            applyStoredPrices();
+        }
         updateRateWidget();
     }
 
@@ -186,7 +192,13 @@
         const roundedSellPrice = roundToUnit(sellPrice);
         const roundedBuyPrice = roundToUnit(buyPrice);
         sellPriceEl.textContent = formatVND(roundedSellPrice);
+        
+        // Hiển thị giá mua với thời gian cập nhật
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
         buyPriceEl.textContent  = formatVND(roundedBuyPrice);
+        buyPriceEl.title = `Cập nhật lúc ${timeStr}`;
+        
         computeUsdtValue();
     }
 
@@ -999,6 +1011,8 @@
 
     /* ===================== COLUMN RESIZE FUNCTIONALITY ===================== */
     // Initial renders
+    console.log('📊 Dashboard initializing...');
+    console.log('🔄 Fetching P2P rates on page load...');
     fetchRates();
     if (alertBanner) {
         fetchAlertState();
@@ -1010,6 +1024,15 @@
         console.log('🔄 Auto-refreshing P2P USDT rates...');
         fetchRates();
     }, 60 * 60 * 1000); // 1 giờ = 60 phút × 60 giây × 1000ms
+    
+    // Thêm nút làm mới thủ công
+    const refreshBtn = document.getElementById('refresh-p2p-btn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+            console.log('🔄 Manual refresh P2P rates...');
+            fetchRates();
+        });
+    }
     
     renderConversionTable();
     renderWithdrawTable();
