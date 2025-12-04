@@ -338,7 +338,7 @@ function renderPeopleList() {
                             ${formatCurrency(person.totalTT_AE)}
                         </div>
                         <div style="font-size: 10px; color: #9ca3af; margin-top: 2px;">
-                            ${person.ttTransactions_AE ? person.ttTransactions_AE.length : 0} giao dịch
+                            ${person.aeTransactions ? person.aeTransactions.length : 0} giao dịch
                         </div>
                     </div>
                     ` : ''}
@@ -349,7 +349,7 @@ function renderPeopleList() {
                             ${formatCurrency(person.totalTT_AEQT)}
                         </div>
                         <div style="font-size: 10px; color: #9ca3af; margin-top: 2px;">
-                            ${person.ttTransactions_AEQT ? person.ttTransactions_AEQT.length : 0} giao dịch
+                            ${person.aeqtTransactions ? person.aeqtTransactions.length : 0} giao dịch
                         </div>
                     </div>
                     ` : ''}
