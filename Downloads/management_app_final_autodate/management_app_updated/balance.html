@@ -105,10 +105,13 @@
                 </div>
                 <div id="empty-state-ae" style="display: none; text-align: center; padding: 40px 15px; background: white; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
                     <div style="font-size: 48px; margin-bottom: 12px;">💼</div>
-                    <h3 style="color: #6b7280; margin-bottom: 8px; font-size: 16px;">Chưa có nhân viên AE</h3>
-                    <p style="color: #9ca3af; font-size: 13px; margin: 0 0 12px 0;">Vui lòng thêm nhân viên để bắt đầu theo dõi công nợ</p>
-                    <button onclick="document.getElementById('manage-staff-btn').click()" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px;">
-                        👤 Thêm Nhân Viên AE
+                    <h3 style="color: #6b7280; margin-bottom: 8px; font-size: 16px;">Chưa có dữ liệu nhân viên AE</h3>
+                    <p style="color: #9ca3af; font-size: 13px; margin: 0 0 16px 0; line-height: 1.6;">
+                        Trang này tự động hiển thị tên nhân viên từ <strong>Bảng AE</strong>.<br>
+                        Vui lòng nhập dữ liệu vào cột <strong>"Tên NV"</strong> trong Bảng AE để bắt đầu theo dõi công nợ.
+                    </p>
+                    <button onclick="window.location.href='AE.html'" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.3s;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
+                        📊 Mở Bảng AE
                     </button>
                 </div>
             </div>
@@ -124,10 +127,13 @@
                 </div>
                 <div id="empty-state-aeqt" style="display: none; text-align: center; padding: 40px 15px; background: white; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
                     <div style="font-size: 48px; margin-bottom: 12px;">🌐</div>
-                    <h3 style="color: #6b7280; margin-bottom: 8px; font-size: 16px;">Chưa có nhân viên AE-QT</h3>
-                    <p style="color: #9ca3af; font-size: 13px; margin: 0 0 12px 0;">Vui lòng thêm nhân viên để bắt đầu theo dõi công nợ</p>
-                    <button onclick="document.getElementById('manage-staff-btn').click()" style="padding: 8px 16px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px;">
-                        👤 Thêm Nhân Viên AE-QT
+                    <h3 style="color: #6b7280; margin-bottom: 8px; font-size: 16px;">Chưa có dữ liệu nhân viên AE-QT</h3>
+                    <p style="color: #9ca3af; font-size: 13px; margin: 0 0 16px 0; line-height: 1.6;">
+                        Trang này tự động hiển thị tên nhân viên từ <strong>Bảng AE-QT</strong>.<br>
+                        Vui lòng nhập dữ liệu vào cột <strong>"Tên NV"</strong> trong Bảng AE-QT để bắt đầu theo dõi công nợ.
+                    </p>
+                    <button onclick="window.location.href='AE-QT.html'" style="padding: 10px 20px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.3s;" onmouseover="this.style.background='#d97706'" onmouseout="this.style.background='#f59e0b'">
+                        📊 Mở Bảng AE-QT
                     </button>
                 </div>
             </div>
@@ -312,11 +318,11 @@
         <div style="margin-top: 24px; padding: 16px; background: #f0f9ff; border-left: 4px solid #3b82f6; border-radius: 8px;">
             <h3 style="margin: 0 0 12px 0; color: #1e40af; font-size: 16px;">📖 Hướng Dẫn Sử Dụng</h3>
             <ol style="margin: 0; padding-left: 20px; color: #1e40af; line-height: 1.8;">
-                <li><strong>Bước 1 - Thêm nhân viên:</strong> Click nút "👤 Quản Lý Nhân Viên" ở trên → Thêm tên vào danh sách AE hoặc AE-QT</li>
-                <li><strong>Bước 2 - Nhập dữ liệu:</strong> Vào các bảng (AE, AE-QT, Bảng Chính) và nhập giao dịch với tên nhân viên</li>
-                <li><strong>Bước 3 - Xem kết quả:</strong> Quay lại trang này để xem công nợ được tính tự động</li>
-                <li><strong>Số Dương (Xanh):</strong> Người này đang nợ bạn tiền (Công > Ngày Đổi + Ngày Lấy)</li>
-                <li><strong>Số Âm (Đỏ):</strong> Bạn đang nợ người này tiền (Ngày Đổi + Ngày Lấy > Công)</li>
+                <li><strong>Tự động hiển thị:</strong> Trang này tự động lấy tên từ cột <strong>"Tên NV"</strong> trong Bảng AE và Bảng AE-QT</li>
+                <li><strong>Nhập dữ liệu:</strong> Vào Bảng AE, AE-QT, Bảng Chính và nhập giao dịch với tên nhân viên</li>
+                <li><strong>Xem công nợ:</strong> Công nợ được tính tự động theo công thức: <code style="background: white; padding: 2px 6px; border-radius: 4px;">Công = (Nhận AE × 0.5 + Nhận AE-QT × 0.8) - Ngày Đổi - Ngày Lấy</code></li>
+                <li><strong>Số Dương (Xanh):</strong> Nhân viên còn nợ bạn tiền (Nhận > Đã trả)</li>
+                <li><strong>Số Âm (Đỏ):</strong> Bạn nợ nhân viên tiền (Đã trả > Nhận)</li>
                 <li><strong>Số 0 (Xám):</strong> Không có công nợ, đã thanh toán đủ</li>
                 <li><strong>Click vào card:</strong> Xem chi tiết đầy đủ các giao dịch Ngày Đổi, Ngày Lấy, Bảng AE, Bảng AE-QT</li>
             </ol>
