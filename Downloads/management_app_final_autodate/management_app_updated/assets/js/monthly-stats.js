@@ -157,11 +157,11 @@ function calculateMonthlyStats() {
         monthlyData[monthKey].aeqtTotal += money;
     });
 
-    // Calculate totalSum for each month: (VND Đổi + VND Lấy) - Tổng Tiền Làm
+    // Calculate totalSum for each month: Tiền Làm - (VND Đổi + VND Lấy)
     Object.keys(monthlyData).forEach(monthKey => {
         const data = monthlyData[monthKey];
         const totalWork = data.aeTotal + data.aeqtTotal;
-        data.totalSum = (data.vndConversion + data.vndWithdraw) - totalWork;
+        data.totalSum = totalWork - (data.vndConversion + data.vndWithdraw);
     });
 
     return monthlyData;
@@ -209,53 +209,51 @@ function renderMonthlyTable() {
         };
         
         row.innerHTML = `
-            <td style="padding: 18px 20px; border: none; font-weight: 700; color: #0f172a; font-size: 15px; white-space: nowrap;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="display: inline-block; width: 6px; height: 6px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 50%;"></span>
+            <td style="padding: 12px 10px; border: none; font-weight: 700; color: #0f172a; font-size: 13px; white-space: nowrap;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="display: inline-block; width: 5px; height: 5px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 50%;"></span>
                     <span>${formatMonth(monthKey)}</span>
                 </div>
             </td>
-            <td style="padding: 18px 20px; text-align: right; border: none; font-size: 14px; font-weight: 600; white-space: nowrap;">
-                <span style="font-family: 'Courier New', monospace; color: #475569;">${data.usdt.toFixed(2)}</span>
-                <span style="color: #94a3b8; font-size: 11px; margin-left: 3px;">USDT</span>
+            <td style="padding: 12px 8px; text-align: right; border: none; font-size: 12px; font-weight: 600; white-space: nowrap;">
+                <span style="font-family: 'Courier New', monospace; color: #475569;">${data.usdt.toFixed(1)}</span>
             </td>
-            <td style="padding: 18px 20px; text-align: right; border: none; font-size: 14px; font-weight: 600; white-space: nowrap;">
-                <span style="font-family: 'Courier New', monospace; color: #475569;">${data.usd.toFixed(2)}</span>
-                <span style="color: #94a3b8; font-size: 11px; margin-left: 3px;">USD</span>
+            <td style="padding: 12px 8px; text-align: right; border: none; font-size: 12px; font-weight: 600; white-space: nowrap;">
+                <span style="font-family: 'Courier New', monospace; color: #475569;">${data.usd.toFixed(1)}</span>
             </td>
-            <td style="padding: 18px 20px; text-align: right; border: none; white-space: nowrap;">
-                <div style="display: inline-block; padding: 6px 12px; background: linear-gradient(135deg, #e0e7ff, #c7d2fe); border-radius: 8px; border: 1px solid #a5b4fc;">
-                    <span style="color: #4338ca; font-weight: 700; font-size: 14px;">${formatVND(avgPrice)}</span>
+            <td style="padding: 12px 8px; text-align: right; border: none; white-space: nowrap;">
+                <div style="display: inline-block; padding: 4px 8px; background: linear-gradient(135deg, #e0e7ff, #c7d2fe); border-radius: 6px; border: 1px solid #a5b4fc;">
+                    <span style="color: #4338ca; font-weight: 700; font-size: 12px;">${formatVND(avgPrice)}</span>
                 </div>
             </td>
-            <td style="padding: 18px 20px; text-align: right; border: none; white-space: nowrap;">
-                <div style="display: inline-block; padding: 6px 12px; background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-radius: 8px; border: 1px solid #6ee7b7;">
-                    <span style="color: #047857; font-weight: 700; font-size: 14px;">${formatVND(data.vndConversion)}</span>
+            <td style="padding: 12px 8px; text-align: right; border: none; white-space: nowrap;">
+                <div style="display: inline-block; padding: 4px 8px; background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-radius: 6px; border: 1px solid #6ee7b7;">
+                    <span style="color: #047857; font-weight: 700; font-size: 12px;">${formatVND(data.vndConversion)}</span>
                 </div>
             </td>
-            <td style="padding: 18px 20px; text-align: right; border: none; white-space: nowrap;">
-                <div style="display: inline-block; padding: 6px 12px; background: linear-gradient(135deg, #fee2e2, #fecaca); border-radius: 8px; border: 1px solid #fca5a5;">
-                    <span style="color: #b91c1c; font-weight: 700; font-size: 14px;">${formatVND(data.vndWithdraw)}</span>
+            <td style="padding: 12px 8px; text-align: right; border: none; white-space: nowrap;">
+                <div style="display: inline-block; padding: 4px 8px; background: linear-gradient(135deg, #fee2e2, #fecaca); border-radius: 6px; border: 1px solid #fca5a5;">
+                    <span style="color: #b91c1c; font-weight: 700; font-size: 12px;">${formatVND(data.vndWithdraw)}</span>
                 </div>
             </td>
-            <td style="padding: 18px 20px; text-align: right; border: none; white-space: nowrap;">
-                <div style="display: inline-block; padding: 8px 14px; background: linear-gradient(135deg, #d1fae5, #10b981); border-radius: 10px; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2); border: 2px solid #059669;">
-                    <span style="color: white; font-weight: 700; font-size: 15px; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">${formatVND(data.aeTotal)}</span>
+            <td style="padding: 12px 8px; text-align: right; border: none; white-space: nowrap;">
+                <div style="display: inline-block; padding: 5px 10px; background: linear-gradient(135deg, #d1fae5, #10b981); border-radius: 6px; box-shadow: 0 2px 6px rgba(5, 150, 105, 0.2); border: 1px solid #059669;">
+                    <span style="color: white; font-weight: 700; font-size: 12px; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">${formatVND(data.aeTotal)}</span>
                 </div>
             </td>
-            <td style="padding: 18px 20px; text-align: right; border: none; white-space: nowrap;">
-                <div style="display: inline-block; padding: 8px 14px; background: linear-gradient(135deg, #cffafe, #06b6d4); border-radius: 10px; box-shadow: 0 2px 8px rgba(8, 145, 178, 0.2); border: 2px solid #0891b2;">
-                    <span style="color: white; font-weight: 700; font-size: 15px; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">${formatVND(data.aeqtTotal)}</span>
+            <td style="padding: 12px 8px; text-align: right; border: none; white-space: nowrap;">
+                <div style="display: inline-block; padding: 5px 10px; background: linear-gradient(135deg, #cffafe, #06b6d4); border-radius: 6px; box-shadow: 0 2px 6px rgba(8, 145, 178, 0.2); border: 1px solid #0891b2;">
+                    <span style="color: white; font-weight: 700; font-size: 12px; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">${formatVND(data.aeqtTotal)}</span>
                 </div>
             </td>
-            <td style="padding: 18px 20px; text-align: right; border: none; white-space: nowrap;">
-                <div style="display: inline-block; padding: 10px 16px; background: linear-gradient(135deg, #fca5a5, #dc2626); border-radius: 10px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); border: 2px solid #b91c1c;">
-                    <span style="color: white; font-weight: 800; font-size: 16px; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">${formatVND(totalWork)}</span>
+            <td style="padding: 12px 8px; text-align: right; border: none; white-space: nowrap;">
+                <div style="display: inline-block; padding: 6px 10px; background: linear-gradient(135deg, #fca5a5, #dc2626); border-radius: 6px; box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25); border: 1px solid #b91c1c;">
+                    <span style="color: white; font-weight: 700; font-size: 13px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">${formatVND(totalWork)}</span>
                 </div>
             </td>
-            <td style="padding: 18px 20px; text-align: right; border: none; white-space: nowrap;">
-                <div style="display: inline-block; padding: 10px 16px; background: linear-gradient(135deg, ${data.totalSum >= 0 ? '#10b981, #059669' : '#ef4444, #dc2626'}); border-radius: 10px; box-shadow: 0 4px 12px ${data.totalSum >= 0 ? 'rgba(5, 150, 105, 0.3)' : 'rgba(220, 38, 38, 0.3)'}; border: 2px solid ${data.totalSum >= 0 ? '#059669' : '#b91c1c'};">
-                    <span style="color: white; font-weight: 800; font-size: 16px; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">${formatVND(data.totalSum)}</span>
+            <td style="padding: 12px 8px; text-align: right; border: none; white-space: nowrap;">
+                <div style="display: inline-block; padding: 6px 10px; background: linear-gradient(135deg, ${data.totalSum >= 0 ? '#ef4444, #dc2626' : '#10b981, #059669'}); border-radius: 6px; box-shadow: 0 2px 8px ${data.totalSum >= 0 ? 'rgba(220, 38, 38, 0.25)' : 'rgba(5, 150, 105, 0.25)'}; border: 1px solid ${data.totalSum >= 0 ? '#b91c1c' : '#059669'};">
+                    <span style="color: white; font-weight: 700; font-size: 13px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">${formatVND(data.totalSum)}</span>
                 </div>
             </td>
         `;

@@ -31,93 +31,117 @@
         <!-- Thống kê tổng quan -->
         <div style="margin-bottom: 48px;">
             <div class="cards-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
-                <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; position: relative; overflow: hidden; transition: all 0.3s ease;">
-                    <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; position: relative; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);">
+                    <div style="position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.08); border-radius: 50%;"></div>
                     <div style="position: relative; z-index: 1;">
-                        <h3 style="color: white; font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 8px;">
-                            <span style="font-size: 24px; margin-right: 8px;">📅</span> NGÀY ĐỔI
+                        <h3 style="color: white; font-size: 14px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <span style="font-size: 20px; margin-right: 8px;">📅</span> NGÀY ĐỔI
                         </h3>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                            <span style="color: rgba(255,255,255,0.9); font-size: 12px;">Tổng USDT:</span>
-                            <span id="home-conversion-usdt" style="color: white; font-size: 13px; font-weight: 600;">0 USDT</span>
+                        <div style="display: grid; gap: 8px; margin-bottom: 12px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: rgba(255,255,255,0.85); font-size: 11px; font-weight: 500;">USDT:</span>
+                                <span id="home-conversion-usdt" style="color: white; font-size: 12px; font-weight: 700; font-family: 'Courier New', monospace;">0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: rgba(255,255,255,0.85); font-size: 11px; font-weight: 500;">USD:</span>
+                                <span id="home-conversion-usd" style="color: white; font-size: 12px; font-weight: 700; font-family: 'Courier New', monospace;">0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: rgba(255,255,255,0.85); font-size: 11px; font-weight: 500;">Giá TB tháng này:</span>
+                                <span id="home-conversion-price" style="color: white; font-size: 12px; font-weight: 700;">0₫</span>
+                            </div>
                         </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                            <span style="color: rgba(255,255,255,0.9); font-size: 12px;">Tổng USD:</span>
-                            <span id="home-conversion-usd" style="color: white; font-size: 13px; font-weight: 600;">0 USD</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                            <span style="color: rgba(255,255,255,0.9); font-size: 12px;">Giá TB tháng này:</span>
-                            <span id="home-conversion-price" style="color: white; font-size: 13px; font-weight: 600;">0₫</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.3);">
-                            <span style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 600;">Tổng đổi VND:</span>
-                            <span id="home-conversion-total" style="color: white; font-size: 18px; font-weight: 700;">0₫</span>
+                        <div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; margin-top: 12px; backdrop-filter: blur(10px);">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: white; font-size: 11px; font-weight: 600; text-transform: uppercase;">Tổng đổi VND</span>
+                                <span id="home-conversion-total" style="color: white; font-size: 16px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">0₫</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border: none; position: relative; overflow: hidden; transition: all 0.3s ease;">
-                    <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                <div class="card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border: none; position: relative; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 20px rgba(240, 147, 251, 0.3);">
+                    <div style="position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.08); border-radius: 50%;"></div>
                     <div style="position: relative; z-index: 1;">
-                        <h3 style="color: white; font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 8px;">
-                            <span style="font-size: 24px; margin-right: 8px;">📤</span> NGÀY LẤY
+                        <h3 style="color: white; font-size: 14px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <span style="font-size: 20px; margin-right: 8px;">📤</span> NGÀY LẤY
                         </h3>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <span style="color: rgba(255,255,255,0.9); font-size: 12px;">Tổng đổi VND:</span>
-                            <span id="home-withdraw-conversion" style="color: white; font-size: 13px; font-weight: 600;">0₫</span>
+                        <div style="display: grid; gap: 10px;">
+                            <div style="background: rgba(255,255,255,0.12); border-radius: 6px; padding: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: rgba(255,255,255,0.85); font-size: 11px; font-weight: 500;">Đổi VND:</span>
+                                    <span id="home-withdraw-conversion" style="color: white; font-size: 12px; font-weight: 700;">0₫</span>
+                                </div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.12); border-radius: 6px; padding: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: rgba(255,255,255,0.85); font-size: 11px; font-weight: 500;">Lấy VND:</span>
+                                    <span id="home-withdraw-total" style="color: white; font-size: 12px; font-weight: 700;">0₫</span>
+                                </div>
+                            </div>
                         </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <span style="color: rgba(255,255,255,0.9); font-size: 12px;">Tổng lấy VND:</span>
-                            <span id="home-withdraw-total" style="color: white; font-size: 13px; font-weight: 600;">0₫</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.3);">
-                            <span style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 600;">Tổng toàn bộ VND:</span>
-                            <span id="home-withdraw-total-all" style="color: white; font-size: 18px; font-weight: 700;">0₫</span>
+                        <div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; margin-top: 12px; backdrop-filter: blur(10px);">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: white; font-size: 11px; font-weight: 600; text-transform: uppercase;">Tổng toàn bộ</span>
+                                <span id="home-withdraw-total-all" style="color: white; font-size: 16px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">0₫</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border: none; position: relative; overflow: hidden; transition: all 0.3s ease;">
-                    <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                <div class="card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border: none; position: relative; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 20px rgba(79, 172, 254, 0.3);">
+                    <div style="position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.08); border-radius: 50%;"></div>
                     <div style="position: relative; z-index: 1;">
-                        <h3 style="color: white; font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 8px;">
-                            <span style="font-size: 24px; margin-right: 8px;">💼</span> AE
+                        <h3 style="color: white; font-size: 14px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <span style="font-size: 20px; margin-right: 8px;">💼</span> AE
                         </h3>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 600;">Tổng cộng:</span>
-                            <span id="home-ae-total" style="color: white; font-size: 20px; font-weight: 700;">0₫</span>
+                        <div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 12px; margin-bottom: 10px; backdrop-filter: blur(10px);">
+                            <div style="text-align: center;">
+                                <span style="color: rgba(255,255,255,0.9); font-size: 10px; font-weight: 600; text-transform: uppercase; display: block; margin-bottom: 6px;">Tổng cộng</span>
+                                <span id="home-ae-total" style="color: white; font-size: 20px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.2); display: block;">0₫</span>
+                            </div>
                         </div>
-                        <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.3);">
-                            <span style="color: rgba(255,255,255,0.9); font-size: 12px;">Tổng khóa:</span>
-                            <span id="home-ae-locked" style="color: white; font-size: 13px; font-weight: 600;">0₫</span>
+                        <div style="background: rgba(255,255,255,0.1); border-radius: 6px; padding: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: rgba(255,255,255,0.85); font-size: 11px; font-weight: 500;">Tổng khóa:</span>
+                                <span id="home-ae-locked" style="color: white; font-size: 12px; font-weight: 700;">0₫</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); border: none; position: relative; overflow: hidden; transition: all 0.3s ease;">
-                    <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                <div class="card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); border: none; position: relative; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 20px rgba(67, 233, 123, 0.3);">
+                    <div style="position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.08); border-radius: 50%;"></div>
                     <div style="position: relative; z-index: 1;">
-                        <h3 style="color: white; font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 8px;">
-                            <span style="font-size: 24px; margin-right: 8px;">🌐</span> AE-QT
+                        <h3 style="color: white; font-size: 14px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <span style="font-size: 20px; margin-right: 8px;">🌐</span> AE-QT
                         </h3>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 600;">Tổng cộng:</span>
-                            <span id="home-aeqt-total" style="color: white; font-size: 20px; font-weight: 700;">0₫</span>
+                        <div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 12px; margin-bottom: 10px; backdrop-filter: blur(10px);">
+                            <div style="text-align: center;">
+                                <span style="color: rgba(255,255,255,0.9); font-size: 10px; font-weight: 600; text-transform: uppercase; display: block; margin-bottom: 6px;">Tổng cộng</span>
+                                <span id="home-aeqt-total" style="color: white; font-size: 20px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.2); display: block;">0₫</span>
+                            </div>
                         </div>
-                        <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.3);">
-                            <span style="color: rgba(255,255,255,0.9); font-size: 12px;">Tổng khóa:</span>
-                            <span id="home-aeqt-locked" style="color: white; font-size: 13px; font-weight: 600;">0₫</span>
+                        <div style="background: rgba(255,255,255,0.1); border-radius: 6px; padding: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: rgba(255,255,255,0.85); font-size: 11px; font-weight: 500;">Tổng khóa:</span>
+                                <span id="home-aeqt-locked" style="color: white; font-size: 12px; font-weight: 700;">0₫</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); border: none; position: relative; overflow: hidden; transition: all 0.3s ease;">
-                    <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                <div class="card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); border: none; position: relative; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 20px rgba(250, 112, 154, 0.3);">
+                    <div style="position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.08); border-radius: 50%;"></div>
                     <div style="position: relative; z-index: 1;">
-                        <h3 style="color: white; font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 8px;">
-                            <span style="font-size: 24px; margin-right: 8px;">💱</span> GIÁ P2P
+                        <h3 style="color: white; font-size: 14px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <span style="font-size: 20px; margin-right: 8px;">💱</span> GIÁ P2P
                         </h3>
-                        <div style="text-align: center; margin: 20px 0;">
-                            <div style="color: rgba(255,255,255,0.9); font-size: 12px; margin-bottom: 6px;">Giá Mua USDT Hôm Nay</div>
-                            <div id="home-rate-avg" style="color: white; font-size: 28px; font-weight: 700;">0₫</div>
-                            <div id="p2p-source-label" style="color: rgba(255,255,255,0.7); font-size: 10px; margin-top: 4px;">⏳ Đang tải...</div>
-                            <div id="p2p-update-time" style="color: rgba(255,255,255,0.6); font-size: 9px; margin-top: 2px;"></div>
+                        <div style="text-align: center; margin-bottom: 12px;">
+                            <span style="color: rgba(255,255,255,0.9); font-size: 10px; font-weight: 600; text-transform: uppercase; display: block; margin-bottom: 4px;">Giá Mua USDT Hôm Nay</span>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 14px; backdrop-filter: blur(10px); text-align: center; margin-bottom: 8px;">
+                            <div id="home-rate-avg" style="color: white; font-size: 24px; font-weight: 900; text-shadow: 0 2px 6px rgba(0,0,0,0.3); letter-spacing: 0.5px;">0₫</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div id="p2p-source-label" style="color: rgba(255,255,255,0.85); font-size: 9px; font-weight: 500; margin-bottom: 2px;">⏳ Đang tải...</div>
+                            <div id="p2p-update-time" style="color: rgba(255,255,255,0.7); font-size: 8px;"></div>
                         </div>
                     </div>
                 </div>
@@ -136,61 +160,61 @@
                 <table id="monthly-stats-table" style="width: 100%; border-collapse: separate; border-spacing: 0; background: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
                     <thead>
                         <tr style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                            <th style="padding: 18px 20px; text-align: left; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; border-top-left-radius: 16px; position: relative;">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span style="font-size: 16px;">📅</span>
+                            <th style="padding: 12px 10px; text-align: left; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; border-top-left-radius: 16px; position: relative;">
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    <span style="font-size: 13px;">📅</span>
                                     <span>Tháng</span>
                                 </div>
                             </th>
-                            <th style="padding: 18px 20px; text-align: right; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; position: relative;">
-                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
-                                    <span>₮ USDT</span>
+                            <th style="padding: 12px 8px; text-align: right; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 3px;">
+                                    <span>USDT</span>
                                 </div>
                             </th>
-                            <th style="padding: 18px 20px; text-align: right; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; position: relative;">
-                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
-                                    <span>$ USD</span>
+                            <th style="padding: 12px 8px; text-align: right; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 3px;">
+                                    <span>USD</span>
                                 </div>
                             </th>
-                            <th style="padding: 18px 20px; text-align: right; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; position: relative;">
-                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
-                                    <span style="font-size: 14px;">📊</span>
+                            <th style="padding: 12px 8px; text-align: right; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 3px;">
+                                    <span style="font-size: 12px;">📊</span>
                                     <span>Giá TB</span>
                                 </div>
                             </th>
-                            <th style="padding: 18px 20px; text-align: right; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; position: relative;">
-                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
-                                    <span style="font-size: 14px;">💱</span>
-                                    <span>VND Đổi</span>
+                            <th style="padding: 12px 8px; text-align: right; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 3px;">
+                                    <span style="font-size: 12px;">💱</span>
+                                    <span>Đổi</span>
                                 </div>
                             </th>
-                            <th style="padding: 18px 20px; text-align: right; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; position: relative;">
-                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
-                                    <span style="font-size: 14px;">💰</span>
-                                    <span>VND Lấy</span>
+                            <th style="padding: 12px 8px; text-align: right; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 3px;">
+                                    <span style="font-size: 12px;">💰</span>
+                                    <span>Lấy</span>
                                 </div>
                             </th>
-                            <th style="padding: 18px 20px; text-align: right; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; background: rgba(5, 150, 105, 0.95); position: relative;">
-                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
-                                    <span style="font-size: 14px;">💼</span>
+                            <th style="padding: 12px 8px; text-align: right; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; background: rgba(5, 150, 105, 0.95); position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 3px;">
+                                    <span style="font-size: 12px;">💼</span>
                                     <span>AE</span>
                                 </div>
                             </th>
-                            <th style="padding: 18px 20px; text-align: right; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; background: rgba(8, 145, 178, 0.95); position: relative;">
-                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
-                                    <span style="font-size: 14px;">🌐</span>
+                            <th style="padding: 12px 8px; text-align: right; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; background: rgba(8, 145, 178, 0.95); position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 3px;">
+                                    <span style="font-size: 12px;">🌐</span>
                                     <span>AE-QT</span>
                                 </div>
                             </th>
-                            <th style="padding: 18px 20px; text-align: right; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; background: rgba(220, 38, 38, 0.95); position: relative;">
-                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
-                                    <span style="font-size: 14px;">💸</span>
-                                    <span>Tiền Làm</span>
+                            <th style="padding: 12px 8px; text-align: right; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; background: rgba(220, 38, 38, 0.95); position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 3px;">
+                                    <span style="font-size: 12px;">💸</span>
+                                    <span>T.Làm</span>
                                 </div>
                             </th>
-                            <th style="padding: 18px 20px; text-align: right; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; background: rgba(99, 102, 241, 0.95); border-top-right-radius: 16px; position: relative;">
-                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
-                                    <span style="font-size: 14px;">💰</span>
+                            <th style="padding: 12px 8px; text-align: right; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; background: rgba(99, 102, 241, 0.95); border-top-right-radius: 16px; position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 3px;">
+                                    <span style="font-size: 12px;">💎</span>
                                     <span>Tổng</span>
                                 </div>
                             </th>
