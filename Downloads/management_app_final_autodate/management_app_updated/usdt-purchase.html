@@ -18,11 +18,10 @@
         <a href="dashboard.html">📊 Bảng Chính</a>
         <a href="AE.html">💼 Bảng AE</a>
         <a href="AE-QT.html">🌐 Bảng AE-QT</a>
-        <a href="rate.html">💱 Tỷ Giá USD</a>
+        <a href="balance.html">👥 Danh Sách Tên</a>
         <a href="usdt-purchase.html" class="active">💰 Giá Nhập USDT</a>
-        <a href="balance.html">👥 Danh Sách Theo Tên</a>
+        <a href="rate.html">💱 Tỷ Giá USD</a>
         <a href="settings.html">⚙️ Cài Đặt</a>
-        <a href="system.html">🔧 Quản Lý</a>
     </nav>
 
     <div class="container">
@@ -33,9 +32,18 @@
                     <span style="font-size: 32px;">💰</span>
                     Bảng Giá Nhập USDT
                 </h1>
-                <button id="export-usdt-btn" style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                    <span>📥</span> Xuất Excel
-                </button>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div id="p2p-rate-display" style="padding: 10px 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                        <span>💱 Giá P2P:</span>
+                        <span id="current-p2p-rate">0₫</span>
+                    </div>
+                    <button id="refresh-p2p-btn" onclick="loadP2PRate()" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <span>🔄</span> Cập Nhật Giá
+                    </button>
+                    <button id="export-usdt-btn" style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <span>📥</span> Xuất Excel
+                    </button>
+                </div>
             </div>
 
             <!-- Thống kê nhanh -->
@@ -64,14 +72,15 @@
             <table id="usdt-purchase-table">
                 <thead>
                     <tr>
-                        <th style="width: 120px;">Ngày Nhập</th>
-                        <th style="width: 150px;">Tiền Nhập (VND)</th>
-                        <th style="width: 150px;">Giá Nhập (VND)</th>
-                        <th style="width: 150px;">USDT ($)</th>
-                        <th style="width: 150px;">VND (VND)</th>
-                        <th style="width: 150px;">Tiền Làm (VND)</th>
-                        <th style="width: 150px;">Tổng Cộng (VND)</th>
-                        <th style="width: 100px;">Thao Tác</th>
+                        <th style="width: 110px;">Ngày</th>
+                        <th style="width: 140px;">Tiền Nhập (VND)</th>
+                        <th style="width: 120px;">USDT ($)</th>
+                        <th style="width: 140px;">Giá Nhập (VND)</th>
+                        <th style="width: 120px;">USDT ($)</th>
+                        <th style="width: 140px;">Giá Bán (VND)</th>
+                        <th style="width: 140px;">Tiền Bán (VND)</th>
+                        <th style="width: 140px;">Tổng Cộng (VND)</th>
+                        <th style="width: 90px;">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody id="usdt-purchase-tbody">
@@ -91,13 +100,14 @@
         <div style="margin-top: 24px; padding: 16px; background: #f0f9ff; border-left: 4px solid #3b82f6; border-radius: 8px;">
             <h3 style="margin: 0 0 12px 0; color: #1e40af; font-size: 16px;">📖 Hướng Dẫn Sử Dụng</h3>
             <ul style="margin: 0; padding-left: 20px; color: #1e40af; line-height: 1.8;">
-                <li><strong>Ngày Nhập:</strong> Chọn ngày mua USDT</li>
-                <li><strong>Tiền Nhập:</strong> Số tiền VND đã chuyển để mua USDT</li>
-                <li><strong>Giá Nhập:</strong> Giá mua 1 USDT tại thời điểm nhập (VND)</li>
-                <li><strong>USDT:</strong> Số lượng USDT thực nhận (tự động tính = Tiền Nhập ÷ Giá Nhập)</li>
-                <li><strong>VND:</strong> Giá trị hiện tại của USDT theo giá P2P mới nhất (tự động cập nhật)</li>
-                <li><strong>Tiền Làm:</strong> Chi phí phát sinh, phí giao dịch</li>
-                <li><strong>Tổng Cộng:</strong> Lợi nhuận/lỗ = VND - Tiền Làm</li>
+                <li><strong>Ngày:</strong> Ngày thực hiện giao dịch</li>
+                <li><strong>Tiền Nhập (VND):</strong> Số tiền VND đã chi ra để mua USDT</li>
+                <li><strong>USDT ($) - Nhập:</strong> Số lượng USDT đã mua</li>
+                <li><strong>Giá Nhập (VND):</strong> Giá mua 1 USDT = Tiền Nhập ÷ USDT (tự động tính)</li>
+                <li><strong>USDT ($) - Bán:</strong> Số lượng USDT bán ra</li>
+                <li><strong>Giá Bán (VND):</strong> Giá bán 1 USDT</li>
+                <li><strong>Tiền Bán (VND):</strong> Tổng tiền thu về = USDT × Giá Bán (tự động tính)</li>
+                <li><strong>Tổng Cộng (VND):</strong> Lãi/lỗ = Tiền Bán - Tiền Nhập (tự động tính)</li>
             </ul>
         </div>
     </div>
