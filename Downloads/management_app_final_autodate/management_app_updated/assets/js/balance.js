@@ -329,6 +329,27 @@ function renderPeopleList() {
                     </div>
                 </div>
                 
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                    <div>
+                        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 2px;">💼 Nhận AE (×0.5)</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #8b5cf6;">
+                            ${formatCurrency(person.totalTT_AE || 0)}
+                        </div>
+                        <div style="font-size: 10px; color: #9ca3af; margin-top: 2px;">
+                            ${person.ttTransactions_AE ? person.ttTransactions_AE.length : 0} giao dịch
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 2px;">🌐 Nhận AE-QT (×0.8)</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #ec4899;">
+                            ${formatCurrency(person.totalTT_AEQT || 0)}
+                        </div>
+                        <div style="font-size: 10px; color: #9ca3af; margin-top: 2px;">
+                            ${person.ttTransactions_AEQT ? person.ttTransactions_AEQT.length : 0} giao dịch
+                        </div>
+                    </div>
+                </div>
+                
                 <div style="margin-top: 12px; text-align: center; padding-top: 12px; border-top: 1px solid #e5e7eb;">
                     <span style="font-size: 12px; color: #6b7280; font-weight: 600;">
                         👆 Click để xem chi tiết
