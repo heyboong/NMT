@@ -609,10 +609,25 @@
         if (['usdt', 'usd', 'price'].includes(col) && inputValue && !convData[rowIndex].date) {
             const currentDate = formatDateInput(getCurrentDate());
             convData[rowIndex].date = currentDate;
-            // Cập nhật ô ngày tháng trên giao diện
             const dateTd = tr.querySelector('td[data-col="date"]');
-            if (dateTd) {
-                dateTd.textContent = currentDate;
+            if (dateTd) dateTd.textContent = currentDate;
+        }
+        
+        // Tự động điền giá P2P USDT vào cột "price" khi nhập USDT hoặc USD
+        // Chỉ điền nếu cột price đang trống hoặc bằng 0
+        if (['usdt', 'usd'].includes(col) && inputValue) {
+            const currentPrice = parseFloat(convData[rowIndex].price);
+            if (!currentPrice || currentPrice === 0) {
+                // Sử dụng giá P2P hiện tại (buyPrice)
+                const p2pPrice = Math.round(buyPrice); // Làm tròn đến số nguyên
+                if (p2pPrice > 0) {
+                    convData[rowIndex].price = p2pPrice.toString();
+                    const priceTd = tr.querySelector('td[data-col="price"]');
+                    if (priceTd) {
+                        priceTd.textContent = formatVND(p2pPrice);
+                    }
+                    console.log(`✅ Auto-filled P2P price: ${formatVND(p2pPrice)} for row ${rowIndex + 1}`);
+                }
             }
         }
         

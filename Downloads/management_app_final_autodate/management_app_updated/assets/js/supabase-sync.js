@@ -21,7 +21,7 @@ const SYNC_KEYS = {
     'rate-settings': 'rate_settings',         // Cài đặt tỷ giá
     'system_categories': 'system_categories', // Danh mục hệ thống
     'table_row_notes': 'table_row_notes',     // Ghi chú dòng bảng
-    'usdt_purchase_data': 'usdt_purchase_data', // Bảng Giá Nhập USDT
+    'usdt_data': 'usdt_data',                 // Bảng Nhập USDT (mới)
     'staff_list_ae': 'staff_list_ae',         // Danh sách NV Bảng AE
     'staff_list_aeqt': 'staff_list_aeqt'      // Danh sách NV Bảng AE-QT
     // Note: System table data (system_table_*) will be synced dynamically

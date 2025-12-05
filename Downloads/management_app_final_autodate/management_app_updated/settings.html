@@ -12,11 +12,10 @@
         <a href="dashboard.html">📊 Bảng Chính</a>
         <a href="AE.html">💼 Bảng AE</a>
         <a href="AE-QT.html">🌐 Bảng AE-QT</a>
-        <a href="rate.html">💱 Tỷ Giá USD</a>
-        <a href="usdt-purchase.html">💰 Giá Nhập USDT</a>
         <a href="balance.html">👥 Danh Sách Tên</a>
+        <a href="usdt.html">💵 Nhập USDT</a>
+        <a href="rate.html">💱 Tỷ Giá USD</a>
         <a href="settings.html" class="active">⚙️ Cài Đặt</a>
-        <a href="system.html">🔧 Quản Lý</a>
     </nav>
 
     <div class="container">
@@ -35,6 +34,7 @@
             <button class="settings-tab" data-tab="display">🎨 Hiển Thị</button>
             <button class="settings-tab" data-tab="p2p">📈 P2P Rate</button>
             <button class="settings-tab" data-tab="history">📜 Lịch Sử</button>
+            <button class="settings-tab" data-tab="system">🔧 Quản Lý</button>
             <button class="settings-tab" data-tab="advanced">🔧 Nâng Cao</button>
         </div>
 
@@ -625,6 +625,121 @@
             </section>
         </div>
 
+        <!-- System Management Tab -->
+        <div class="settings-tab-content" data-content="system">
+            <section class="settings-section">
+                <h3>🔧 Quản Lý Hệ Thống</h3>
+                <p>Thiết lập các danh mục tùy chỉnh và quản lý bảng dữ liệu động theo nhu cầu riêng.</p>
+
+                <div class="system-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                    <div class="settings-card" style="padding: 20px;">
+                        <h4>Tạo danh mục mới</h4>
+                        <form id="system-category-form" class="system-form">
+                            <label>
+                                Tên danh mục *
+                                <input type="text" id="category-name" placeholder="VD: Quỹ marketing" required />
+                            </label>
+                            <label>
+                                Mô tả
+                                <textarea id="category-description" rows="2" placeholder="Ghi chú ngắn gọn về mục này"></textarea>
+                            </label>
+                            <div class="system-display-options">
+                                <h4 style="font-size: 14px; margin: 15px 0 10px 0;">Vị trí hiển thị</h4>
+                                <p style="font-size: 12px; color: #6b7280; margin-bottom: 10px;">Chọn trang và thứ tự hiển thị. Bạn có thể cho cùng một danh mục xuất hiện trên nhiều trang.</p>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                                    <label style="display: flex; align-items: center; gap: 6px; font-size: 13px;">
+                                        <input type="checkbox" name="category-pages" value="system" checked />
+                                        Trang Quản Lý Hệ Thống
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 6px; font-size: 13px;">
+                                        <input type="checkbox" name="category-pages" value="dashboard" />
+                                        Trang Bảng Điều Khiển
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 6px; font-size: 13px;">
+                                        <input type="checkbox" name="category-pages" value="ae" />
+                                        Trang Bảng AE
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 6px; font-size: 13px;">
+                                        <input type="checkbox" name="category-pages" value="aeqt" />
+                                        Trang Bảng AE-QT
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 6px; font-size: 13px;">
+                                        <input type="checkbox" name="category-pages" value="history" />
+                                        Trang Lịch Sử
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 6px; font-size: 13px;">
+                                        <input type="checkbox" name="category-pages" value="rate" />
+                                        Trang Tỷ Giá USD
+                                    </label>
+                                </div>
+                                <label>
+                                    Thứ tự hiển thị (số nhỏ hiển thị trước)
+                                    <input type="number" id="category-display-order" min="1" max="999" value="1" />
+                                </label>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0;">
+                                <label>
+                                    Số dòng ban đầu
+                                    <input type="number" id="category-initial-rows" min="5" max="200" value="20" />
+                                </label>
+                                <label>
+                                    Số dòng tối đa
+                                    <input type="number" id="category-max-rows" min="10" max="500" value="200" />
+                                </label>
+                            </div>
+                            <div class="system-columns">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <h4 style="font-size: 14px; margin: 0;">Cấu hình cột</h4>
+                                    <button type="button" id="system-add-column" style="background: none; border: none; color: #3b82f6; cursor: pointer; font-weight: 600;">+ Thêm cột</button>
+                                </div>
+                                <p style="font-size: 12px; color: #6b7280; margin-bottom: 10px;">Đặt tên và loại dữ liệu cho từng cột. Đánh dấu "Tính tổng" với các cột số.</p>
+                                <div id="system-columns-container"></div>
+                            </div>
+                            <div style="margin-top: 20px; display: flex; gap: 12px; align-items: center;">
+                                <button type="submit" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Tạo danh mục</button>
+                                <span id="system-form-status" style="color: #10b981; font-size: 13px;"></span>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="settings-card" style="padding: 20px;">
+                        <h4>Danh mục hiện có</h4>
+                        <div style="margin-bottom: 12px; display: flex; gap: 8px; justify-content: flex-end;">
+                            <button type="button" id="import-category-btn" style="font-size: 13px; padding: 6px 12px; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                                📂 Nhập danh mục từ file
+                            </button>
+                            <button type="button" id="export-all-btn" style="font-size: 13px; padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                                💾 Xuất tất cả
+                            </button>
+                        </div>
+                        <div id="system-category-list" style="max-height: 500px; overflow-y: auto;">
+                            <p style="text-align: center; color: #9ca3af; padding: 40px 20px;">Chưa có danh mục. Hãy tạo mới ở khung bên cạnh.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-card" style="margin-top: 24px; padding: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <div>
+                            <h4 id="system-table-title" style="margin: 0 0 4px 0;">Chưa chọn danh mục</h4>
+                            <p id="system-table-subtitle" style="margin: 0; font-size: 13px; color: #6b7280;">Chọn hoặc tạo một danh mục để bắt đầu nhập dữ liệu.</p>
+                        </div>
+                        <button type="button" id="system-add-rows" disabled style="padding: 8px 16px; background: #e5e7eb; color: #9ca3af; border: none; border-radius: 6px; cursor: not-allowed;">+ Thêm 10 dòng</button>
+                    </div>
+                    <div id="system-empty-state" style="text-align: center; color: #9ca3af; padding: 60px 20px; background: #f9fafb; border-radius: 8px; border: 2px dashed #e5e7eb;">
+                        Không có dữ liệu hiển thị. Vui lòng chọn danh mục ở danh sách bên trên.
+                    </div>
+                    <div id="system-table-wrapper" style="overflow-x: auto;" hidden>
+                        <table id="system-table" class="sheet adjustable-table" data-row-resize="true" style="width: 100%; border-collapse: collapse;">
+                            <thead></thead>
+                            <tbody></tbody>
+                        </table>
+                        <p id="system-total-display" style="margin-top: 12px; font-weight: 600; color: #1f2937;"></p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
         <!-- Advanced Tab -->
         <div class="settings-tab-content" data-content="advanced">
             <section class="settings-section">
@@ -787,5 +902,11 @@
         }
     })();
     </script>
+
+    <!-- System Management Tab -->
+    <script src="assets/js/table-resize.js"></script>
+    <script src="assets/js/system-import-export.js"></script>
+    <script src="assets/js/system.js"></script>
+    <script src="assets/js/universal-autocomplete.js"></script>
 </body>
 </html>
