@@ -55,20 +55,23 @@ async function loadP2PRate() {
     try {
         const rateData = localStorage.getItem('rate_settings');
         if (rateData) {
-            const rates = JSON.parse(rateData);
-            if (rates.length > 0) {
-                // Get most recent rate
-                const sortedRates = rates.sort((a, b) => new Date(b.date) - new Date(a.date));
-                currentP2PRate = parseFloat(sortedRates[0].price) || 0;
+            const settings = JSON.parse(rateData);
+            
+            // rate_settings is an object: {sellPrice, buyPrice, updatedAt}
+            if (settings && typeof settings === 'object') {
+                // Use sellPrice as the P2P rate
+                const sellPrice = parseFloat(settings.sellPrice) || 0;
                 
-                // Update display
-                const display = document.getElementById('current-p2p-rate');
-                if (display) {
-                    display.textContent = formatNumber(currentP2PRate) + '₫';
-                }
-                
-                // Auto-apply to empty sellPrice cells (always check when rate is available)
-                if (currentP2PRate > 0) {
+                if (sellPrice > 0) {
+                    currentP2PRate = sellPrice;
+                    
+                    // Update display
+                    const display = document.getElementById('current-p2p-rate');
+                    if (display) {
+                        display.textContent = formatNumber(currentP2PRate) + '₫';
+                    }
+                    
+                    // Auto-apply to empty sellPrice cells (always check when rate is available)
                     let updated = 0;
                     usdtPurchaseData.forEach((row, index) => {
                         if (!row.sellPrice || row.sellPrice === 0) {
@@ -83,10 +86,14 @@ async function loadP2PRate() {
                         updateStatistics();
                         console.log(`✅ Tự động áp dụng giá P2P cho ${updated} dòng`);
                     }
+                    
+                    console.log('✅ P2P rate loaded:', currentP2PRate);
+                } else {
+                    console.warn('⚠️ Giá P2P không hợp lệ');
                 }
-                
-                console.log('✅ P2P rate loaded:', currentP2PRate);
             }
+        } else {
+            console.warn('⚠️ Chưa có dữ liệu rate_settings. Vui lòng vào trang Tỷ Giá USD để cập nhật.');
         }
     } catch (e) {
         console.error('Error loading P2P rate:', e);
