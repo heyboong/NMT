@@ -59,7 +59,6 @@ async function loadP2PRate() {
             if (rates.length > 0) {
                 // Get most recent rate
                 const sortedRates = rates.sort((a, b) => new Date(b.date) - new Date(a.date));
-                const oldRate = currentP2PRate;
                 currentP2PRate = parseFloat(sortedRates[0].price) || 0;
                 
                 // Update display
@@ -68,8 +67,8 @@ async function loadP2PRate() {
                     display.textContent = formatNumber(currentP2PRate) + '₫';
                 }
                 
-                // Auto-apply to empty sellPrice cells
-                if (currentP2PRate > 0 && oldRate !== currentP2PRate) {
+                // Auto-apply to empty sellPrice cells (always check when rate is available)
+                if (currentP2PRate > 0) {
                     let updated = 0;
                     usdtPurchaseData.forEach((row, index) => {
                         if (!row.sellPrice || row.sellPrice === 0) {
