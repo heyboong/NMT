@@ -80,6 +80,21 @@
             createExportButtons('ae-export-container', 'AE_sheet', 'BangAE_' + new Date().toISOString().split('T')[0], 'Bảng AE');
         });
     </script>
+    <script src="assets/js/row-manager.js"></script>
+    <script>
+        // Initialize Row Manager for AE table
+        document.addEventListener('DOMContentLoaded', function() {
+            const aeTable = document.getElementById('AE_sheet');
+            if (aeTable) {
+                initRowManager('AE_sheet', {
+                    dateColumn: 0,
+                    storageKey: 'ae_table_rows',
+                    autoAddToday: true,
+                    maxRows: 200
+                });
+            }
+        });
+    </script>
     <script src="assets/js/system-embed.js"></script>
     <script src="assets/js/universal-autocomplete.js"></script>
 </body>

@@ -116,6 +116,21 @@
             }
         });
     </script>
+    <script src="assets/js/row-manager.js"></script>
+    <script>
+        // Initialize Row Manager for AE-QT table
+        document.addEventListener('DOMContentLoaded', function() {
+            const aeqtTable = document.getElementById('AE-QT_sheet');
+            if (aeqtTable) {
+                initRowManager('AE-QT_sheet', {
+                    dateColumn: 0,
+                    storageKey: 'aeqt_table_rows',
+                    autoAddToday: true,
+                    maxRows: 200
+                });
+            }
+        });
+    </script>
     <script src="assets/js/system-embed.js"></script>
     <script src="assets/js/universal-autocomplete.js"></script>
 </body>

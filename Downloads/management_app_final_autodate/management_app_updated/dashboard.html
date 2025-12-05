@@ -279,6 +279,27 @@
             container.appendChild(exportContainer);
         });
     </script>
+    <script src="assets/js/row-manager.js"></script>
+    <script>
+        // Initialize Row Manager for dashboard tables
+        document.addEventListener('DOMContentLoaded', function() {
+            // Conversion table (NGÀY ĐỔI)
+            initRowManager('conversion-table', {
+                dateColumn: 0,
+                storageKey: 'conversion_table_rows',
+                autoAddToday: true,
+                maxRows: 100
+            });
+
+            // Withdraw table (NGÀY LẤY)
+            initRowManager('withdraw-table', {
+                dateColumn: 0,
+                storageKey: 'withdraw_table_rows',
+                autoAddToday: true,
+                maxRows: 100
+            });
+        });
+    </script>
     <script src="assets/js/universal-autocomplete.js"></script>
 </body>
 </html>

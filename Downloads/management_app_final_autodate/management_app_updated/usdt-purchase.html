@@ -123,5 +123,20 @@
     <script src="assets/js/usdt-purchase.js"></script>
     <script src="assets/js/note-manager.js"></script>
     <script src="assets/js/export.js"></script>
+    <script src="assets/js/row-manager.js"></script>
+    <script>
+        // Initialize Row Manager for USDT Purchase table
+        document.addEventListener('DOMContentLoaded', function() {
+            const usdtTable = document.getElementById('usdt-purchase-table');
+            if (usdtTable) {
+                initRowManager('usdt-purchase-table', {
+                    dateColumn: 0,
+                    storageKey: 'usdt_purchase_rows',
+                    autoAddToday: true,
+                    maxRows: 150
+                });
+            }
+        });
+    </script>
 </body>
 </html>
