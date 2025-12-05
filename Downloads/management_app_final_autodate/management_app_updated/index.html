@@ -12,6 +12,18 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.9;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
@@ -141,6 +153,7 @@
                         <div style="text-align: center;">
                             <div id="p2p-source-label" style="color: rgba(255,255,255,0.85); font-size: 9px; font-weight: 500; margin-bottom: 2px;">⏳ Đang tải...</div>
                             <div id="p2p-update-time" style="color: rgba(255,255,255,0.7); font-size: 8px;"></div>
+                            <div id="p2p-next-update" style="color: rgba(255,255,255,0.6); font-size: 8px; margin-top: 4px; font-style: italic;">🔄 Tự động cập nhật: 10 phút</div>
                         </div>
                     </div>
                 </div>
@@ -414,7 +427,19 @@
                 document.getElementById('home-aeqt-locked').textContent = formatVND(aeqtLocked);
 
                 // P2P Rate - Hiển thị giá mới nhất từ Tỷ Giá USD
-                document.getElementById('home-rate-avg').textContent = formatVND(latestP2PPrice);
+                const rateElement = document.getElementById('home-rate-avg');
+                const currentRate = rateElement.textContent;
+                const newRate = formatVND(latestP2PPrice);
+                
+                // Add pulse animation when rate changes
+                if (currentRate !== newRate && latestP2PPrice > 0) {
+                    rateElement.style.animation = 'pulse 0.5s ease-in-out';
+                    setTimeout(() => {
+                        rateElement.style.animation = '';
+                    }, 500);
+                }
+                
+                rateElement.textContent = newRate;
                 
                 // Hiển thị nguồn dữ liệu
                 const sourceLabel = document.getElementById('p2p-source-label');
@@ -470,11 +495,11 @@
             // Check data availability
             window.checkDataAvailability();
             
-            // Auto refresh P2P rate every 5 minutes (or custom interval)
-            const refreshInterval = window.P2P_REFRESH_INTERVAL || (5 * 60 * 1000);
+            // Auto refresh P2P rate every 10 minutes
+            const refreshInterval = window.P2P_REFRESH_INTERVAL || (10 * 60 * 1000); // 10 phút
             setInterval(() => {
                 window.loadHomeSummary();
-                console.log('Auto-refreshed P2P rate at', new Date().toLocaleTimeString('vi-VN'));
+                console.log('🔄 Tự động cập nhật giá P2P lúc', new Date().toLocaleTimeString('vi-VN'));
             }, refreshInterval);
             
             // Initialize monthly statistics
