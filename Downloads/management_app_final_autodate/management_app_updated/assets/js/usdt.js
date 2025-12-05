@@ -37,11 +37,23 @@ function loadData() {
             usdtData.push({
                 date: '',
                 inputAmount: 0,    // Tiền Nhập (VND)
-                usdtReceived: 0    // Nhận USDT ($)
+                usdtReceived: 0,   // Nhận USDT ($)
+                inputPrice: 0      // Giá Nhập (VND) - nhập thủ công
             });
         }
         saveData();
     }
+    
+    // Migrate old data: add inputPrice field if missing
+    let needsSave = false;
+    usdtData.forEach(row => {
+        if (row.inputPrice === undefined) {
+            // Auto-calculate from existing data if available
+            row.inputPrice = row.usdtReceived > 0 ? (row.inputAmount / row.usdtReceived) : 0;
+            needsSave = true;
+        }
+    });
+    if (needsSave) saveData();
     
     renderTable();
     updateStatistics();
@@ -109,8 +121,8 @@ function renderTable() {
     if (!tbody) return;
 
     tbody.innerHTML = usdtData.map((row, index) => {
-        // Calculate Giá Nhập = Tiền Nhập / USDT
-        const inputPrice = row.usdtReceived > 0 ? (row.inputAmount / row.usdtReceived) : 0;
+        // Giá Nhập: user input (manual)
+        const inputPrice = parseFloat(row.inputPrice) || 0;
         
         // Calculate Lãi/Lỗ % = ((Giá P2P - Giá Nhập) / Giá Nhập) * 100
         let profitPercent = 0;
@@ -155,9 +167,9 @@ function renderTable() {
                 <td>
                     <input type="number" 
                         value="${inputPrice > 0 ? inputPrice.toFixed(0) : ''}" 
-                        readonly
+                        onchange="updateCell(${index}, 'inputPrice', parseFloat(this.value) || 0)"
                         placeholder="0"
-                        style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right; background: #f3f4f6; font-weight: 600; color: #6b7280; cursor: not-allowed;">
+                        style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right; background: white; font-weight: 600; color: #059669;">
                 </td>
                 <td>
                     <input type="number" 
@@ -205,7 +217,8 @@ function addNewRow() {
     usdtData.push({
         date: today,
         inputAmount: 0,
-        usdtReceived: 0
+        usdtReceived: 0,
+        inputPrice: 0
     });
     
     saveData();
