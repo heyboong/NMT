@@ -78,11 +78,15 @@
             });
         }
 
-        addRow(data = null) {
+        addRow(data = null, insertAtIndex = null) {
             const tbody = this.table.querySelector('tbody');
             if (!tbody) return;
 
-            const row = tbody.insertRow();
+            // Chèn dòng tại vị trí chỉ định hoặc cuối bảng
+            const row = insertAtIndex !== null && insertAtIndex >= 0 
+                ? tbody.insertRow(insertAtIndex)
+                : tbody.insertRow();
+            
             const rowData = data || { ...this.options.defaultRowData };
             
             // Tự động thêm ngày hôm nay nếu không có
@@ -107,9 +111,21 @@
                 }
             });
 
-            // Thêm nút xóa
-            const deleteCell = row.insertCell();
-            deleteCell.innerHTML = `<button onclick="deleteRowByIndex('${this.tableId}', this)" style="padding: 4px 10px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Xóa</button>`;
+            // Thêm cột hành động với nút Chèn và Xóa
+            const actionCell = row.insertCell();
+            actionCell.style.cssText = 'white-space: nowrap; display: flex; gap: 4px;';
+            actionCell.innerHTML = `
+                <button onclick="insertRowAbove('${this.tableId}', this)" 
+                    style="padding: 4px 8px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;" 
+                    title="Chèn dòng phía trên">
+                    ⬆️ Chèn
+                </button>
+                <button onclick="deleteRowByIndex('${this.tableId}', this)" 
+                    style="padding: 4px 8px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;" 
+                    title="Xóa dòng này">
+                    🗑️ Xóa
+                </button>
+            `;
             
             this.saveData();
             this.updateRowCount();
@@ -262,12 +278,24 @@
         }
     };
 
+    window.insertRowAbove = function(tableId, button) {
+        const row = button.closest('tr');
+        const rowIndex = row.rowIndex - 1; // Subtract header row
+        const manager = window.rowManagers[tableId];
+        if (manager) {
+            // Thêm dòng mới ngay phía trên dòng hiện tại
+            manager.addRow(null, rowIndex);
+        }
+    };
+
     window.deleteRowByIndex = function(tableId, button) {
         const row = button.closest('tr');
         const rowIndex = row.rowIndex - 1; // Subtract header row
         const manager = window.rowManagers[tableId];
         if (manager) {
-            manager.deleteRowByIndex(rowIndex);
+            if (confirm('Bạn có chắc muốn xóa dòng này?')) {
+                manager.deleteRowByIndex(rowIndex);
+            }
         }
     };
 
