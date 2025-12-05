@@ -281,37 +281,63 @@
             
         // Fetch Binance P2P Rate
         window.fetchBinanceP2PRate = async function() {
-            try {
-                const apiUrl = window.RATE_PROXY_URL || 'http://localhost:3001/api/p2p-rate';
-                const response = await fetch(apiUrl, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to fetch P2P rate');
+            // Try multiple API endpoints
+            const apiUrls = [
+                window.RATE_PROXY_URL || 'http://localhost:3000/api/p2p-rate',
+                'http://localhost:3001/api/p2p-rate',
+                'https://api.binance.com/api/v3/ticker/price?symbol=USDTVND' // Direct fallback
+            ];
+            
+            for (let apiUrl of apiUrls) {
+                try {
+                    console.log(`🔄 Trying API: ${apiUrl}`);
+                    const response = await fetch(apiUrl, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' },
+                        timeout: 5000
+                    });
+                    
+                    if (!response.ok) {
+                        console.warn(`⚠️ API ${apiUrl} returned status: ${response.status}`);
+                        continue;
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Handle direct Binance API response
+                    if (data.price && apiUrl.includes('binance.com')) {
+                        return {
+                            sellPrice: parseFloat(data.price) || 0,
+                            buyPrice: parseFloat(data.price) || 0,
+                            source: 'binance-direct',
+                            lastFetchedAt: new Date().toISOString()
+                        };
+                    }
+                    
+                    // Handle proxy API response
+                    return {
+                        sellPrice: parseFloat(data.sellPrice) || 0,
+                        buyPrice: parseFloat(data.buyPrice) || 0,
+                        source: data.source || 'proxy',
+                        lastFetchedAt: data.lastFetchedAt || new Date().toISOString()
+                    };
+                } catch (error) {
+                    console.warn(`⚠️ Failed to fetch from ${apiUrl}:`, error.message);
+                    continue;
                 }
-                
-                const data = await response.json();
-                return {
-                    sellPrice: parseFloat(data.sellPrice) || 0,
-                    buyPrice: parseFloat(data.buyPrice) || 0,
-                    source: data.source || 'unknown',
-                    lastFetchedAt: data.lastFetchedAt
-                };
-            } catch (error) {
-                console.warn('⚠️ Cannot fetch P2P rate from API, using fallback:', error.message);
-                // Fallback to rate-settings if API fails
-                const rateSettings = loadData('rate-settings') || {};
-                const fallbackPrice = parseFloat(rateSettings.sellPrice) || 27500; // Default 27500
-                console.log('📌 Using fallback price:', fallbackPrice);
-                return {
-                    sellPrice: fallbackPrice,
-                    buyPrice: parseFloat(rateSettings.buyPrice) || fallbackPrice,
-                    source: 'fallback',
-                    lastFetchedAt: null
-                };
             }
+            
+            // All APIs failed, use localStorage fallback
+            console.warn('⚠️ All API endpoints failed, using localStorage fallback');
+            const rateSettings = loadData('rate-settings') || {};
+            const fallbackPrice = parseFloat(rateSettings.buyPrice) || 27500;
+            console.log('📌 Using fallback price:', fallbackPrice);
+            return {
+                sellPrice: fallbackPrice,
+                buyPrice: fallbackPrice,
+                source: 'localStorage',
+                lastFetchedAt: rateSettings.updatedAt || null
+            };
         }
 
         // Load summary data
@@ -319,10 +345,30 @@
             console.log('🔄 Loading home summary...');
             
             try {
-                // Get latest rate from rate-settings (Tỷ Giá USD page)
-                const rateSettings = loadData('rate-settings') || {};
-                const latestP2PPrice = parseFloat(rateSettings.buyPrice) || 0; // Giá mua USDT mới nhất
-                console.log('💱 Latest P2P rate from settings:', latestP2PPrice);
+                // Fetch real-time P2P rate from API
+                let latestP2PPrice = 0;
+                let p2pSource = 'localStorage';
+                
+                try {
+                    const p2pData = await window.fetchBinanceP2PRate();
+                    latestP2PPrice = p2pData.sellPrice;
+                    p2pSource = p2pData.source;
+                    console.log('💱 P2P rate fetched from API:', latestP2PPrice, '(source:', p2pSource + ')');
+                    
+                    // Update localStorage with latest rate
+                    const rateSettings = loadData('rate-settings') || {};
+                    rateSettings.buyPrice = latestP2PPrice;
+                    rateSettings.sellPrice = latestP2PPrice;
+                    rateSettings.updatedAt = new Date().toISOString();
+                    rateSettings.source = p2pSource;
+                    saveData('rate-settings', rateSettings);
+                    console.log('✅ Rate saved to localStorage:', latestP2PPrice);
+                } catch (error) {
+                    console.warn('⚠️ Failed to fetch P2P rate, using localStorage fallback:', error.message);
+                    const rateSettings = loadData('rate-settings') || {};
+                    latestP2PPrice = parseFloat(rateSettings.buyPrice) || 0;
+                    p2pSource = 'localStorage';
+                }
                 
                 // Conversion data (NGÀY ĐỔI)
                 const conversionData = loadData('dashboard_conversion') || [];
@@ -444,10 +490,24 @@
                 // Hiển thị nguồn dữ liệu
                 const sourceLabel = document.getElementById('p2p-source-label');
                 if (sourceLabel) {
-                    sourceLabel.textContent = latestP2PPrice > 0 ? '🟢 Tỷ Giá USD' : '🟡 Chưa cập nhật';
+                    let statusText = '🟡 Chưa cập nhật';
+                    if (latestP2PPrice > 0) {
+                        if (p2pSource === 'binance') {
+                            statusText = '🟢 Binance P2P (Live)';
+                        } else if (p2pSource === 'localStorage') {
+                            statusText = '🟠 LocalStorage';
+                        } else {
+                            statusText = '🟢 API Live';
+                        }
+                    }
+                    sourceLabel.textContent = statusText;
                 }
                 
                 const updateTimeLabel = document.getElementById('p2p-update-time');
+                if (updateTimeLabel) {
+                    const now = new Date();
+                    updateTimeLabel.textContent = 'Cập nhật: ' + now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                }
                 if (updateTimeLabel) {
                     const now = new Date();
                     const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
