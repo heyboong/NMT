@@ -49,19 +49,19 @@
             <!-- Thống kê nhanh -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 16px; border-radius: 10px; color: white;">
-                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Tổng Tiền Nhập</div>
+                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Tổng Tiền Làm (Vốn)</div>
                     <div id="stat-total-input" style="font-size: 24px; font-weight: 700;">0₫</div>
                 </div>
                 <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 16px; border-radius: 10px; color: white;">
-                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Tổng USDT Mua</div>
+                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Tổng USDT</div>
                     <div id="stat-total-usdt" style="font-size: 24px; font-weight: 700;">0 $</div>
                 </div>
                 <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 16px; border-radius: 10px; color: white;">
-                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Giá Nhập TB</div>
-                    <div id="stat-avg-price" style="font-size: 24px; font-weight: 700;">0₫</div>
+                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Tổng Tiền Bán (Thu về)</div>
+                    <div id="stat-total-sell" style="font-size: 24px; font-weight: 700;">0₫</div>
                 </div>
                 <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 16px; border-radius: 10px; color: white;">
-                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Tổng Cộng</div>
+                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Lãi/Lỗ</div>
                     <div id="stat-total-final" style="font-size: 24px; font-weight: 700;">0₫</div>
                 </div>
             </div>
@@ -73,7 +73,7 @@
                 <thead>
                     <tr>
                         <th style="width: 120px;">Ngày</th>
-                        <th style="width: 150px;">Tiền Nhập (VND)</th>
+                        <th style="width: 150px;">Tiền Làm (VND)</th>
                         <th style="width: 130px;">USDT ($)</th>
                         <th style="width: 150px;">Giá Nhập (VND)</th>
                         <th style="width: 150px;">Giá Bán (VND)</th>
@@ -100,13 +100,12 @@
             <h3 style="margin: 0 0 12px 0; color: #1e40af; font-size: 16px;">📖 Hướng Dẫn Sử Dụng</h3>
             <ul style="margin: 0; padding-left: 20px; color: #1e40af; line-height: 1.8;">
                 <li><strong>Ngày:</strong> Ngày thực hiện giao dịch</li>
-                <li><strong>Tiền Nhập (VND):</strong> Số tiền VND đã chi ra để mua USDT</li>
-                <li><strong>USDT ($) - Nhập:</strong> Số lượng USDT đã mua</li>
-                <li><strong>Giá Nhập (VND):</strong> Giá mua 1 USDT = Tiền Nhập ÷ USDT (tự động tính)</li>
-                <li><strong>USDT ($) - Bán:</strong> Số lượng USDT bán ra</li>
-                <li><strong>Giá Bán (VND):</strong> Giá bán 1 USDT</li>
+                <li><strong>Tiền Làm (VND):</strong> Số tiền vốn đầu tư để mua USDT</li>
+                <li><strong>USDT ($):</strong> Số lượng USDT đã mua</li>
+                <li><strong>Giá Nhập (VND):</strong> Giá mua vốn = Tiền Làm ÷ USDT (tự động tính)</li>
+                <li><strong>Giá Bán (VND):</strong> Giá bán hiện tại (có thể dùng nút 💱 để áp dụng giá P2P)</li>
                 <li><strong>Tiền Bán (VND):</strong> Tổng tiền thu về = USDT × Giá Bán (tự động tính)</li>
-                <li><strong>Tổng Cộng (VND):</strong> Lãi/lỗ = Tiền Bán - Tiền Nhập (tự động tính)</li>
+                <li><strong>Tổng Cộng (VND):</strong> Lãi/lỗ = Tiền Bán - Tiền Làm (tự động tính)</li>
             </ul>
         </div>
     </div>

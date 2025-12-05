@@ -36,7 +36,7 @@ function loadData() {
         for (let i = 0; i < 20; i++) {
             usdtPurchaseData.push({
                 date: '',
-                purchaseAmount: 0,      // Tiền Nhập (VND)
+                purchaseAmount: 0,      // Tiền Làm (VND) - Vốn đầu tư
                 usdtBuy: 0,             // USDT ($)
                 sellPrice: 0            // Giá Bán (VND)
             });
@@ -99,13 +99,13 @@ function renderTable() {
     if (!tbody) return;
 
     tbody.innerHTML = usdtPurchaseData.map((row, index) => {
-        // Calculate Giá Nhập = Tiền Nhập / USDT
+        // Calculate Giá Nhập = Tiền Làm / USDT (giá vốn mua vào)
         const buyPrice = row.usdtBuy > 0 ? (row.purchaseAmount / row.usdtBuy) : 0;
         
-        // Calculate Tiền Bán = USDT × Giá Bán
+        // Calculate Tiền Bán = USDT × Giá Bán (tiền thu về khi bán)
         const sellAmount = (row.usdtBuy || 0) * (row.sellPrice || 0);
         
-        // Calculate Tổng Cộng = Tiền Bán - Tiền Nhập
+        // Calculate Tổng Cộng = Tiền Bán - Tiền Làm (lãi/lỗ)
         const total = sellAmount - (row.purchaseAmount || 0);
         
         return `
@@ -282,35 +282,32 @@ function deleteRow(index) {
 // Update Statistics
 // ====================================
 function updateStatistics() {
-    let totalInput = 0;
-    let totalUSDTBuy = 0;
-    let totalSellAmount = 0;
-    let totalProfit = 0;
+    let totalCapital = 0;      // Tổng Tiền Làm (Vốn)
+    let totalUSDT = 0;         // Tổng USDT
+    let totalSellAmount = 0;   // Tổng Tiền Bán (Thu về)
+    let totalProfit = 0;       // Lãi/Lỗ
 
     usdtPurchaseData.forEach(row => {
-        const purchaseAmount = parseFloat(row.purchaseAmount) || 0;
-        const usdtBuy = parseFloat(row.usdtBuy) || 0;
-        const usdtSell = parseFloat(row.usdtSell) || 0;
-        const sellPrice = parseFloat(row.sellPrice) || 0;
+        const purchaseAmount = parseFloat(row.purchaseAmount) || 0;  // Tiền Làm (Vốn)
+        const usdtBuy = parseFloat(row.usdtBuy) || 0;                // USDT
+        const sellPrice = parseFloat(row.sellPrice) || 0;            // Giá Bán
         
-        totalInput += purchaseAmount;
-        totalUSDTBuy += usdtBuy;
+        totalCapital += purchaseAmount;
+        totalUSDT += usdtBuy;
         
-        // Calculate sell amount
-        const sellAmount = usdtSell * sellPrice;
+        // Calculate Tiền Bán = USDT × Giá Bán
+        const sellAmount = usdtBuy * sellPrice;
         totalSellAmount += sellAmount;
         
-        // Calculate profit/loss
+        // Calculate Lãi/Lỗ = Tiền Bán - Tiền Làm
         const profit = sellAmount - purchaseAmount;
         totalProfit += profit;
     });
 
-    const avgPrice = totalUSDTBuy > 0 ? totalInput / totalUSDTBuy : 0;
-
     // Update stat cards
-    document.getElementById('stat-total-input').textContent = formatCurrency(totalInput);
-    document.getElementById('stat-total-usdt').textContent = formatNumber(totalUSDTBuy, 2) + ' $';
-    document.getElementById('stat-avg-price').textContent = formatCurrency(avgPrice);
+    document.getElementById('stat-total-input').textContent = formatCurrency(totalCapital);
+    document.getElementById('stat-total-usdt').textContent = formatNumber(totalUSDT, 2) + ' $';
+    document.getElementById('stat-total-sell').textContent = formatCurrency(totalSellAmount);
     
     const finalElement = document.getElementById('stat-total-final');
     finalElement.textContent = formatCurrency(totalProfit);
@@ -342,18 +339,17 @@ function exportToExcel() {
     }
 
     let csv = '\uFEFF'; // BOM for UTF-8
-    csv += 'Ngày,Tiền Nhập (VND),USDT Mua ($),Giá Nhập (VND),USDT Bán ($),Giá Bán (VND),Tiền Bán (VND),Tổng Cộng (VND)\n';
+    csv += 'Ngày,Tiền Làm (VND),USDT ($),Giá Nhập (VND),Giá Bán (VND),Tiền Bán (VND),Tổng Cộng (VND)\n';
 
     usdtPurchaseData.forEach(row => {
         const buyPrice = row.usdtBuy > 0 ? (row.purchaseAmount / row.usdtBuy) : 0;
-        const sellAmount = (row.usdtSell || 0) * (row.sellPrice || 0);
+        const sellAmount = (row.usdtBuy || 0) * (row.sellPrice || 0);
         const total = sellAmount - (row.purchaseAmount || 0);
 
         csv += `${row.date || ''},`;
         csv += `${row.purchaseAmount || 0},`;
         csv += `${row.usdtBuy || 0},`;
         csv += `${buyPrice.toFixed(0)},`;
-        csv += `${row.usdtSell || 0},`;
         csv += `${row.sellPrice || 0},`;
         csv += `${sellAmount.toFixed(0)},`;
         csv += `${total.toFixed(0)}\n`;
