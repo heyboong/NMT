@@ -59,12 +59,31 @@ async function loadP2PRate() {
             if (rates.length > 0) {
                 // Get most recent rate
                 const sortedRates = rates.sort((a, b) => new Date(b.date) - new Date(a.date));
+                const oldRate = currentP2PRate;
                 currentP2PRate = parseFloat(sortedRates[0].price) || 0;
                 
                 // Update display
                 const display = document.getElementById('current-p2p-rate');
                 if (display) {
                     display.textContent = formatNumber(currentP2PRate) + '₫';
+                }
+                
+                // Auto-apply to empty sellPrice cells
+                if (currentP2PRate > 0 && oldRate !== currentP2PRate) {
+                    let updated = 0;
+                    usdtPurchaseData.forEach((row, index) => {
+                        if (!row.sellPrice || row.sellPrice === 0) {
+                            row.sellPrice = currentP2PRate;
+                            updated++;
+                        }
+                    });
+                    
+                    if (updated > 0) {
+                        saveData();
+                        renderTable();
+                        updateStatistics();
+                        console.log(`✅ Tự động áp dụng giá P2P cho ${updated} dòng`);
+                    }
                 }
                 
                 console.log('✅ P2P rate loaded:', currentP2PRate);
@@ -139,18 +158,11 @@ function renderTable() {
                         style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right; background: #f3f4f6; font-weight: 600; color: #6b7280; cursor: not-allowed;">
                 </td>
                 <td>
-                    <div style="display: flex; gap: 4px; align-items: center;">
-                        <input type="number" 
-                            value="${row.sellPrice || ''}" 
-                            onchange="updateCell(${index}, 'sellPrice', parseFloat(this.value) || 0)"
-                            placeholder="0"
-                            style="flex: 1; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right;">
-                        <button onclick="applyP2PRate(${index})" 
-                            title="Áp dụng giá P2P hiện tại"
-                            style="padding: 8px 10px; background: #8b5cf6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; white-space: nowrap;">
-                            💱
-                        </button>
-                    </div>
+                    <input type="number" 
+                        value="${row.sellPrice || ''}" 
+                        onchange="updateCell(${index}, 'sellPrice', parseFloat(this.value) || 0)"
+                        placeholder="${currentP2PRate > 0 ? currentP2PRate : '0'}"
+                        style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right; background: ${row.sellPrice ? 'white' : '#fef3c7'};">
                 </td>
                 <td>
                     <input type="number" 
@@ -218,7 +230,7 @@ function addNewRow() {
         date: today,
         purchaseAmount: 0,
         usdtBuy: 0,
-        sellPrice: currentP2PRate  // Tự động điền giá P2P hiện tại
+        sellPrice: currentP2PRate > 0 ? currentP2PRate : 0  // Tự động điền giá P2P nếu có
     });
     
     saveData();
@@ -234,37 +246,7 @@ function addNewRow() {
     }, 100);
 }
 
-// ====================================
-// Apply P2P Rate to Specific Row
-// ====================================
-function applyP2PRate(index) {
-    if (!usdtPurchaseData[index]) return;
-    
-    if (currentP2PRate <= 0) {
-        alert('⚠️ Chưa có giá P2P! Vui lòng vào Tỷ Giá USD để cập nhật giá.');
-        return;
-    }
-    
-    usdtPurchaseData[index].sellPrice = currentP2PRate;
-    saveData();
-    renderTable();
-    updateStatistics();
-    
-    // Visual feedback
-    const btn = event.target.closest('button');
-    if (btn) {
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '✅';
-        btn.style.background = '#10b981';
-        setTimeout(() => {
-            btn.innerHTML = originalText;
-            btn.style.background = '#8b5cf6';
-        }, 500);
-    }
-}
 
-// Make applyP2PRate globally accessible
-window.applyP2PRate = applyP2PRate;
 
 // ====================================
 // Delete Row
