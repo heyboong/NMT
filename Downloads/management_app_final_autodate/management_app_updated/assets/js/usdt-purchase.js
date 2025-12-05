@@ -357,6 +357,51 @@ function exportToExcel() {
 }
 
 // ====================================
+// Clear All Data
+// ====================================
+function clearAllData() {
+    if (!confirm('⚠️ BẠN CÓ CHẮC CHẮN MUỐN XÓA TOÀN BỘ DỮ LIỆU?\n\nHành động này sẽ:\n- Xóa tất cả dữ liệu trong bảng USDT\n- Tạo lại bảng mới với 20 dòng trống\n- KHÔNG THỂ HOÀN TÁC!\n\nNhấn OK để xác nhận xóa.')) {
+        return;
+    }
+    
+    // Double confirmation
+    if (!confirm('🚨 XÁC NHẬN LẦN CUỐI!\n\nBạn đang chuẩn bị xóa TOÀN BỘ dữ liệu.\nĐây là cơ hội cuối cùng để hủy bỏ.\n\nNhấn OK để XÓA VĨNH VIỄN.')) {
+        return;
+    }
+    
+    try {
+        // Clear localStorage
+        localStorage.removeItem('usdt_purchase_data');
+        
+        // Reinitialize with empty data
+        usdtPurchaseData = [];
+        for (let i = 0; i < 20; i++) {
+            usdtPurchaseData.push({
+                date: '',
+                purchaseAmount: 0,
+                usdtBuy: 0,
+                sellPrice: currentP2PRate > 0 ? currentP2PRate : 0
+            });
+        }
+        
+        saveData();
+        renderTable();
+        updateStatistics();
+        
+        // Show success notification
+        alert('✅ Đã xóa toàn bộ dữ liệu và tạo lại bảng mới!\n\n20 dòng trống đã được tạo sẵn.');
+        
+        console.log('✅ All data cleared and reset');
+    } catch (e) {
+        console.error('Error clearing data:', e);
+        alert('❌ Lỗi khi xóa dữ liệu!');
+    }
+}
+
+// Make clearAllData globally accessible
+window.clearAllData = clearAllData;
+
+// ====================================
 // Utility Functions
 // ====================================
 function formatCurrency(value) {
