@@ -428,29 +428,61 @@
         }
     }
 
+    /**
+     * Normalize date string to YYYY-MM-DD format for comparison
+     * Supports: DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD
+     */
+    function normalizeDateForComparison(dateStr) {
+        if (!dateStr) return '';
+        const cleaned = dateStr.trim();
+        if (!cleaned) return '';
+        
+        // Try DD/MM/YYYY or DD-MM-YYYY format
+        const dmyMatch = cleaned.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+        if (dmyMatch) {
+            const day = dmyMatch[1].padStart(2, '0');
+            const month = dmyMatch[2].padStart(2, '0');
+            const year = dmyMatch[3];
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Try YYYY-MM-DD format
+        const ymdMatch = cleaned.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+        if (ymdMatch) {
+            const year = ymdMatch[1];
+            const month = ymdMatch[2].padStart(2, '0');
+            const day = ymdMatch[3].padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Return as-is if no pattern matches
+        return cleaned;
+    }
+
     function renderConversionTable() {
         convTableBody.innerHTML = '';
         
         // Sắp xếp dữ liệu theo ngày để dòng kẻ xanh hoạt động đúng
         const sortedData = [...convData].sort((a, b) => {
-            const dateA = a.date ? a.date.trim() : '';
-            const dateB = b.date ? b.date.trim() : '';
+            const dateA = normalizeDateForComparison(a.date);
+            const dateB = normalizeDateForComparison(b.date);
             if (!dateA) return 1;
             if (!dateB) return -1;
             return dateA.localeCompare(dateB);
         });
         
-        let previousDate = null; // Theo dõi ngày trước đó
+        let previousDate = null; // Theo dõi ngày trước đó (normalized)
         
         sortedData.forEach((row, rowIndex) => {
             const originalIndex = convData.indexOf(row);
             const tr = document.createElement('tr');
             
-            // Kiểm tra nếu ngày thay đổi so với dòng trước
-            const currentDate = row.date ? row.date.trim() : '';
+            // Chuẩn hóa và kiểm tra nếu ngày thay đổi so với dòng trước
+            const currentDate = normalizeDateForComparison(row.date);
             if (currentDate && previousDate && currentDate !== previousDate) {
-                // Thêm border-top màu xanh lá để ngăn cách ngày
-                tr.style.borderTop = '3px solid #4ade80';
+                // Thêm border-top màu xanh lá để ngăn cách ngày mới
+                tr.style.borderTop = '3px solid #10b981';
+                tr.style.boxShadow = '0 -2px 4px rgba(16, 185, 129, 0.1)';
             }
             previousDate = currentDate;
             
@@ -904,24 +936,25 @@
         
         // Sắp xếp dữ liệu theo ngày để dòng kẻ xanh hoạt động đúng
         const sortedData = [...wData].sort((a, b) => {
-            const dateA = a.date ? a.date.trim() : '';
-            const dateB = b.date ? b.date.trim() : '';
+            const dateA = normalizeDateForComparison(a.date);
+            const dateB = normalizeDateForComparison(b.date);
             if (!dateA) return 1;
             if (!dateB) return -1;
             return dateA.localeCompare(dateB);
         });
         
-        let previousDate = null; // Theo dõi ngày trước đó
+        let previousDate = null; // Theo dõi ngày trước đó (normalized)
         
         sortedData.forEach((row, rowIndex) => {
             const originalIndex = wData.indexOf(row);
             const tr = document.createElement('tr');
             
-            // Kiểm tra nếu ngày thay đổi so với dòng trước
-            const currentDate = row.date ? row.date.trim() : '';
+            // Chuẩn hóa và kiểm tra nếu ngày thay đổi so với dòng trước
+            const currentDate = normalizeDateForComparison(row.date);
             if (currentDate && previousDate && currentDate !== previousDate) {
-                // Thêm border-top màu xanh lá để ngăn cách ngày
-                tr.style.borderTop = '3px solid #4ade80';
+                // Thêm border-top màu xanh lá để ngăn cách ngày mới
+                tr.style.borderTop = '3px solid #10b981';
+                tr.style.boxShadow = '0 -2px 4px rgba(16, 185, 129, 0.1)';
             }
             previousDate = currentDate;
             
