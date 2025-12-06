@@ -26,9 +26,23 @@
      * Initialize the text color highlight system
      */
     function init() {
+        console.log('🎨 Starting text color highlight initialization...');
+        
+        // Remove existing elements if any
+        const existingToolbar = document.getElementById('text-color-toolbar');
+        const existingToggle = document.getElementById('text-color-toggle');
+        if (existingToolbar) existingToolbar.remove();
+        if (existingToggle) existingToggle.remove();
+        
         createToolbarHTML();
+        console.log('✓ Toolbar HTML created');
+        
         createToggleButton();
+        console.log('✓ Toggle button created');
+        
         attachEventListeners();
+        console.log('✓ Event listeners attached');
+        
         console.log('🎨 Text color highlight system initialized');
     }
 
@@ -98,6 +112,18 @@
         const colorOptions = document.getElementById('text-color-options');
         const boldBtn = document.getElementById('text-bold-btn');
         const resetBtn = document.getElementById('text-reset-btn');
+
+        if (!toolbar || !toggleBtn || !closeBtn || !colorOptions || !boldBtn || !resetBtn) {
+            console.error('❌ Text color highlight: Missing elements', {
+                toolbar: !!toolbar,
+                toggleBtn: !!toggleBtn,
+                closeBtn: !!closeBtn,
+                colorOptions: !!colorOptions,
+                boldBtn: !!boldBtn,
+                resetBtn: !!resetBtn
+            });
+            return;
+        }
 
         // Toggle toolbar
         toggleBtn.addEventListener('click', toggleToolbar);

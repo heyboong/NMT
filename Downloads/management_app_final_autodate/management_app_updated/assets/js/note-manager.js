@@ -323,6 +323,13 @@
             ? parseInt(row.getAttribute('data-row-index'))
             : Array.from(row.parentElement.children).indexOf(row);
         
+        console.log('📝 Context menu opened:', {
+            table: currentTable,
+            rowIndex: rowIndex,
+            hasDataAttribute: row.hasAttribute('data-row-index'),
+            dataRowIndex: row.getAttribute('data-row-index')
+        });
+        
         const hasNote = getNote(currentTable, rowIndex) !== null;
         
         const viewItem = contextMenu.querySelector('[data-action="view-note"]');
