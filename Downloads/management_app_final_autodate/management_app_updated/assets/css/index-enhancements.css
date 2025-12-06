@@ -428,8 +428,8 @@ div:has(canvas):hover {
     border-color: #b5bcc7;
 }
 .p2p-block--red-border {
-    border: 2px solid #ef4444;
-    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.1);
+    border: 2px solid #ef4444 !important;
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.1) !important;
 }
 .p2p-label {
     color: #0f172a;
