@@ -2,6 +2,7 @@
   publish = "."
   command = "echo 'No build needed - static site'"
   ignore = "git diff --quiet HEAD^ HEAD ./"
+  functions = "netlify/functions"
 
 [[redirects]]
   from = "/*"

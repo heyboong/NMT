@@ -116,7 +116,13 @@
         <h1>🧪 Test Binance P2P API Connection</h1>
         
         <div class="test-section">
-            <h2>🎯 Test 1: Binance P2P API (Direct)</h2>
+            <h2>🎯 Test 1: Netlify Function (Recommended)</h2>
+            <button onclick="testNetlifyFunction()">Test Netlify Function</button>
+            <div id="result-netlify" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📡 Test 2: Binance P2P API (Direct - May have CORS issues)</h2>
             <button onclick="testBinanceP2P()">Test Binance P2P API</button>
             <div id="result-p2p" class="result" style="display:none;"></div>
         </div>
@@ -145,6 +151,53 @@
     <script src="config.js"></script>
     <script>
         let bestRate = 0;
+
+        async function testNetlifyFunction() {
+            const resultDiv = document.getElementById('result-netlify');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="loading"></div> Testing Netlify Function...';
+
+            try {
+                const origin = window.location.origin;
+                const url = `${origin}/.netlify/functions/p2p-rate`;
+                
+                console.log('📤 Sending request to Netlify Function:', url);
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const sellPrice = parseFloat(data.sellPrice) || 0;
+
+                if (sellPrice === 0) {
+                    throw new Error('Invalid price returned');
+                }
+
+                bestRate = sellPrice;
+                updateBestRate();
+
+                resultDiv.innerHTML = `
+                    <div class="success">✅ Success!</div>
+                    <div><strong>Sell Price:</strong> ${formatVND(sellPrice)}</div>
+                    <div><strong>Buy Price:</strong> ${formatVND(data.buyPrice || sellPrice)}</div>
+                    <div class="info"><strong>Source:</strong> ${data.source}</div>
+                    <div><strong>Timestamp:</strong> ${new Date(data.timestamp).toLocaleString('vi-VN')}</div>
+                    ${data.prices ? `<div><strong>Prices:</strong> ${data.prices.map(p => formatVND(p)).join(', ')}</div>` : ''}
+                `;
+            } catch (error) {
+                console.error('❌ Error:', error);
+                resultDiv.innerHTML = `
+                    <div class="error">❌ Error: ${error.message}</div>
+                    <div>This might be because Netlify Functions are not available in local development.</div>
+                    <div>Try testing on the deployed site: <a href="https://nmt-t12-2025.netlify.app/test-binance-api.html" target="_blank">https://nmt-t12-2025.netlify.app/test-binance-api.html</a></div>
+                `;
+            }
+        }
 
         async function testBinanceP2P() {
             const resultDiv = document.getElementById('result-p2p');
@@ -280,9 +333,42 @@
         }
 
         async function fetchBinanceP2PRate() {
-            console.log('🚀 Fetching P2P rate from Binance...');
+            console.log('🚀 Fetching P2P rate...');
             
-            // Method 1: Direct Binance P2P API
+            // Method 1: Netlify Function (Primary)
+            const origin = window.location.origin;
+            const netlifyUrls = [
+                `${origin}/.netlify/functions/p2p-rate`
+            ];
+            
+            for (let url of netlifyUrls) {
+                try {
+                    console.log(`🔄 Trying Netlify Function: ${url}`);
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const sellPrice = parseFloat(data.sellPrice) || 0;
+                        
+                        if (sellPrice > 0) {
+                            console.log('✅ Netlify Function success:', sellPrice);
+                            return {
+                                sellPrice: sellPrice,
+                                buyPrice: parseFloat(data.buyPrice) || sellPrice,
+                                source: data.source || 'netlify-function',
+                                lastFetchedAt: data.timestamp || new Date().toISOString()
+                            };
+                        }
+                    }
+                } catch (error) {
+                    console.warn(`⚠️ Netlify Function failed:`, error.message);
+                }
+            }
+            
+            // Method 2: Direct Binance P2P API (may have CORS issues)
             try {
                 const body = {
                     page: 1,

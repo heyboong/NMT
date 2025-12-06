@@ -5,59 +5,38 @@
 let usdtPurchaseData = [];
 let currentP2PRate = 0;
 
-// Fetch live P2P sell price (Direct Binance P2P API first)
+// Fetch live P2P sell price (via Netlify Function to bypass CORS)
 async function fetchBinanceP2PRate() {
-    console.log('🚀 Fetching P2P rate from Binance...');
+    console.log('🚀 Fetching P2P rate...');
     
-    // Method 1: Direct Binance P2P API (Primary - Most accurate)
-    try {
-        const body = {
-            page: 1,
-            rows: 10,
-            payTypes: [],
-            asset: 'USDT',
-            tradeType: 'SELL',
-            fiat: 'VND',
-            publisherType: null
-        };
-        
-        const res = await fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(body)
-        });
-        
-        if (res.ok) {
-            const data = await res.json();
-            const ads = data?.data || [];
-            
-            if (ads.length > 0) {
-                // Get top 5 prices and calculate average
-                const prices = ads.slice(0, 5)
-                    .map(ad => parseFloat(ad?.adv?.price))
-                    .filter(price => price > 0);
-                
-                if (prices.length > 0) {
-                    const avg = prices.reduce((sum, p) => sum + p, 0) / prices.length;
-                    console.log('✅ Binance P2P Direct API:', avg, 'VND');
-                    console.log('📊 Top 5 prices:', prices);
-                    return { sellPrice: avg, buyPrice: avg, source: 'binance-p2p' };
+    // Method 1: Netlify Function (Primary - bypasses CORS)
+    const origin = window.location.origin;
+    const netlifyUrls = [
+        `${origin}/.netlify/functions/p2p-rate`,
+        window.NETLIFY_FUNCTION_URL
+    ].filter(Boolean);
+    
+    for (let url of netlifyUrls) {
+        try {
+            console.log(`🔄 Trying Netlify Function: ${url}`);
+            const res = await fetch(url, { method: 'GET' });
+            if (res.ok) {
+                const data = await res.json();
+                const sellPrice = parseFloat(data.sellPrice) || 0;
+                if (sellPrice > 0) {
+                    console.log('✅ Netlify Function success:', sellPrice, 'VND');
+                    return { sellPrice, buyPrice: sellPrice, source: data.source || 'netlify-function' };
                 }
             }
+        } catch (e) {
+            console.warn(`⚠️ Netlify Function ${url} failed:`, e.message);
         }
-    } catch (e) {
-        console.warn('⚠️ Binance P2P API failed:', e.message);
     }
     
     // Method 2: Try proxy endpoints if configured
-    const origin = window.location.origin;
     const proxyUrls = [
         window.RATE_PROXY_URL,
-        `${origin}/api/p2p-rate`,
-        `${origin}/.netlify/functions/p2p-rate`
+        `${origin}/api/p2p-rate`
     ].filter(Boolean);
 
     for (const url of proxyUrls) {
