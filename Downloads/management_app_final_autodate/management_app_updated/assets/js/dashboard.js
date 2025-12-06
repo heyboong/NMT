@@ -1253,5 +1253,28 @@
         ]);
     }
     
+    // Force check text color highlight initialization
+    setTimeout(() => {
+        const toolbar = document.getElementById('text-color-toolbar');
+        const toggleBtn = document.getElementById('text-color-toggle');
+        
+        if (!toolbar || !toggleBtn) {
+            console.warn('⚠️ Text color highlight elements not found, attempting re-initialization...');
+            if (window.TextColorHighlight && typeof window.TextColorHighlight.init === 'function') {
+                window.TextColorHighlight.init();
+            }
+        } else {
+            console.log('✅ Text color highlight UI elements found');
+        }
+        
+        // Also check note manager
+        const contextMenu = document.querySelector('.context-menu');
+        if (!contextMenu) {
+            console.warn('⚠️ Note manager context menu not found');
+        } else {
+            console.log('✅ Note manager UI elements found');
+        }
+    }, 500);
+    
     console.log('✅ Dashboard initialization complete');
 })();

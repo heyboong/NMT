@@ -377,6 +377,7 @@
 
     // Export for external use
     window.TextColorHighlight = {
+        init,
         applyColor,
         toggleBold,
         resetFormatting,
