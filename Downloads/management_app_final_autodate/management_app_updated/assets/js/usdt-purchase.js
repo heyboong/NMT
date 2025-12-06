@@ -312,11 +312,11 @@ function renderTable() {
                         style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right; font-weight: 600;">
                 </td>
                 <td>
-                    <input type="number" 
-                        value="${row.usdtBuy || ''}" 
-                        onchange="updateCell(${index}, 'usdtBuy', parseFloat(this.value) || 0)"
-                        placeholder="0"
-                        step="0.01"
+                    <input type="text" 
+                        value="${row.usdtBuy ? formatUSDT(row.usdtBuy) : ''}" 
+                        onfocus="this.value = this.value.replace(/[^0-9.]/g, '')" 
+                        onblur="updateCellUSDT(${index}, 'usdtBuy', this.value); this.value = formatUSDT(parseFloat(this.value.replace(/[^0-9.]/g, '')) || 0)"
+                        placeholder="0.00"
                         style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right; background: #eff6ff; font-weight: 600; color: #3b82f6;">
                 </td>
                 <td>
@@ -400,6 +400,26 @@ function updateCellCurrency(index, field, value) {
             'sellPrice': 'Giá P2P Bán'
         };
         showSuccess(`Đã cập nhật ${fieldNames[field] || field}: ${formatCurrency(numericValue)}`, 2000);
+    }
+}
+
+// ====================================
+// Update Cell USDT (for USDT input with decimal support)
+// ====================================
+function updateCellUSDT(index, field, value) {
+    if (!usdtPurchaseData[index]) return;
+    
+    // Remove comma but keep decimal point
+    const numericValue = parseFloat(value.replace(/,/g, '')) || 0;
+    usdtPurchaseData[index][field] = numericValue;
+    
+    saveData();
+    renderTable();
+    updateStatistics();
+    
+    // Show success notification
+    if (numericValue > 0 && typeof showSuccess === 'function') {
+        showSuccess(`Đã cập nhật Nhận USDT: ${formatUSDT(numericValue)} $`, 2000);
     }
 }
 
@@ -703,8 +723,19 @@ function formatNumber(value, decimals = 0) {
     return value.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
+// Format USDT with comma separator and 2 decimal places
+function formatUSDT(value) {
+    if (typeof value !== 'number' || isNaN(value) || value === 0) return '';
+    // Use toLocaleString for comma separator
+    return value.toLocaleString('en-US', { 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2 
+    });
+}
+
 // Make functions globally accessible
 window.updateCell = updateCell;
 window.updateCellCurrency = updateCellCurrency;
+window.updateCellUSDT = updateCellUSDT;
 window.deleteRow = deleteRow;
 window.addNewRow = addNewRow;
