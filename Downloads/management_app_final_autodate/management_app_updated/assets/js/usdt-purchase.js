@@ -219,14 +219,27 @@ async function loadP2PRate() {
                 renderTable();
                 updateStatistics();
                 console.log(`✅ Tự động áp dụng giá P2P cho ${updated} dòng`);
+                if (typeof showSuccess === 'function') {
+                    showSuccess(`Đã cập nhật giá P2P: ${formatCurrency(currentP2PRate)}`);
+                }
+            } else {
+                if (typeof showInfo === 'function') {
+                    showInfo(`Giá P2P hiện tại: ${formatCurrency(currentP2PRate)}`);
+                }
             }
 
             console.log('✅ P2P rate loaded:', currentP2PRate);
         } else {
             console.warn('⚠️ Giá P2P không hợp lệ');
+            if (typeof showWarning === 'function') {
+                showWarning('Không thể tải giá P2P. Sử dụng giá đã lưu.');
+            }
         }
     } catch (e) {
         console.error('Error loading P2P rate:', e);
+        if (typeof showError === 'function') {
+            showError('Lỗi khi tải giá P2P!');
+        }
     }
 }
 
@@ -242,7 +255,11 @@ function saveData() {
         console.log('✅ USDT purchase data saved');
     } catch (e) {
         console.error('Error saving data:', e);
-        alert('Lỗi khi lưu dữ liệu!');
+        if (typeof showError === 'function') {
+            showError('Lỗi khi lưu dữ liệu!');
+        } else {
+            alert('Lỗi khi lưu dữ liệu!');
+        }
     }
 }
 
@@ -377,6 +394,16 @@ function updateCellCurrency(index, field, value) {
     saveData();
     renderTable();
     updateStatistics();
+    
+    // Show success notification for manual inputs
+    if (numericValue > 0 && typeof showSuccess === 'function') {
+        const fieldNames = {
+            'purchaseAmount': 'Tiền Nhập',
+            'buyPrice': 'Giá Nhập',
+            'sellPrice': 'Giá P2P Bán'
+        };
+        showSuccess(`Đã cập nhật ${fieldNames[field] || field}: ${formatCurrency(numericValue)}`, 2000);
+    }
 }
 
 // ====================================
@@ -418,6 +445,10 @@ function addNewRow() {
     renderTable();
     updateStatistics();
     
+    if (typeof showSuccess === 'function') {
+        showSuccess('Đã thêm dòng mới', 2000);
+    }
+    
     // Scroll to bottom
     setTimeout(() => {
         const tbody = document.getElementById('usdt-purchase-tbody');
@@ -448,6 +479,10 @@ function insertRowAfter(index) {
     saveData();
     renderTable();
     updateStatistics();
+    
+    if (typeof showSuccess === 'function') {
+        showSuccess('Đã chèn dòng mới', 2000);
+    }
 
     setTimeout(() => {
         const tbody = document.getElementById('usdt-purchase-tbody');
@@ -464,13 +499,25 @@ window.insertRowAfter = insertRowAfter;
 // ====================================
 // Delete Row
 // ====================================
-function deleteRow(index) {
-    if (!confirm('Bạn có chắc muốn xóa dòng này?')) return;
+async function deleteRow(index) {
+    const confirmed = typeof showConfirm === 'function'
+        ? await showConfirm('Bạn có chắc muốn xóa dòng này?', 'Xác nhận xóa', {
+            icon: '🗑️',
+            confirmText: 'Xóa',
+            cancelText: 'Hủy'
+        })
+        : confirm('Bạn có chắc muốn xóa dòng này?');
+    
+    if (!confirmed) return;
     
     usdtPurchaseData.splice(index, 1);
     saveData();
     renderTable();
     updateStatistics();
+    
+    if (typeof showSuccess === 'function') {
+        showSuccess('Đã xóa dòng', 2000);
+    }
 }
 
 // ====================================
@@ -534,7 +581,11 @@ function setupEventListeners() {
 // ====================================
 function exportToExcel() {
     if (usdtPurchaseData.length === 0) {
-        alert('Không có dữ liệu để xuất!');
+        if (typeof showWarning === 'function') {
+            showWarning('Không có dữ liệu để xuất!');
+        } else {
+            alert('Không có dữ liệu để xuất!');
+        }
         return;
     }
 
@@ -572,20 +623,36 @@ function exportToExcel() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    if (typeof showSuccess === 'function') {
+        showSuccess('Đã xuất file Excel thành công!', 2500);
+    }
 }
 
 // ====================================
 // Clear All Data
 // ====================================
-function clearAllData() {
-    if (!confirm('⚠️ BẠN CÓ CHẮC CHẮN MUỐN XÓA TOÀN BỘ DỮ LIỆU?\n\nHành động này sẽ:\n- Xóa tất cả dữ liệu trong bảng USDT\n- Tạo lại bảng mới với 20 dòng trống\n- KHÔNG THỂ HOÀN TÁC!\n\nNhấn OK để xác nhận xóa.')) {
-        return;
-    }
+async function clearAllData() {
+    const confirmed1 = typeof showConfirm === 'function'
+        ? await showConfirm(
+            'Hành động này sẽ:<br>• Xóa tất cả dữ liệu trong bảng USDT<br>• Tạo lại bảng mới với 20 dòng trống<br>• <strong>KHÔNG THỂ HOÀN TÁC!</strong>',
+            '⚠️ BẠN CÓ CHẮC CHẮN MUỐN XÓA TOÀN BỘ DỮ LIỆU?',
+            { icon: '⚠️', confirmText: 'Tiếp tục', cancelText: 'Hủy', confirmColor: '#f59e0b' }
+        )
+        : confirm('⚠️ BẠN CÓ CHẮC CHẮN MUỐN XÓA TOÀN BỘ DỮ LIỆU?\n\nHành động này sẽ:\n- Xóa tất cả dữ liệu trong bảng USDT\n- Tạo lại bảng mới với 20 dòng trống\n- KHÔNG THỂ HOÀN TÁC!\n\nNhấn OK để xác nhận xóa.');
+    
+    if (!confirmed1) return;
     
     // Double confirmation
-    if (!confirm('🚨 XÁC NHẬN LẦN CUỐI!\n\nBạn đang chuẩn bị xóa TOÀN BỘ dữ liệu.\nĐây là cơ hội cuối cùng để hủy bỏ.\n\nNhấn OK để XÓA VĨNH VIỄN.')) {
-        return;
-    }
+    const confirmed2 = typeof showConfirm === 'function'
+        ? await showConfirm(
+            'Bạn đang chuẩn bị xóa <strong>TOÀN BỘ</strong> dữ liệu.<br>Đây là cơ hội cuối cùng để hủy bỏ.',
+            '🚨 XÁC NHẬN LẦN CUỐI!',
+            { icon: '🚨', confirmText: 'XÓA VĨNH VIỄN', cancelText: 'Hủy', confirmColor: '#ef4444' }
+        )
+        : confirm('🚨 XÁC NHẬN LẦN CUỐI!\n\nBạn đang chuẩn bị xóa TOÀN BỘ dữ liệu.\nĐây là cơ hội cuối cùng để hủy bỏ.\n\nNhấn OK để XÓA VĨNH VIỄN.');
+    
+    if (!confirmed2) return;
     
     try {
         // Clear localStorage
@@ -609,12 +676,20 @@ function clearAllData() {
         updateStatistics();
         
         // Show success notification
-        alert('✅ Đã xóa toàn bộ dữ liệu và tạo lại bảng mới!\n\n20 dòng trống đã được tạo sẵn.');
+        if (typeof showSuccess === 'function') {
+            showSuccess('Đã xóa toàn bộ dữ liệu và tạo lại bảng mới! 20 dòng trống đã được tạo sẵn.', 3500);
+        } else {
+            alert('✅ Đã xóa toàn bộ dữ liệu và tạo lại bảng mới!\n\n20 dòng trống đã được tạo sẵn.');
+        }
         
         console.log('✅ All data cleared and reset');
     } catch (e) {
         console.error('Error clearing data:', e);
-        alert('❌ Lỗi khi xóa dữ liệu!');
+        if (typeof showError === 'function') {
+            showError('Lỗi khi xóa dữ liệu!');
+        } else {
+            alert('❌ Lỗi khi xóa dữ liệu!');
+        }
     }
 }
 
