@@ -147,18 +147,20 @@ function loadData() {
             usdtPurchaseData.push({
                 date: '',
                 time: '',
-                purchaseAmount: 0,      // Tiền Làm (VND) - Vốn đầu tư
-                usdtBuy: 0,             // USDT ($)
-                sellPrice: 0            // Giá Bán (VND)
+                purchaseAmount: 0,      // Tiền Nhập (VND) - Số tiền VND nhập vào
+                usdtBuy: 0,             // USDT ($) - Số USDT nhận được
+                buyPrice: 0,            // Giá Nhập (VND) - Giá mua thủ công
+                sellPrice: 0            // Giá P2P Bán (VND) - Giá P2P hiện tại
             });
         }
         saveData();
     }
 
-    // Migration: ensure time field exists
+    // Migration: ensure time and buyPrice fields exist
     usdtPurchaseData = usdtPurchaseData.map(row => ({
         ...row,
-        time: row.time || ''
+        time: row.time || '',
+        buyPrice: row.buyPrice || 0  // Thêm buyPrice nếu chưa có
     }));
     
     renderTable();
@@ -254,14 +256,14 @@ function renderTable() {
     const workTotals = buildWorkTotalsByDate();
 
     tbody.innerHTML = usdtPurchaseData.map((row, index) => {
-        // Calculate Giá Nhập = Tiền Làm / USDT (giá vốn mua vào)
-        const buyPrice = row.usdtBuy > 0 ? (row.purchaseAmount / row.usdtBuy) : 0;
+        // Giá Nhập (VND) - Manual input từ user
+        const buyPrice = parseFloat(row.buyPrice) || 0;
         
         // Tiền Làm từ bảng AE + AE-QT (cùng ngày)
         const dateKey = normalizeDateKey(row.date);
         const workAmount = dateKey ? (workTotals[dateKey] || 0) : 0;
 
-        // Lãi/Lỗ % theo giá bán so với giá nhập
+        // Lãi/Lỗ % theo giá P2P bán so với giá nhập
         const profitPercent = (buyPrice > 0 && row.sellPrice > 0)
             ? ((row.sellPrice - buyPrice) / buyPrice) * 100
             : null;
@@ -305,16 +307,18 @@ function renderTable() {
                 <td>
                     <input type="text" 
                         value="${buyPrice > 0 ? formatCurrency(buyPrice) : ''}" 
-                        readonly
+                        onfocus="this.value = this.value.replace(/[^0-9]/g, '')" 
+                        onblur="updateCellCurrency(${index}, 'buyPrice', this.value); this.value = formatCurrency(parseFloat(this.value.replace(/[^0-9]/g, '')) || 0)"
                         placeholder="0₫"
-                        style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right; background: #f3f4f6; font-weight: 600; color: #6b7280; cursor: not-allowed;">
+                        style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right; background: #fff3cd; font-weight: 600; color: #856404;">
                 </td>
                 <td>
                     <input type="text" 
-                        value="${workAmount ? formatCurrency(workAmount) : ''}"
+                        value="${workAmount > 0 ? formatCurrency(workAmount) : ''}"
                         readonly
-                        placeholder="0"
-                        style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right; background: #f8fafc; font-weight: 700; color: #0f172a; cursor: not-allowed;">
+                        placeholder="0₫"
+                        title="Tự động tính từ Bảng AE + AE-QT cùng ngày ${row.date || ''}"
+                        style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right; background: #e7f3ff; font-weight: 700; color: #0066cc; cursor: not-allowed;">
                 </td>
                 <td>
                     <input type="text" 
@@ -406,6 +410,7 @@ function addNewRow() {
         time: nowTime,
         purchaseAmount: 0,
         usdtBuy: 0,
+        buyPrice: 0,
         sellPrice: currentP2PRate > 0 ? currentP2PRate : 0  // Tự động điền giá P2P nếu có
     });
     
@@ -435,6 +440,7 @@ function insertRowAfter(index) {
         time: baseTime,
         purchaseAmount: 0,
         usdtBuy: 0,
+        buyPrice: 0,
         sellPrice: currentP2PRate > 0 ? currentP2PRate : (usdtPurchaseData[index]?.sellPrice || 0)
     };
 
@@ -590,8 +596,10 @@ function clearAllData() {
         for (let i = 0; i < 20; i++) {
             usdtPurchaseData.push({
                 date: '',
+                time: '',
                 purchaseAmount: 0,
                 usdtBuy: 0,
+                buyPrice: 0,
                 sellPrice: currentP2PRate > 0 ? currentP2PRate : 0
             });
         }
