@@ -600,6 +600,9 @@
         });
         updateConversionTotal();
         refreshTableResize('conversion-table', { enableRowResize: true });
+        
+        // Dispatch event for note manager and text color highlight
+        window.dispatchEvent(new Event('tableRendered'));
     }
 
     function createEmptyConversionRow(base = {}) {
@@ -1100,6 +1103,9 @@
         });
         updateWithdrawTotal();
         refreshTableResize('withdraw-table', { enableRowResize: true });
+        
+        // Dispatch event for note manager and text color highlight
+        window.dispatchEvent(new Event('tableRendered'));
     }
 
     function createEmptyWithdrawRow(base = {}) {
@@ -1236,6 +1242,7 @@
     // Cập nhật bảng tổng lần đầu
     updateTotalsTable();
     
+    // Initialize table resizer
     if (window.TableResizer) {
         window.TableResizer.initTables([
             'dashboard-rate-table',
@@ -1243,4 +1250,6 @@
             'dashboard-totals-withdraw-table'
         ]);
     }
+    
+    console.log('✅ Dashboard initialization complete');
 })();
