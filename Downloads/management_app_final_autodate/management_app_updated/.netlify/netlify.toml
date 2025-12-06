@@ -1,5 +1,7 @@
 redirectsOrigin = "config"
 plugins = []
+functionsDirectory = "C:\\netlify\\functions"
+functionsDirectoryOrigin = "config-v1"
 headers = []
 
 [functions]
@@ -12,6 +14,7 @@ publishOrigin = "config"
 commandOrigin = "config"
 command = "echo 'No build needed - static site'"
 ignore = "git diff --quiet HEAD^ HEAD ./"
+functions = "C:\\netlify\\functions"
 
 [build.environment]
 

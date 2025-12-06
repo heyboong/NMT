@@ -118,8 +118,6 @@
     let crossRate        = 0;
     const settingsKey    = 'rate-settings';
     const BACKEND_URL    = 'https://nmt-qj4t.onrender.com';
-    const p2pProxy       = BACKEND_URL + '/api/p2p-rate';
-    const alertEndpoint   = p2pProxy.replace(/\/api\/p2p-rate\/?$/, '/api/p2p-rate/alert');
     const alertBanner     = document.getElementById('rate-alert-banner');
     const alertMessageEl  = document.getElementById('rate-alert-message');
     const alertBadgeEl    = document.getElementById('rate-alert-badge');
@@ -135,27 +133,59 @@
         let fetchedFromAPI = false;
         try {
             console.log('🔄 Fetching P2P rates from API...');
-            const res = await fetch(p2pProxy, {
-                cache: 'no-cache',
-                headers: {
-                    'Cache-Control': 'no-cache',
-                    'Pragma': 'no-cache'
+            
+            // Try Netlify Function first (bypasses CORS)
+            const origin = window.location.origin;
+            const endpoints = [
+                `${origin}/.netlify/functions/p2p-rate`,
+                BACKEND_URL + '/api/p2p-rate'
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    console.log(`🔄 Trying: ${endpoint}`);
+                    const res = await fetch(endpoint, {
+                        cache: 'no-cache',
+                        headers: {
+                            'Cache-Control': 'no-cache',
+                            'Pragma': 'no-cache'
+                        }
+                    });
+                    
+                    if (!res.ok) {
+                        console.warn(`⚠️ ${endpoint} returned ${res.status}`);
+                        continue;
+                    }
+                    
+                    const data = await res.json();
+                    console.log('📊 API Response:', data);
+                    
+                    if (data && (data.sellPrice || data.buyPrice)) {
+                        sellPrice = parseFloat(data.sellPrice) || 0;
+                        buyPrice = parseFloat(data.buyPrice) || sellPrice;
+                        crossRate = buyPrice || sellPrice;
+                        fetchedFromAPI = true;
+                        
+                        // Save to localStorage
+                        const settings = {
+                            sellPrice: sellPrice,
+                            buyPrice: buyPrice,
+                            source: data.source || 'api',
+                            updatedAt: new Date().toISOString()
+                        };
+                        saveData(settingsKey, settings);
+                        
+                        console.log('✅ P2P rates fetched successfully:', { sellPrice, buyPrice });
+                        break;
+                    }
+                } catch (err) {
+                    console.warn(`❌ ${endpoint} failed:`, err.message);
                 }
-            });
-            if (!res.ok) throw new Error('Backend proxy failed');
-            const data = await res.json();
-            console.log('📊 API Response:', data);
-            if (data && data.sellPrice && data.buyPrice) {
-                sellPrice = data.sellPrice;
-                buyPrice = data.buyPrice;
-                crossRate = data.crossRate || data.sellPrice;
-                fetchedFromAPI = true;
-                console.log('✅ P2P rates fetched successfully:', { sellPrice, buyPrice });
             }
         } catch (err) {
-            console.warn('❌ Proxy fetch failed, using fallback:', err);
-            await fetchFallbackRates();
+            console.warn('❌ All API endpoints failed:', err);
         }
+        
         // Chỉ dùng giá từ localStorage nếu không lấy được từ API
         if (!fetchedFromAPI) {
             console.warn('⚠️ Using stored prices from localStorage');
@@ -245,6 +275,7 @@
     async function fetchAlertState() {
         if (!alertBanner) return;
         try {
+            const alertEndpoint = BACKEND_URL + '/api/p2p-rate/alert';
             const res = await fetch(alertEndpoint);
             if (!res.ok) throw new Error('Alert fetch failed');
             const data = await res.json();

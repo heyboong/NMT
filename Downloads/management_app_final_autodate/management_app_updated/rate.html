@@ -101,6 +101,7 @@
         <section id="system-embed-root" data-page="rate" class="system-embed-section"></section>
     </div>
 
+    <script src="config.js"></script>
     <script src="assets/js/app.js"></script>
     <script src="assets/js/button-effects.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
@@ -138,63 +139,54 @@
             try {
                 updateFetchStatus('Đang lấy tỷ giá từ Binance P2P…', 'loading');
                 
-                // Try multiple endpoints
+                // Try Netlify Function first (bypasses CORS)
+                const origin = window.location.origin;
                 const endpoints = [
+                    `${origin}/.netlify/functions/p2p-rate`,
                     'http://localhost:3000/api/p2p-rate',
-                    'http://localhost:3001/api/p2p-rate',
-                    'https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search'
+                    'http://localhost:3001/api/p2p-rate'
                 ];
                 
                 for (const endpoint of endpoints) {
                     try {
-                        let response;
-                        if (endpoint.includes('binance.com')) {
-                            response = await fetch(endpoint, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    fiat: 'VND',
-                                    page: 1,
-                                    rows: 1,
-                                    tradeType: 'SELL',
-                                    asset: 'USDT',
-                                    countries: [],
-                                    proMerchantAds: false,
-                                    shieldMerchantAds: false,
-                                    publisherType: null,
-                                    payTypes: []
-                                })
-                            });
-                        } else {
-                            response = await fetch(endpoint, { cache: 'no-store' });
-                        }
+                        console.log('🔄 Trying:', endpoint);
+                        const response = await fetch(endpoint, { 
+                            method: 'GET',
+                            cache: 'no-store' 
+                        });
                         
-                        if (!response.ok) continue;
+                        if (!response.ok) {
+                            console.warn(`⚠️ ${endpoint} returned ${response.status}`);
+                            continue;
+                        }
                         
                         const payload = await response.json();
+                        console.log('📊 Response:', payload);
                         
-                        let sell = 0, buy = 0;
+                        const sell = parseFloat(payload.sellPrice) || 0;
+                        const buy = parseFloat(payload.buyPrice) || 0;
                         
-                        if (payload.data && Array.isArray(payload.data)) {
-                            // Direct Binance format
-                            sell = parseFloat(payload.data[0]?.adv?.price || 0);
-                            buy = sell;
-                        } else if (payload.sellPrice) {
-                            // Proxy format
-                            sell = parseFloat(payload.sellPrice) || 0;
-                            buy = parseFloat(payload.buyPrice) || 0;
-                        }
-                        
-                        crossRate = sell || buy;
+                        crossRate = buy || sell;
                         
                         if (crossRate > 0) {
                             currentPriceEl.textContent = formatVND(crossRate);
                             prefillPrices();
-                            updateFetchStatus('Đã lấy tỷ giá P2P mới nhất từ Binance.', 'success');
+                            
+                            // Save to localStorage
+                            const settings = {
+                                sellPrice: sell,
+                                buyPrice: buy,
+                                source: payload.source || 'api',
+                                updatedAt: new Date().toISOString()
+                            };
+                            localStorage.setItem(settingsKey, JSON.stringify(settings));
+                            
+                            updateFetchStatus('✅ Đã lấy tỷ giá P2P mới nhất từ Binance', 'success');
+                            console.log('✅ Rate fetched:', crossRate, 'VND');
                             return;
                         }
                     } catch (err) {
-                        console.log(`Failed ${endpoint}:`, err.message);
+                        console.warn(`❌ Failed ${endpoint}:`, err.message);
                     }
                 }
                 
