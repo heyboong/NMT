@@ -427,6 +427,10 @@ div:has(canvas):hover {
     background: linear-gradient(120deg, #c6ccd6, #b5bcc7);
     border-color: #b5bcc7;
 }
+.p2p-block--red-border {
+    border: 2px solid #ef4444;
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.1);
+}
 .p2p-label {
     color: #0f172a;
     font-size: 10.5px;
