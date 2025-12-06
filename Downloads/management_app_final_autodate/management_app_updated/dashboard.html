@@ -29,12 +29,6 @@
         <a href="settings.html">⚙️ Cài Đặt</a>
     </nav>
     <div class="container">
-        <!-- Toolbar với các nút công cụ -->
-        <div id="dashboard-toolbar" style="display: flex; gap: 12px; margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; align-items: center; min-height: 48px;">
-            <span style="color: #64748b; font-size: 13px; font-weight: 600; margin-right: 8px;">🛠️ Công cụ:</span>
-            <!-- Text color toggle button will be inserted here -->
-        </div>
-        
         <h2>📊 Tổng quan</h2>
         <div class="alert-banner" id="rate-alert-banner" data-status="idle">
             <span class="alert-banner__message" id="rate-alert-message">Đang chờ dữ liệu cảnh báo...</span>
@@ -148,6 +142,9 @@
                 <div style="display:flex; justify-content:space-between; align-items:center; margin:0 0 8px 0;">
                     <h3 style="margin:0; font-size:16px; color:#1f2937;">BẢNG NGÀY ĐỔI</h3>
                     <div style="display:flex; gap:8px; align-items:center;">
+                        <button type="button" id="text-color-toggle-conversion" class="text-color-toggle-btn" title="Tô màu chữ trong bảng">
+                            <span style="font-size: 16px;">🎨</span> <span>Tô Màu</span>
+                        </button>
                         <button type="button" onclick="DASH_addConversionRow()" style="padding:6px 12px; background:#3b82f6; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer;">➕ Thêm dòng mới</button>
                         <span style="font-size:12px; color:#6b7280;">Nút ➕ dòng</span>
                     </div>
@@ -184,6 +181,9 @@
                 <div style="display:flex; justify-content:space-between; align-items:center; margin:0 0 8px 0;">
                     <h3 style="margin:0; font-size:16px; color:#1f2937;">BẢNG NGÀY LẤY</h3>
                     <div style="display:flex; gap:8px; align-items:center;">
+                        <button type="button" id="text-color-toggle-withdraw" class="text-color-toggle-btn" title="Tô màu chữ trong bảng">
+                            <span style="font-size: 16px;">🎨</span> <span>Tô Màu</span>
+                        </button>
                         <button type="button" onclick="DASH_addWithdrawRow()" style="padding:6px 12px; background:#3b82f6; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer;">➕ Thêm dòng mới</button>
                         <span style="font-size:12px; color:#6b7280;">Nút ➕ dòng</span>
                     </div>

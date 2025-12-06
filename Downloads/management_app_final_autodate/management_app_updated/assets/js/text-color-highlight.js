@@ -28,17 +28,12 @@
     function init() {
         console.log('🎨 Starting text color highlight initialization...');
         
-        // Remove existing elements if any
+        // Remove existing toolbar if any
         const existingToolbar = document.getElementById('text-color-toolbar');
-        const existingToggle = document.getElementById('text-color-toggle');
         if (existingToolbar) existingToolbar.remove();
-        if (existingToggle) existingToggle.remove();
         
         createToolbarHTML();
         console.log('✓ Toolbar HTML created');
-        
-        createToggleButton();
-        console.log('✓ Toggle button created');
         
         attachEventListeners();
         console.log('✓ Event listeners attached');
@@ -123,16 +118,16 @@
      */
     function attachEventListeners() {
         const toolbar = document.getElementById('text-color-toolbar');
-        const toggleBtn = document.getElementById('text-color-toggle');
+        const toggleBtnConversion = document.getElementById('text-color-toggle-conversion');
+        const toggleBtnWithdraw = document.getElementById('text-color-toggle-withdraw');
         const closeBtn = document.getElementById('text-color-close');
         const colorOptions = document.getElementById('text-color-options');
         const boldBtn = document.getElementById('text-bold-btn');
         const resetBtn = document.getElementById('text-reset-btn');
 
-        if (!toolbar || !toggleBtn || !closeBtn || !colorOptions || !boldBtn || !resetBtn) {
-            console.error('❌ Text color highlight: Missing elements', {
+        if (!toolbar || !closeBtn || !colorOptions || !boldBtn || !resetBtn) {
+            console.error('❌ Text color highlight: Missing toolbar elements', {
                 toolbar: !!toolbar,
-                toggleBtn: !!toggleBtn,
                 closeBtn: !!closeBtn,
                 colorOptions: !!colorOptions,
                 boldBtn: !!boldBtn,
@@ -141,13 +136,28 @@
             return;
         }
 
-        // Toggle toolbar
-        toggleBtn.addEventListener('click', (e) => {
-            console.log('🖱️ Toggle button clicked!');
-            e.preventDefault();
-            e.stopPropagation();
-            toggleToolbar();
-        });
+        // Toggle toolbar from conversion table button
+        if (toggleBtnConversion) {
+            toggleBtnConversion.addEventListener('click', (e) => {
+                console.log('🖱️ Conversion table toggle button clicked!');
+                e.preventDefault();
+                e.stopPropagation();
+                toggleToolbar();
+            });
+            console.log('✓ Conversion toggle button listener attached');
+        }
+
+        // Toggle toolbar from withdraw table button
+        if (toggleBtnWithdraw) {
+            toggleBtnWithdraw.addEventListener('click', (e) => {
+                console.log('🖱️ Withdraw table toggle button clicked!');
+                e.preventDefault();
+                e.stopPropagation();
+                toggleToolbar();
+            });
+            console.log('✓ Withdraw toggle button listener attached');
+        }
+
         closeBtn.addEventListener('click', hideToolbar);
 
         // Color buttons
@@ -209,10 +219,11 @@
     function toggleToolbar() {
         console.log('🔄 Toggling toolbar...');
         const toolbar = document.getElementById('text-color-toolbar');
-        const toggleBtn = document.getElementById('text-color-toggle');
+        const toggleBtnConversion = document.getElementById('text-color-toggle-conversion');
+        const toggleBtnWithdraw = document.getElementById('text-color-toggle-withdraw');
         
-        if (!toolbar || !toggleBtn) {
-            console.error('❌ Toolbar or toggle button not found in toggleToolbar');
+        if (!toolbar) {
+            console.error('❌ Toolbar not found in toggleToolbar');
             return;
         }
         
@@ -221,7 +232,8 @@
         
         if (toolbarVisible) {
             toolbar.classList.add('active');
-            toggleBtn.classList.add('active');
+            if (toggleBtnConversion) toggleBtnConversion.classList.add('active');
+            if (toggleBtnWithdraw) toggleBtnWithdraw.classList.add('active');
             updateToolbarState();
             console.log('✓ Toolbar opened');
         } else {
@@ -235,10 +247,12 @@
      */
     function hideToolbar() {
         const toolbar = document.getElementById('text-color-toolbar');
-        const toggleBtn = document.getElementById('text-color-toggle');
+        const toggleBtnConversion = document.getElementById('text-color-toggle-conversion');
+        const toggleBtnWithdraw = document.getElementById('text-color-toggle-withdraw');
         
         toolbar.classList.remove('active');
-        toggleBtn.classList.remove('active');
+        if (toggleBtnConversion) toggleBtnConversion.classList.remove('active');
+        if (toggleBtnWithdraw) toggleBtnWithdraw.classList.remove('active');
         toolbarVisible = false;
     }
 
