@@ -602,6 +602,13 @@
         updateConversionTotal();
         refreshTableResize('conversion-table', { enableRowResize: true });
         
+        // Restore text color formatting
+        if (window.TextColorHighlight && typeof window.TextColorHighlight.restoreCellFormatting === 'function') {
+            convTableBody.querySelectorAll('td[contenteditable="true"]').forEach(cell => {
+                window.TextColorHighlight.restoreCellFormatting(cell);
+            });
+        }
+        
         // Dispatch event for note manager and text color highlight
         window.dispatchEvent(new Event('tableRendered'));
     }
@@ -1105,6 +1112,13 @@
         });
         updateWithdrawTotal();
         refreshTableResize('withdraw-table', { enableRowResize: true });
+        
+        // Restore text color formatting
+        if (window.TextColorHighlight && typeof window.TextColorHighlight.restoreCellFormatting === 'function') {
+            wTableBody.querySelectorAll('td[contenteditable="true"]').forEach(cell => {
+                window.TextColorHighlight.restoreCellFormatting(cell);
+            });
+        }
         
         // Dispatch event for note manager and text color highlight
         window.dispatchEvent(new Event('tableRendered'));

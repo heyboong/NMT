@@ -26,16 +26,13 @@
     contextMenu.className = 'context-menu';
     contextMenu.innerHTML = `
         <div class="context-menu-item" data-action="add-note">
-            <span class="icon">📝</span>
-            <span>Thêm/Sửa ghi chú</span>
+            <span>Ghi Chú</span>
         </div>
         <div class="context-menu-item" data-action="view-note">
-            <span class="icon">👁️</span>
             <span>Xem ghi chú</span>
         </div>
         <div class="context-menu-divider"></div>
         <div class="context-menu-item" data-action="delete-note">
-            <span class="icon">🗑️</span>
             <span>Xóa ghi chú</span>
         </div>
     `;
@@ -275,6 +272,13 @@
         const table = document.querySelector(tableSelector);
         if (!table) return null;
 
+        // Try to find by data-row-index attribute first (for dashboard tables)
+        const rowByAttribute = table.querySelector(`tbody tr[data-row-index="${rowIndex}"]`);
+        if (rowByAttribute) {
+            return rowByAttribute;
+        }
+
+        // Fallback to direct index access (for AE/AE-QT tables)
         const rows = table.querySelectorAll('tbody tr');
         return rows[rowIndex] || null;
     }
