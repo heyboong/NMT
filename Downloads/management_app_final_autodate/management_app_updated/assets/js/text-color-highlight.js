@@ -142,7 +142,12 @@
         }
 
         // Toggle toolbar
-        toggleBtn.addEventListener('click', toggleToolbar);
+        toggleBtn.addEventListener('click', (e) => {
+            console.log('🖱️ Toggle button clicked!');
+            e.preventDefault();
+            e.stopPropagation();
+            toggleToolbar();
+        });
         closeBtn.addEventListener('click', hideToolbar);
 
         // Color buttons
@@ -202,17 +207,26 @@
      * Toggle toolbar visibility
      */
     function toggleToolbar() {
+        console.log('🔄 Toggling toolbar...');
         const toolbar = document.getElementById('text-color-toolbar');
         const toggleBtn = document.getElementById('text-color-toggle');
         
+        if (!toolbar || !toggleBtn) {
+            console.error('❌ Toolbar or toggle button not found in toggleToolbar');
+            return;
+        }
+        
         toolbarVisible = !toolbarVisible;
+        console.log('📊 Toolbar visible:', toolbarVisible);
         
         if (toolbarVisible) {
             toolbar.classList.add('active');
             toggleBtn.classList.add('active');
             updateToolbarState();
+            console.log('✓ Toolbar opened');
         } else {
             hideToolbar();
+            console.log('✓ Toolbar closed');
         }
     }
 
