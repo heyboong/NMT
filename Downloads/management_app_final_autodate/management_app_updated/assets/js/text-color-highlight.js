@@ -96,10 +96,16 @@
         const btn = document.createElement('button');
         btn.id = 'text-color-toggle';
         btn.className = 'text-color-toggle-btn';
-        btn.innerHTML = '🎨';
-        btn.title = 'Tô màu chữ';
+        btn.innerHTML = '<span style="font-size: 18px;">🎨</span> <span>Tô Màu Chữ</span>';
+        btn.title = 'Bật/Tắt công cụ tô màu chữ';
         
-        document.body.appendChild(btn);
+        // Try to add to dashboard toolbar first, fallback to body
+        const toolbar = document.getElementById('dashboard-toolbar');
+        if (toolbar) {
+            toolbar.appendChild(btn);
+        } else {
+            document.body.appendChild(btn);
+        }
     }
 
     /**
