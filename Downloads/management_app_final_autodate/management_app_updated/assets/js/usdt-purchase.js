@@ -5,6 +5,122 @@
 let usdtPurchaseData = [];
 let currentP2PRate = 0;
 
+// Fetch live P2P sell price (proxy -> direct ticker -> P2P search)
+async function fetchBinanceP2PRate() {
+    const origin = window.location.origin;
+    const proxyUrls = [
+        window.RATE_PROXY_URL,
+        `${origin}/api/p2p-rate`,
+        `${origin}/.netlify/functions/p2p-rate`,
+        'http://localhost:3000/api/p2p-rate',
+        'http://localhost:3001/api/p2p-rate'
+    ].filter(Boolean);
+
+    for (const url of proxyUrls) {
+        try {
+            const res = await fetch(url, { method: 'GET' });
+            if (!res.ok) continue;
+            const data = await res.json();
+            const sellPrice = parseFloat(data.sellPrice) || 0;
+            if (sellPrice > 0) {
+                return { sellPrice, buyPrice: sellPrice, source: data.source || 'proxy' };
+            }
+        } catch (e) {
+            console.warn('Proxy P2P rate failed:', e.message);
+        }
+    }
+
+    // Try simple ticker
+    try {
+        const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTVND');
+        if (res.ok) {
+            const data = await res.json();
+            const price = parseFloat(data.price) || 0;
+            if (price > 0) {
+                return { sellPrice: price, buyPrice: price, source: 'binance-direct' };
+            }
+        }
+    } catch (e) {
+        console.warn('Ticker fallback failed:', e.message);
+    }
+
+    // P2P search (average top 5 SELL USDT/VND)
+    try {
+        const body = {
+            page: 1,
+            rows: 5,
+            payTypes: [],
+            asset: 'USDT',
+            tradeType: 'SELL',
+            fiat: 'VND',
+            publisherType: null
+        };
+        const res = await fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if (res.ok) {
+            const data = await res.json();
+            const ads = data?.data || [];
+            const prices = ads.slice(0, 5)
+                .map(a => parseFloat(a?.adv?.price))
+                .filter(v => isFinite(v) && v > 0);
+            if (prices.length > 0) {
+                const avg = prices.reduce((s, v) => s + v, 0) / prices.length;
+                return { sellPrice: avg, buyPrice: avg, source: 'binance-p2p' };
+            }
+        }
+    } catch (e) {
+        console.warn('P2P endpoint failed:', e.message);
+    }
+
+    return null;
+}
+
+// Build Tiền Làm totals by date from AE & AE-QT
+function normalizeDateKey(dateStr) {
+    if (!dateStr) return '';
+    // Support dd/mm/yyyy
+    if (dateStr.includes('/')) {
+        const parts = dateStr.split('/').map(p => p.trim());
+        if (parts.length === 3) {
+            const [day, month, year] = parts;
+            if (day && month && year) {
+                return `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            }
+        }
+    }
+    // Fallback ISO date
+    const d = new Date(dateStr);
+    if (!isNaN(d)) {
+        return d.toISOString().slice(0, 10);
+    }
+    return '';
+}
+
+function buildWorkTotalsByDate() {
+    const totals = {};
+    const addRows = (rows) => {
+        if (!Array.isArray(rows)) return;
+        rows.forEach(row => {
+            const key = normalizeDateKey(row?.date);
+            const money = parseFloat(row?.money) || 0;
+            if (!key || !isFinite(money)) return;
+            totals[key] = (totals[key] || 0) + money;
+        });
+    };
+
+    try {
+        addRows(JSON.parse(localStorage.getItem('AE_sheet') || '[]'));
+        addRows(JSON.parse(localStorage.getItem('AEQT_sheet') || '[]'));
+    } catch (e) {
+        console.warn('⚠️ Không đọc được dữ liệu AE/AE-QT:', e);
+    }
+
+    return totals;
+}
+
 // ====================================
 // Initialize
 // ====================================
@@ -36,6 +152,7 @@ function loadData() {
         for (let i = 0; i < 20; i++) {
             usdtPurchaseData.push({
                 date: '',
+                time: '',
                 purchaseAmount: 0,      // Tiền Làm (VND) - Vốn đầu tư
                 usdtBuy: 0,             // USDT ($)
                 sellPrice: 0            // Giá Bán (VND)
@@ -43,6 +160,12 @@ function loadData() {
         }
         saveData();
     }
+
+    // Migration: ensure time field exists
+    usdtPurchaseData = usdtPurchaseData.map(row => ({
+        ...row,
+        time: row.time || ''
+    }));
     
     renderTable();
     updateStatistics();
@@ -53,47 +176,58 @@ function loadData() {
 // ====================================
 async function loadP2PRate() {
     try {
-        const rateData = localStorage.getItem('rate_settings');
-        if (rateData) {
-            const settings = JSON.parse(rateData);
-            
-            // rate_settings is an object: {sellPrice, buyPrice, updatedAt}
-            if (settings && typeof settings === 'object') {
-                // Use sellPrice as the P2P rate
+        // 1) Try live fetch
+        const live = await fetchBinanceP2PRate();
+        if (live && live.sellPrice > 0) {
+            currentP2PRate = live.sellPrice;
+
+            // Persist for reuse (align key with other pages: rate-settings)
+            const settings = {
+                sellPrice: live.sellPrice,
+                buyPrice: live.buyPrice,
+                source: live.source,
+                updatedAt: new Date().toISOString()
+            };
+            localStorage.setItem('rate-settings', JSON.stringify(settings));
+            localStorage.setItem('rate_settings', JSON.stringify(settings)); // legacy key
+        } else {
+            // 2) Fallback to cached localStorage (both keys)
+            const rateData = localStorage.getItem('rate-settings') || localStorage.getItem('rate_settings');
+            if (rateData) {
+                const settings = JSON.parse(rateData);
                 const sellPrice = parseFloat(settings.sellPrice) || 0;
-                
                 if (sellPrice > 0) {
                     currentP2PRate = sellPrice;
-                    
-                    // Update display
-                    const display = document.getElementById('current-p2p-rate');
-                    if (display) {
-                        display.textContent = formatNumber(currentP2PRate) + '₫';
-                    }
-                    
-                    // Auto-apply to empty sellPrice cells (always check when rate is available)
-                    let updated = 0;
-                    usdtPurchaseData.forEach((row, index) => {
-                        if (!row.sellPrice || row.sellPrice === 0) {
-                            row.sellPrice = currentP2PRate;
-                            updated++;
-                        }
-                    });
-                    
-                    if (updated > 0) {
-                        saveData();
-                        renderTable();
-                        updateStatistics();
-                        console.log(`✅ Tự động áp dụng giá P2P cho ${updated} dòng`);
-                    }
-                    
-                    console.log('✅ P2P rate loaded:', currentP2PRate);
-                } else {
-                    console.warn('⚠️ Giá P2P không hợp lệ');
                 }
             }
+        }
+
+        if (currentP2PRate > 0) {
+            // Update display
+            const display = document.getElementById('current-p2p-rate');
+            if (display) {
+                display.textContent = formatNumber(currentP2PRate) + '₫';
+            }
+
+            // Auto-apply to empty sellPrice cells (always check when rate is available)
+            let updated = 0;
+            usdtPurchaseData.forEach((row) => {
+                if (!row.sellPrice || row.sellPrice === 0) {
+                    row.sellPrice = currentP2PRate;
+                    updated++;
+                }
+            });
+
+            if (updated > 0) {
+                saveData();
+                renderTable();
+                updateStatistics();
+                console.log(`✅ Tự động áp dụng giá P2P cho ${updated} dòng`);
+            }
+
+            console.log('✅ P2P rate loaded:', currentP2PRate);
         } else {
-            console.warn('⚠️ Chưa có dữ liệu rate_settings. Vui lòng vào trang Tỷ Giá USD để cập nhật.');
+            console.warn('⚠️ Giá P2P không hợp lệ');
         }
     } catch (e) {
         console.error('Error loading P2P rate:', e);
@@ -123,23 +257,40 @@ function renderTable() {
     const tbody = document.getElementById('usdt-purchase-tbody');
     if (!tbody) return;
 
+    const workTotals = buildWorkTotalsByDate();
+
     tbody.innerHTML = usdtPurchaseData.map((row, index) => {
         // Calculate Giá Nhập = Tiền Làm / USDT (giá vốn mua vào)
         const buyPrice = row.usdtBuy > 0 ? (row.purchaseAmount / row.usdtBuy) : 0;
         
-        // Calculate Tiền Bán = USDT × Giá Bán (tiền thu về khi bán)
-        const sellAmount = (row.usdtBuy || 0) * (row.sellPrice || 0);
-        
-        // Calculate Tổng Cộng = Tiền Bán - Tiền Làm (lãi/lỗ)
-        const total = sellAmount - (row.purchaseAmount || 0);
+        // Tiền Làm từ bảng AE + AE-QT (cùng ngày)
+        const dateKey = normalizeDateKey(row.date);
+        const workAmount = dateKey ? (workTotals[dateKey] || 0) : 0;
+
+        // Lãi/Lỗ % theo giá bán so với giá nhập
+        const profitPercent = (buyPrice > 0 && row.sellPrice > 0)
+            ? ((row.sellPrice - buyPrice) / buyPrice) * 100
+            : null;
+        const profitColor = profitPercent === null
+            ? '#6b7280'
+            : profitPercent > 0 ? '#10b981' : '#ef4444';
         
         return `
             <tr data-index="${index}">
+                <th class="row-header">${index + 1}</th>
                 <td>
-                    <input type="date" 
-                        value="${row.date || ''}" 
-                        onchange="updateCell(${index}, 'date', this.value)"
-                        style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px;">
+                    <div class="datetime-stack" style="display:flex; flex-direction:column; gap:6px; align-items:stretch; width:100%;">
+                        <input type="time"
+                            value="${row.time || ''}"
+                            onchange="updateCell(${index}, 'time', this.value)"
+                            placeholder="HH:MM"
+                            style="width:100%; box-sizing:border-box; padding:8px; border:1px solid #e5e7eb; border-radius:4px;">
+                        <input type="date" 
+                            value="${row.date || ''}" 
+                            onchange="updateCell(${index}, 'date', this.value)"
+                            placeholder="YYYY-MM-DD"
+                            style="width:100%; box-sizing:border-box; padding:8px; border:1px solid #e5e7eb; border-radius:4px;">
+                    </div>
                 </td>
                 <td>
                     <input type="number" 
@@ -164,6 +315,13 @@ function renderTable() {
                         style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right; background: #f3f4f6; font-weight: 600; color: #6b7280; cursor: not-allowed;">
                 </td>
                 <td>
+                    <input type="text" 
+                        value="${workAmount ? formatCurrency(workAmount) : ''}"
+                        readonly
+                        placeholder="0"
+                        style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right; background: #f8fafc; font-weight: 700; color: #0f172a; cursor: not-allowed;">
+                </td>
+                <td>
                     <input type="number" 
                         value="${row.sellPrice || ''}" 
                         onchange="updateCell(${index}, 'sellPrice', parseFloat(this.value) || 0)"
@@ -171,24 +329,23 @@ function renderTable() {
                         style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right; background: ${row.sellPrice ? 'white' : '#fef3c7'};">
                 </td>
                 <td>
-                    <input type="number" 
-                        value="${sellAmount > 0 ? sellAmount.toFixed(0) : ''}" 
+                    <input type="text" 
+                        value="${profitPercent !== null ? profitPercent.toFixed(2) + '%' : ''}" 
                         readonly
-                        placeholder="0"
-                        style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right; background: #f5f3ff; font-weight: 600; color: #8b5cf6; cursor: not-allowed;">
-                </td>
-                <td>
-                    <input type="number" 
-                        value="${total !== 0 ? total.toFixed(0) : ''}" 
-                        readonly
-                        placeholder="0"
-                        style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right; font-weight: 700; font-size: 15px; cursor: not-allowed; ${total > 0 ? 'color: #10b981; background: #d1fae5;' : total < 0 ? 'color: #ef4444; background: #fee2e2;' : 'color: #6b7280; background: #f3f4f6;'}">
+                        placeholder="0%"
+                        style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right; font-weight: 800; font-size: 13px; cursor: not-allowed; color: ${profitColor}; background: #f8fafc;">
                 </td>
                 <td style="text-align: center;">
-                    <button onclick="deleteRow(${index})" 
-                        style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">
-                        🗑️
-                    </button>
+                    <div style="display: flex; gap: 8px; justify-content: center;">
+                        <button onclick="insertRowAfter(${index})"
+                            style="padding: 6px 10px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">
+                            ➕ Chèn dưới
+                        </button>
+                        <button onclick="deleteRow(${index})" 
+                            style="padding: 6px 10px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">
+                            🗑️
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;
@@ -231,9 +388,11 @@ window.updateCellManual = function(index, field, value) {
 // ====================================
 function addNewRow() {
     const today = new Date().toISOString().split('T')[0];
+    const nowTime = new Date().toTimeString().slice(0, 5);
     
     usdtPurchaseData.push({
         date: today,
+        time: nowTime,
         purchaseAmount: 0,
         usdtBuy: 0,
         sellPrice: currentP2PRate > 0 ? currentP2PRate : 0  // Tự động điền giá P2P nếu có
@@ -251,6 +410,37 @@ function addNewRow() {
         }
     }, 100);
 }
+
+// ====================================
+// Insert Row After
+// ====================================
+function insertRowAfter(index) {
+    const today = new Date().toISOString().split('T')[0];
+    const baseDate = usdtPurchaseData[index]?.date || today;
+    const baseTime = usdtPurchaseData[index]?.time || '';
+
+    const newRow = {
+        date: baseDate,
+        time: baseTime,
+        purchaseAmount: 0,
+        usdtBuy: 0,
+        sellPrice: currentP2PRate > 0 ? currentP2PRate : (usdtPurchaseData[index]?.sellPrice || 0)
+    };
+
+    usdtPurchaseData.splice(index + 1, 0, newRow);
+    saveData();
+    renderTable();
+    updateStatistics();
+
+    setTimeout(() => {
+        const tbody = document.getElementById('usdt-purchase-tbody');
+        const insertedRow = tbody?.children[index + 1];
+        insertedRow?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+}
+
+// Expose for inline handlers
+window.insertRowAfter = insertRowAfter;
 
 
 
@@ -293,13 +483,18 @@ function updateStatistics() {
     });
 
     // Update stat cards
-    document.getElementById('stat-total-input').textContent = formatCurrency(totalCapital);
-    document.getElementById('stat-total-usdt').textContent = formatNumber(totalUSDT, 2) + ' $';
-    document.getElementById('stat-total-sell').textContent = formatCurrency(totalSellAmount);
-    
+    const statInput = document.getElementById('stat-total-input');
+    const statUsdt = document.getElementById('stat-total-usdt');
+    const statSell = document.getElementById('stat-total-sell');
     const finalElement = document.getElementById('stat-total-final');
-    finalElement.textContent = formatCurrency(totalProfit);
-    finalElement.style.color = totalProfit >= 0 ? '#10b981' : '#ef4444';
+
+    if (statInput) statInput.textContent = formatCurrency(totalCapital);
+    if (statUsdt) statUsdt.textContent = formatNumber(totalUSDT, 2) + ' $';
+    if (statSell) statSell.textContent = formatCurrency(totalSellAmount);
+    if (finalElement) {
+        finalElement.textContent = formatCurrency(totalProfit);
+        finalElement.style.color = totalProfit >= 0 ? '#10b981' : '#ef4444';
+    }
 }
 
 // ====================================
@@ -326,21 +521,27 @@ function exportToExcel() {
         return;
     }
 
+    const workTotals = buildWorkTotalsByDate();
+
     let csv = '\uFEFF'; // BOM for UTF-8
-    csv += 'Ngày,Tiền Làm (VND),USDT ($),Giá Nhập (VND),Giá Bán (VND),Tiền Bán (VND),Tổng Cộng (VND)\n';
+    csv += 'Giờ,Ngày,Tiền Nhập (VND),Nhận USDT ($),Giá Nhập (VND),Tiền Làm (VND),Giá P2P Bán (VND),Lãi/Lỗ (%)\n';
 
     usdtPurchaseData.forEach(row => {
         const buyPrice = row.usdtBuy > 0 ? (row.purchaseAmount / row.usdtBuy) : 0;
-        const sellAmount = (row.usdtBuy || 0) * (row.sellPrice || 0);
-        const total = sellAmount - (row.purchaseAmount || 0);
+        const key = normalizeDateKey(row.date);
+        const workAmount = key ? (workTotals[key] || 0) : 0;
+        const profitPercent = (buyPrice > 0 && row.sellPrice > 0)
+            ? ((row.sellPrice - buyPrice) / buyPrice) * 100
+            : 0;
 
+        csv += `${row.time || ''},`;
         csv += `${row.date || ''},`;
         csv += `${row.purchaseAmount || 0},`;
         csv += `${row.usdtBuy || 0},`;
         csv += `${buyPrice.toFixed(0)},`;
+        csv += `${workAmount || 0},`;
         csv += `${row.sellPrice || 0},`;
-        csv += `${sellAmount.toFixed(0)},`;
-        csv += `${total.toFixed(0)}\n`;
+        csv += `${profitPercent.toFixed(2)}\n`;
     });
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

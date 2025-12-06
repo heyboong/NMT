@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tỷ Giá USD</title>
+    
+    <!-- Preconnect to CDN -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    
     <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
@@ -13,7 +18,7 @@
         <a href="AE.html">💼 Bảng AE</a>
         <a href="AE-QT.html">🌐 Bảng AE-QT</a>
         <a href="balance.html">👥 Danh Sách Tên</a>
-        <a href="usdt.html">💵 Nhập USDT</a>
+        <a href="usdt-purchase.html">💰 Nhập USDT</a>
         <a href="rate.html" class="active">💱 Tỷ Giá USD</a>
         <a href="settings.html">⚙️ Cài Đặt</a>
     </nav>
@@ -117,8 +122,6 @@
         const statusEl      = document.getElementById('rate-fetch-status');
         const historyKey    = 'rate-history';
         const settingsKey   = 'rate-settings';
-        const BACKEND_URL   = 'https://nmt-qj4t.onrender.com';
-        const proxyEndpoint = BACKEND_URL + '/api/p2p-rate';
         let crossRate       = 0; // fallback rate from API
         let currentFilter   = 'all';
         let currentSort     = 'newest';
@@ -134,21 +137,70 @@
         async function fetchRates() {
             try {
                 updateFetchStatus('Đang lấy tỷ giá từ Binance P2P…', 'loading');
-                const response = await fetch(proxyEndpoint, { cache: 'no-store' });
-                if (!response.ok) {
-                    throw new Error(`P2P proxy failed (${response.status})`);
+                
+                // Try multiple endpoints
+                const endpoints = [
+                    'http://localhost:3000/api/p2p-rate',
+                    'http://localhost:3001/api/p2p-rate',
+                    'https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search'
+                ];
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        let response;
+                        if (endpoint.includes('binance.com')) {
+                            response = await fetch(endpoint, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    fiat: 'VND',
+                                    page: 1,
+                                    rows: 1,
+                                    tradeType: 'SELL',
+                                    asset: 'USDT',
+                                    countries: [],
+                                    proMerchantAds: false,
+                                    shieldMerchantAds: false,
+                                    publisherType: null,
+                                    payTypes: []
+                                })
+                            });
+                        } else {
+                            response = await fetch(endpoint, { cache: 'no-store' });
+                        }
+                        
+                        if (!response.ok) continue;
+                        
+                        const payload = await response.json();
+                        
+                        let sell = 0, buy = 0;
+                        
+                        if (payload.data && Array.isArray(payload.data)) {
+                            // Direct Binance format
+                            sell = parseFloat(payload.data[0]?.adv?.price || 0);
+                            buy = sell;
+                        } else if (payload.sellPrice) {
+                            // Proxy format
+                            sell = parseFloat(payload.sellPrice) || 0;
+                            buy = parseFloat(payload.buyPrice) || 0;
+                        }
+                        
+                        crossRate = sell || buy;
+                        
+                        if (crossRate > 0) {
+                            currentPriceEl.textContent = formatVND(crossRate);
+                            prefillPrices();
+                            updateFetchStatus('Đã lấy tỷ giá P2P mới nhất từ Binance.', 'success');
+                            return;
+                        }
+                    } catch (err) {
+                        console.log(`Failed ${endpoint}:`, err.message);
+                    }
                 }
-                const payload = await response.json();
-                const sell = parseFloat(payload.sellPrice) || 0;
-                const buy  = parseFloat(payload.buyPrice) || 0;
-                crossRate = sell || buy;
-                if (crossRate > 0) {
-                    currentPriceEl.textContent = formatVND(crossRate);
-                }
-                prefillPrices();
-                updateFetchStatus('Đã lấy tỷ giá P2P mới nhất từ Binance.', 'success');
+                
+                throw new Error('All endpoints failed');
             } catch (err) {
-                console.error('Failed to fetch P2P rate via proxy:', err);
+                console.error('Failed to fetch P2P rate:', err);
                 updateFetchStatus('Không lấy được tỷ giá P2P, đang dùng nguồn dự phòng.', 'warning');
                 await fetchFallbackRates();
             }
@@ -206,6 +258,8 @@
             if (crossRate <= 0 && !sell && !buy) {
                 updateFetchStatus('Không có tỷ giá tham khảo, hãy nhập giá bán/mua thủ công.', 'warning');
             }
+        }
+
         /** Render history rows with filter and sort */
         function renderHistory() {
             let conversions = loadData(historyKey);
@@ -280,8 +334,6 @@
                 tr.appendChild(actionTd);
                 tbody.appendChild(tr);
             });
-        }       tbody.appendChild(tr);
-            });
         }
 
         /** Delete a conversion from history */
@@ -314,27 +366,25 @@
         amountInput.addEventListener('input', updateResult);
         typeSelect.addEventListener('change', updateResult);
 
-        // Initialize page: fetch cross rate then render history
-        fetchRates();
-        renderHistory();
-        
-        // Add filter and sort event listeners
-        document.getElementById('rate-history-filter')?.addEventListener('change', (e) => {
-            currentFilter = e.target.value;
-            renderHistory();
-        });
-        
-        document.getElementById('rate-history-sort')?.addEventListener('change', (e) => {
-            currentSort = e.target.value;
-            renderHistory();
-        });
-        
-        // Auto-refresh rate every 1 hour (3600000 ms)
-        setInterval(fetchRates, 3600000);
-        
-        // Add export buttons
-        createExportButtons('rate-export-container', 'rate-history', 'TyGia_' + new Date().toISOString().split('T')[0], 'Tỷ Giá');
-    })();   resultEl.textContent = formatVND(vnd);
+        // Form submit event
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const sellPrice = parseFloat(sellPriceInput.value) || 0;
+            const buyPrice  = parseFloat(buyPriceInput.value) || 0;
+            const amount    = parseFloat(amountInput.value) || 0;
+            const type      = typeSelect.value;
+            let price = 0;
+            if (type === 'sell') {
+                price = sellPrice;
+            } else {
+                price = buyPrice;
+            }
+            if (price <= 0 || amount <= 0) {
+                alert('Vui lòng nhập giá và số lượng hợp lệ.');
+                return;
+            }
+            const vnd = price * amount;
+            resultEl.textContent = formatVND(vnd);
             const conversions = loadData(historyKey);
             conversions.push({
                 type: type,
@@ -365,6 +415,17 @@
         // Initialize page: fetch cross rate then render history
         fetchRates();
         renderHistory();
+        
+        // Add filter and sort event listeners
+        document.getElementById('rate-history-filter')?.addEventListener('change', (e) => {
+            currentFilter = e.target.value;
+            renderHistory();
+        });
+        
+        document.getElementById('rate-history-sort')?.addEventListener('change', (e) => {
+            currentSort = e.target.value;
+            renderHistory();
+        });
         
         // Auto-refresh rate every 1 hour (3600000 ms)
         setInterval(fetchRates, 3600000);

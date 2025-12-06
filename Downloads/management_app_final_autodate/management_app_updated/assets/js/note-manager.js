@@ -396,21 +396,24 @@
         tooltipTitle.textContent = `Ghi chú`;
         tooltipContent.textContent = note;
         
-        // Position tooltip near the clicked element
+        // Hide action buttons when opened from cell click (edit/xóa sẽ qua nút ghi chú ở STT)
+        tooltipEditBtn.style.display = 'none';
+        tooltipDeleteBtn.style.display = 'none';
+        
+        // Position tooltip to the right of the clicked cell
         const rect = element.getBoundingClientRect();
         const tooltipWidth = 350;
         const tooltipHeight = 200; // max height
         
-        let left = rect.left + window.scrollX;
-        let top = rect.bottom + window.scrollY + 5;
+        let left = rect.right + window.scrollX + 10;
+        let top = rect.top + window.scrollY;
         
         // Adjust if tooltip would go off-screen
         if (left + tooltipWidth > window.innerWidth) {
-            left = window.innerWidth - tooltipWidth - 20;
+            left = Math.max(10, window.innerWidth - tooltipWidth - 10);
         }
-        
         if (top + tooltipHeight > window.innerHeight + window.scrollY) {
-            top = rect.top + window.scrollY - tooltipHeight - 5;
+            top = Math.max(10, rect.bottom + window.scrollY - tooltipHeight - 10);
         }
         
         noteTooltip.style.left = left + 'px';
@@ -632,6 +635,9 @@
     tooltipEditBtn.addEventListener('click', () => {
         if (tooltipCurrentRow && tooltipCurrentTable !== null && tooltipCurrentIndex !== null) {
             hideNoteTooltip();
+            // Restore buttons visibility for popup use
+            tooltipEditBtn.style.display = 'inline-flex';
+            tooltipDeleteBtn.style.display = 'inline-flex';
             showNotePopup(tooltipCurrentRow, tooltipCurrentTable, tooltipCurrentIndex);
         }
     });
@@ -642,6 +648,9 @@
             if (confirm('Bạn có chắc muốn xóa ghi chú này?')) {
                 deleteNote(tooltipCurrentTable, tooltipCurrentIndex);
                 hideNoteTooltip();
+                // Restore buttons visibility after delete action
+                tooltipEditBtn.style.display = 'inline-flex';
+                tooltipDeleteBtn.style.display = 'inline-flex';
                 showNotification('🗑️ Ghi chú đã được xóa!', 'info');
             }
         }

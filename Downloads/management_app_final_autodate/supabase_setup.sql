@@ -1,6 +1,7 @@
 -- ========================================
 -- SUPABASE DATABASE SETUP
 -- Tạo đầy đủ các bảng cho Management App
+-- Version: 2.0 - Updated with all localStorage keys
 -- ========================================
 
 -- Enable UUID extension
@@ -123,7 +124,21 @@ CREATE INDEX IF NOT EXISTS idx_table_row_notes_user_id ON table_row_notes(user_i
 CREATE INDEX IF NOT EXISTS idx_table_row_notes_updated_at ON table_row_notes(updated_at DESC);
 
 -- ========================================
--- 9. USDT PURCHASE DATA TABLE
+-- 9. USDT DATA TABLE (Legacy - usdt.html)
+-- ========================================
+CREATE TABLE IF NOT EXISTS usdt_data (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id TEXT NOT NULL,
+    data JSONB NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_usdt_data_user_id ON usdt_data(user_id);
+CREATE INDEX IF NOT EXISTS idx_usdt_data_updated_at ON usdt_data(updated_at DESC);
+
+-- ========================================
+-- 10. USDT PURCHASE DATA TABLE (New - usdt-purchase.html)
 -- ========================================
 CREATE TABLE IF NOT EXISTS usdt_purchase_data (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -137,7 +152,7 @@ CREATE INDEX IF NOT EXISTS idx_usdt_purchase_data_user_id ON usdt_purchase_data(
 CREATE INDEX IF NOT EXISTS idx_usdt_purchase_data_updated_at ON usdt_purchase_data(updated_at DESC);
 
 -- ========================================
--- 10. STAFF LIST AE TABLE
+-- 11. STAFF LIST AE TABLE
 -- ========================================
 CREATE TABLE IF NOT EXISTS staff_list_ae (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -151,7 +166,7 @@ CREATE INDEX IF NOT EXISTS idx_staff_list_ae_user_id ON staff_list_ae(user_id);
 CREATE INDEX IF NOT EXISTS idx_staff_list_ae_updated_at ON staff_list_ae(updated_at DESC);
 
 -- ========================================
--- 11. STAFF LIST AE-QT TABLE
+-- 12. STAFF LIST AE-QT TABLE
 -- ========================================
 CREATE TABLE IF NOT EXISTS staff_list_aeqt (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -177,6 +192,7 @@ ALTER TABLE dashboard_withdraw ENABLE ROW LEVEL SECURITY;
 ALTER TABLE rate_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE system_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE table_row_notes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE usdt_data ENABLE ROW LEVEL SECURITY;
 ALTER TABLE usdt_purchase_data ENABLE ROW LEVEL SECURITY;
 ALTER TABLE staff_list_ae ENABLE ROW LEVEL SECURITY;
 ALTER TABLE staff_list_aeqt ENABLE ROW LEVEL SECURITY;
@@ -212,10 +228,13 @@ CREATE POLICY "Allow all access to rate_settings" ON rate_settings FOR ALL USING
 -- system_categories policies
 DROP POLICY IF EXISTS "Allow all access to system_categories" ON system_categories;
 CREATE POLICY "Allow all access to system_categories" ON system_categories FOR ALL USING (true) WITH CHECK (true);
-
 -- table_row_notes policies
 DROP POLICY IF EXISTS "Allow all access to table_row_notes" ON table_row_notes;
 CREATE POLICY "Allow all access to table_row_notes" ON table_row_notes FOR ALL USING (true) WITH CHECK (true);
+
+-- usdt_data policies
+DROP POLICY IF EXISTS "Allow all access to usdt_data" ON usdt_data;
+CREATE POLICY "Allow all access to usdt_data" ON usdt_data FOR ALL USING (true) WITH CHECK (true);
 
 -- usdt_purchase_data policies
 DROP POLICY IF EXISTS "Allow all access to usdt_purchase_data" ON usdt_purchase_data;
@@ -235,12 +254,16 @@ CREATE POLICY "Allow all access to staff_list_aeqt" ON staff_list_aeqt FOR ALL U
 
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Create triggers for all tables
 DROP TRIGGER IF EXISTS update_ae_data_updated_at ON ae_data;
@@ -291,6 +314,12 @@ CREATE TRIGGER update_table_row_notes_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_usdt_data_updated_at ON usdt_data;
+CREATE TRIGGER update_usdt_data_updated_at
+    BEFORE UPDATE ON usdt_data
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
 DROP TRIGGER IF EXISTS update_usdt_purchase_data_updated_at ON usdt_purchase_data;
 CREATE TRIGGER update_usdt_purchase_data_updated_at
     BEFORE UPDATE ON usdt_purchase_data
@@ -314,11 +343,9 @@ CREATE TRIGGER update_staff_list_aeqt_updated_at
 -- ========================================
 
 -- Check all tables exist
-SELECT 
-    tablename,
-    schemaname
-FROM pg_tables
-WHERE schemaname = 'public'
+SELECT tablename 
+FROM pg_tables 
+WHERE schemaname = 'public' 
     AND tablename IN (
         'ae_data',
         'ae_qt_data',
@@ -328,6 +355,7 @@ WHERE schemaname = 'public'
         'rate_settings',
         'system_categories',
         'table_row_notes',
+        'usdt_data',
         'usdt_purchase_data',
         'staff_list_ae',
         'staff_list_aeqt'
@@ -344,7 +372,7 @@ ORDER BY tablename;
 -- 4. Paste this entire script
 -- 5. Click "Run"
 -- 
--- All 11 tables will be created with:
+-- All 12 tables will be created with:
 -- - UUID primary keys
 -- - user_id for multi-tenant support
 -- - JSONB data storage

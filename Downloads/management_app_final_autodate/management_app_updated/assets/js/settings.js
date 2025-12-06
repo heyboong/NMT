@@ -1411,19 +1411,51 @@
             }
 
             try {
-                // Sử dụng relative path để hoạt động với cả development và production
-                const apiUrl = window.RATE_PROXY_URL || 
-                              (window.location.protocol === 'file:' ? 'http://localhost:3001' : '') + '/api/p2p-rate/manual';
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ buyPrice, sellPrice })
-                });
+                // Try multiple endpoints
+                const endpoints = [
+                    'http://localhost:3001/api/p2p-rate/manual',
+                    'http://localhost:3000/api/p2p-rate/manual'
+                ];
+                
+                let success = false;
+                for (const apiUrl of endpoints) {
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ buyPrice, sellPrice })
+                        });
 
-                if (response.ok) {
-                    showStatus('✅ Đã lưu giá thủ công thành công!', 'success');
-                } else {
-                    showStatus('❌ Lỗi khi lưu giá thủ công!', 'error');
+                        if (response.ok) {
+                            showStatus('✅ Đã lưu giá thủ công thành công!', 'success');
+                            
+                            // Also save to localStorage for immediate use
+                            const rateSettings = {
+                                sellPrice: sellPrice,
+                                buyPrice: buyPrice,
+                                updatedAt: new Date().toISOString(),
+                                source: 'manual'
+                            };
+                            localStorage.setItem('rate_settings', JSON.stringify(rateSettings));
+                            
+                            success = true;
+                            break;
+                        }
+                    } catch (err) {
+                        console.log(`Failed ${apiUrl}:`, err.message);
+                    }
+                }
+                
+                if (!success) {
+                    // Fallback: save only to localStorage
+                    const rateSettings = {
+                        sellPrice: sellPrice,
+                        buyPrice: buyPrice,
+                        updatedAt: new Date().toISOString(),
+                        source: 'manual'
+                    };
+                    localStorage.setItem('rate_settings', JSON.stringify(rateSettings));
+                    showStatus('✅ Đã lưu giá vào bộ nhớ local (server không hoạt động)!', 'warning');
                 }
             } catch (err) {
                 showStatus('❌ Không thể kết nối đến server!', 'error');

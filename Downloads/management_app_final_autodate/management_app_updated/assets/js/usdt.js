@@ -52,6 +52,11 @@ function loadData() {
             row.inputPrice = row.usdtReceived > 0 ? (row.inputAmount / row.usdtReceived) : 0;
             needsSave = true;
         }
+        // Migrate time field for new time column
+        if (row.time === undefined) {
+            row.time = '00:00';
+            needsSave = true;
+        }
     });
     if (needsSave) saveData();
     
@@ -64,6 +69,10 @@ function loadData() {
 // ====================================
 async function loadP2PRate() {
     try {
+        // First, try to fetch fresh data from API
+        await fetchBinanceP2PRate();
+        
+        // Then read from localStorage (which was just updated)
         const rateData = localStorage.getItem('rate_settings');
         if (rateData) {
             const settings = JSON.parse(rateData);
@@ -98,6 +107,80 @@ async function loadP2PRate() {
     } catch (e) {
         console.error('Error loading P2P rate:', e);
     }
+}
+
+// ====================================
+// Fetch P2P Rate from API
+// ====================================
+async function fetchBinanceP2PRate() {
+    const endpoints = [
+        'http://localhost:3000/api/p2p-rate',
+        'http://localhost:3001/api/p2p-rate',
+        'https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search'
+    ];
+
+    for (const endpoint of endpoints) {
+        try {
+            console.log(`🔄 Trying endpoint: ${endpoint}`);
+            
+            let response;
+            if (endpoint.includes('binance.com')) {
+                // Direct Binance API call
+                response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fiat: 'VND',
+                        page: 1,
+                        rows: 1,
+                        tradeType: 'SELL',
+                        asset: 'USDT',
+                        countries: [],
+                        proMerchantAds: false,
+                        shieldMerchantAds: false,
+                        publisherType: null,
+                        payTypes: []
+                    })
+                });
+            } else {
+                // Proxy endpoint
+                response = await fetch(endpoint);
+            }
+
+            if (!response.ok) continue;
+
+            const data = await response.json();
+            
+            let sellPrice, buyPrice;
+            
+            if (data.data && Array.isArray(data.data)) {
+                // Direct Binance format
+                sellPrice = parseFloat(data.data[0]?.adv?.price || 0);
+                buyPrice = sellPrice;
+            } else if (data.sellPrice) {
+                // Proxy format
+                sellPrice = parseFloat(data.sellPrice);
+                buyPrice = parseFloat(data.buyPrice);
+            }
+
+            if (sellPrice && sellPrice > 0) {
+                const rateSettings = {
+                    sellPrice: sellPrice,
+                    buyPrice: buyPrice || sellPrice,
+                    updatedAt: new Date().toISOString(),
+                    source: endpoint.includes('binance.com') ? 'Binance Direct' : 'Proxy'
+                };
+                
+                localStorage.setItem('rate_settings', JSON.stringify(rateSettings));
+                console.log('✅ P2P rate fetched:', sellPrice, 'from', rateSettings.source);
+                return;
+            }
+        } catch (error) {
+            console.log(`❌ Failed ${endpoint}:`, error.message);
+        }
+    }
+    
+    console.warn('⚠️ All endpoints failed, using cached data');
 }
 
 // ====================================
@@ -144,39 +227,57 @@ function renderTable() {
         return `
             <tr data-index="${index}">
                 <td>
-                    <input type="date" 
-                        value="${row.date || ''}" 
-                        onchange="updateCell(${index}, 'date', this.value)"
-                        style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px;">
+                    <div style="display: grid; grid-template-columns: 1fr 110px; gap: 6px; align-items: center;">
+                        <input type="date" 
+                            value="${row.date || ''}" 
+                            onchange="updateCell(${index}, 'date', this.value)"
+                            style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px;">
+                        <input type="time"
+                            value="${row.time || '00:00'}"
+                            onchange="updateCell(${index}, 'time', this.value)"
+                            style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px;">
+                    </div>
                 </td>
                 <td>
-                    <input type="number" 
-                        value="${row.inputAmount || ''}" 
-                        onchange="updateCell(${index}, 'inputAmount', parseFloat(this.value) || 0)"
-                        placeholder="0"
-                        style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right;">
+                    <div style="position: relative;">
+                        <input type="text" 
+                            value="${row.inputAmount > 0 ? formatNumber(row.inputAmount) : ''}" 
+                            onchange="updateCell(${index}, 'inputAmount', parseFloat(this.value.replace(/\./g, '')) || 0)"
+                            placeholder="0"
+                            style="width: 100%; padding: 8px 24px 8px 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right;">
+                        <span style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: #6b7280; font-weight: 600; pointer-events: none;">₫</span>
+                    </div>
                 </td>
                 <td>
-                    <input type="number" 
-                        value="${row.usdtReceived || ''}" 
-                        onchange="updateCell(${index}, 'usdtReceived', parseFloat(this.value) || 0)"
-                        placeholder="0"
-                        step="0.01"
-                        style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right; background: #eff6ff; font-weight: 600; color: #3b82f6;">
+                    <div style="position: relative;">
+                        <input type="number" 
+                            value="${row.usdtReceived || ''}" 
+                            onchange="updateCell(${index}, 'usdtReceived', parseFloat(this.value) || 0)"
+                            placeholder="0"
+                            step="0.01"
+                            style="width: 100%; padding: 8px 24px 8px 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right; background: #eff6ff; font-weight: 600; color: #3b82f6;">
+                        <span style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: #3b82f6; font-weight: 600; pointer-events: none;">$</span>
+                    </div>
                 </td>
                 <td>
-                    <input type="number" 
-                        value="${inputPrice > 0 ? inputPrice.toFixed(0) : ''}" 
-                        onchange="updateCell(${index}, 'inputPrice', parseFloat(this.value) || 0)"
-                        placeholder="0"
-                        style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right; background: white; font-weight: 600; color: #059669;">
+                    <div style="position: relative;">
+                        <input type="text" 
+                            value="${inputPrice > 0 ? formatNumber(inputPrice.toFixed(0)) : ''}" 
+                            onchange="updateCell(${index}, 'inputPrice', parseFloat(this.value.replace(/\./g, '')) || 0)"
+                            placeholder="0"
+                            style="width: 100%; padding: 8px 24px 8px 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right; background: white; font-weight: 600; color: #059669;">
+                        <span style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: #059669; font-weight: 600; pointer-events: none;">₫</span>
+                    </div>
                 </td>
                 <td>
-                    <input type="number" 
-                        value="${currentP2PRate > 0 ? currentP2PRate.toFixed(0) : ''}" 
-                        readonly
-                        placeholder="0"
-                        style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right; background: #fef3c7; font-weight: 600; color: #92400e; cursor: not-allowed;">
+                    <div style="position: relative;">
+                        <input type="text" 
+                            value="${currentP2PRate > 0 ? formatNumber(currentP2PRate.toFixed(0)) : ''}" 
+                            readonly
+                            placeholder="0"
+                            style="width: 100%; padding: 8px 24px 8px 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right; background: #fef3c7; font-weight: 600; color: #92400e; cursor: not-allowed;">
+                        <span style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: #92400e; font-weight: 600; pointer-events: none;">₫</span>
+                    </div>
                 </td>
                 <td>
                     <input type="text" 
@@ -186,10 +287,16 @@ function renderTable() {
                         style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: center; font-weight: 700; font-size: 15px; cursor: not-allowed; color: ${profitColor}; background: ${profitBg};">
                 </td>
                 <td style="text-align: center;">
-                    <button onclick="deleteRow(${index})" 
-                        style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">
-                        🗑️
-                    </button>
+                    <div style="display: flex; gap: 6px; justify-content: center;">
+                        <button onclick="insertRowAfter(${index})" 
+                            style="padding: 6px 10px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">
+                            ➕ Chèn dưới
+                        </button>
+                        <button onclick="deleteRow(${index})" 
+                            style="padding: 6px 10px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">
+                            🗑️ Xóa
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;
@@ -212,10 +319,13 @@ function updateCell(index, field, value) {
 // Add New Row
 // ====================================
 function addNewRow() {
-    const today = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const time = now.toTimeString().slice(0,5);
     
     usdtData.push({
         date: today,
+        time: time,
         inputAmount: 0,
         usdtReceived: 0,
         inputPrice: 0
@@ -232,6 +342,28 @@ function addNewRow() {
             tbody.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     }, 100);
+}
+
+// ====================================
+// Insert Row After specific index
+// ====================================
+function insertRowAfter(index) {
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const time = now.toTimeString().slice(0,5);
+
+    const newRow = {
+        date: today,
+        time: time,
+        inputAmount: 0,
+        usdtReceived: 0,
+        inputPrice: 0
+    };
+
+    usdtData.splice(index + 1, 0, newRow);
+    saveData();
+    renderTable();
+    updateStatistics();
 }
 
 // ====================================
@@ -349,13 +481,15 @@ function formatCurrency(value) {
 
 function formatNumber(value, decimals = 0) {
     if (typeof value !== 'number' || isNaN(value)) return '0';
-    return value.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    // Use Vietnamese locale for number formatting (. for thousands separator)
+    return value.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
 // Make functions globally accessible
 window.updateCell = updateCell;
 window.deleteRow = deleteRow;
 window.addNewRow = addNewRow;
+window.insertRowAfter = insertRowAfter;
 
 // Add CSS animation
 const style = document.createElement('style');

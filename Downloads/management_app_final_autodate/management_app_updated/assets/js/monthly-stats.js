@@ -27,6 +27,17 @@ function getMonthKey(date) {
 }
 
 /**
+ * Format number with thousands separator
+ */
+function formatNumber(value, decimals = 1) {
+    const num = Number(value || 0);
+    return num.toLocaleString('en-US', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+    });
+}
+
+/**
  * Format month display (MM/YYYY)
  */
 function formatMonth(monthKey) {
@@ -215,45 +226,46 @@ function renderMonthlyTable() {
                     <span>${formatMonth(monthKey)}</span>
                 </div>
             </td>
-            <td style="padding: 12px 8px; text-align: right; border: none; font-size: 12px; font-weight: 600; white-space: nowrap;">
-                <span style="font-family: 'Courier New', monospace; color: #475569;">${data.usdt.toFixed(1)}</span>
+            <td class="stat-usdt-col" style="padding: 12px 8px; text-align: right; border: none; white-space: nowrap;">
+                <div class="stat-chip usdt-chip">
+                    <span class="stat-chip-value">${formatNumber(data.usdt, 1)}</span>
+                    <span class="stat-chip-unit">$</span>
+                </div>
             </td>
-            <td style="padding: 12px 8px; text-align: right; border: none; font-size: 12px; font-weight: 600; white-space: nowrap;">
-                <span style="font-family: 'Courier New', monospace; color: #475569;">${data.usd.toFixed(1)}</span>
+            <td class="stat-usd-col" style="padding: 12px 8px; text-align: right; border: none; white-space: nowrap;">
+                <div class="stat-chip usd-chip">
+                    <span class="stat-chip-value">${formatNumber(data.usd, 1)}</span>
+                    <span class="stat-chip-unit">$</span>
+                </div>
             </td>
             <td style="padding: 12px 8px; text-align: right; border: none; white-space: nowrap;">
                 <div style="display: inline-block; padding: 4px 8px; background: linear-gradient(135deg, #e0e7ff, #c7d2fe); border-radius: 6px; border: 1px solid #a5b4fc;">
-                    <span style="color: #4338ca; font-weight: 700; font-size: 12px;">${formatVND(avgPrice)}</span>
+                    <span style="color: #4338ca; font-weight: 800; font-size: 12px;">${formatVND(avgPrice)}</span>
                 </div>
             </td>
             <td style="padding: 12px 8px; text-align: right; border: none; white-space: nowrap;">
                 <div style="display: inline-block; padding: 4px 8px; background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-radius: 6px; border: 1px solid #6ee7b7;">
-                    <span style="color: #047857; font-weight: 700; font-size: 12px;">${formatVND(data.vndConversion)}</span>
+                    <span style="color: #047857; font-weight: 800; font-size: 12px;">${formatVND(data.vndConversion)}</span>
                 </div>
             </td>
             <td style="padding: 12px 8px; text-align: right; border: none; white-space: nowrap;">
                 <div style="display: inline-block; padding: 4px 8px; background: linear-gradient(135deg, #fee2e2, #fecaca); border-radius: 6px; border: 1px solid #fca5a5;">
-                    <span style="color: #b91c1c; font-weight: 700; font-size: 12px;">${formatVND(data.vndWithdraw)}</span>
+                    <span style="color: #b91c1c; font-weight: 800; font-size: 12px;">${formatVND(data.vndWithdraw)}</span>
                 </div>
             </td>
             <td style="padding: 12px 8px; text-align: right; border: none; white-space: nowrap;">
                 <div style="display: inline-block; padding: 5px 10px; background: linear-gradient(135deg, #d1fae5, #10b981); border-radius: 6px; box-shadow: 0 2px 6px rgba(5, 150, 105, 0.2); border: 1px solid #059669;">
-                    <span style="color: white; font-weight: 700; font-size: 12px; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">${formatVND(data.aeTotal)}</span>
+                    <span style="color: white; font-weight: 800; font-size: 12px; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">${formatVND(data.aeTotal)}</span>
                 </div>
             </td>
             <td style="padding: 12px 8px; text-align: right; border: none; white-space: nowrap;">
                 <div style="display: inline-block; padding: 5px 10px; background: linear-gradient(135deg, #cffafe, #06b6d4); border-radius: 6px; box-shadow: 0 2px 6px rgba(8, 145, 178, 0.2); border: 1px solid #0891b2;">
-                    <span style="color: white; font-weight: 700; font-size: 12px; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">${formatVND(data.aeqtTotal)}</span>
+                    <span style="color: white; font-weight: 800; font-size: 12px; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">${formatVND(data.aeqtTotal)}</span>
                 </div>
             </td>
             <td style="padding: 12px 8px; text-align: right; border: none; white-space: nowrap;">
                 <div style="display: inline-block; padding: 6px 10px; background: linear-gradient(135deg, #fca5a5, #dc2626); border-radius: 6px; box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25); border: 1px solid #b91c1c;">
-                    <span style="color: white; font-weight: 700; font-size: 13px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">${formatVND(totalWork)}</span>
-                </div>
-            </td>
-            <td style="padding: 12px 8px; text-align: right; border: none; white-space: nowrap;">
-                <div style="display: inline-block; padding: 6px 10px; background: linear-gradient(135deg, ${data.totalSum >= 0 ? '#ef4444, #dc2626' : '#10b981, #059669'}); border-radius: 6px; box-shadow: 0 2px 8px ${data.totalSum >= 0 ? 'rgba(220, 38, 38, 0.25)' : 'rgba(5, 150, 105, 0.25)'}; border: 1px solid ${data.totalSum >= 0 ? '#b91c1c' : '#059669'};">
-                    <span style="color: white; font-weight: 700; font-size: 13px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">${formatVND(data.totalSum)}</span>
+                    <span style="color: white; font-weight: 800; font-size: 13px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">${formatVND(totalWork)}</span>
                 </div>
             </td>
         `;
@@ -398,12 +410,29 @@ function renderUSDChart() {
 }
 
 /**
+ * Update badge showing current month total
+ */
+function updateMonthlyTotalBadge() {
+    const badge = document.getElementById('monthly-total-current');
+    if (!badge) return;
+
+    const monthlyData = calculateMonthlyStats();
+    const sortedMonths = Object.keys(monthlyData).sort().reverse();
+    const latestKey = sortedMonths[0];
+    const data = latestKey ? monthlyData[latestKey] : null;
+    const value = data ? data.totalSum : 0;
+
+    badge.textContent = `💎 Tổng: ${formatVND(value)}`;
+}
+
+/**
  * Initialize monthly statistics
  */
 function initMonthlyStats() {
     renderMonthlyTable();
     renderVNDChart();
     renderUSDChart();
+    updateMonthlyTotalBadge();
 }
 
 // Auto refresh on data change

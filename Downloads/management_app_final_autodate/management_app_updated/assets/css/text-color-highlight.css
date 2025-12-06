@@ -1,0 +1,257 @@
+/*
+ * Text Color Highlight System
+ * Cho phép tô màu chữ trong các ô contenteditable để làm điểm nhấn
+ */
+
+/* Color palette cho text highlighting */
+:root {
+    --text-red: #dc2626;
+    --text-orange: #ea580c;
+    --text-yellow: #ca8a04;
+    --text-green: #16a34a;
+    --text-blue: #2563eb;
+    --text-purple: #9333ea;
+    --text-pink: #db2777;
+    --text-gray: #6b7280;
+}
+
+/* Các class màu cho text */
+.text-red { color: var(--text-red) !important; }
+.text-orange { color: var(--text-orange) !important; }
+.text-yellow { color: var(--text-yellow) !important; }
+.text-green { color: var(--text-green) !important; }
+.text-blue { color: var(--text-blue) !important; }
+.text-purple { color: var(--text-purple) !important; }
+.text-pink { color: var(--text-pink) !important; }
+.text-gray { color: var(--text-gray) !important; }
+
+/* Bold variant */
+.text-bold { font-weight: 700 !important; }
+
+/* Toolbar cho text color picker */
+.text-color-toolbar {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    display: none;
+    min-width: 280px;
+}
+
+.text-color-toolbar.active {
+    display: block;
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.text-color-toolbar__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.text-color-toolbar__title {
+    font-weight: 700;
+    font-size: 14px;
+    color: #1f2937;
+}
+
+.text-color-toolbar__close {
+    background: #f3f4f6;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 16px;
+    color: #6b7280;
+    transition: all 0.2s;
+}
+
+.text-color-toolbar__close:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.text-color-toolbar__section {
+    margin-bottom: 16px;
+}
+
+.text-color-toolbar__section:last-child {
+    margin-bottom: 0;
+}
+
+.text-color-toolbar__section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.text-color-toolbar__colors {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.text-color-btn {
+    width: 100%;
+    height: 40px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.text-color-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.text-color-btn.active {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.text-color-btn--red { background: #fee2e2; color: var(--text-red); }
+.text-color-btn--orange { background: #ffedd5; color: var(--text-orange); }
+.text-color-btn--yellow { background: #fef3c7; color: var(--text-yellow); }
+.text-color-btn--green { background: #dcfce7; color: var(--text-green); }
+.text-color-btn--blue { background: #dbeafe; color: var(--text-blue); }
+.text-color-btn--purple { background: #f3e8ff; color: var(--text-purple); }
+.text-color-btn--pink { background: #fce7f3; color: var(--text-pink); }
+.text-color-btn--gray { background: #f3f4f6; color: var(--text-gray); }
+
+.text-color-toolbar__actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.text-color-action-btn {
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.text-color-action-btn:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.text-color-action-btn--bold {
+    background: #fef3c7;
+    border-color: #fbbf24;
+    color: #92400e;
+}
+
+.text-color-action-btn--reset {
+    background: #fee2e2;
+    border-color: #f87171;
+    color: #991b1b;
+}
+
+/* Toggle button cho toolbar */
+.text-color-toggle-btn {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: all 0.3s;
+}
+
+.text-color-toggle-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.text-color-toggle-btn.active {
+    background: #6b7280;
+}
+
+/* Hiển thị hint khi hover cell */
+.sheet td[contenteditable="true"]:hover::after {
+    content: "Nhấn nút 🎨 để tô màu";
+    position: absolute;
+    bottom: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1f2937;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 1000;
+}
+
+.sheet td[contenteditable="true"]:hover:focus::after {
+    opacity: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .text-color-toolbar {
+        right: 10px;
+        left: 10px;
+        min-width: auto;
+    }
+    
+    .text-color-toggle-btn {
+        right: 10px;
+        width: 44px;
+        height: 44px;
+    }
+    
+    .text-color-toolbar__colors {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}

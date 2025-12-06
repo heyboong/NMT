@@ -225,7 +225,26 @@
             // Row header cell showing the row number (starting at 2)
             const th = document.createElement('th');
             th.className = 'row-header';
-            th.textContent = rowIndex + 2;
+            th.style.display = 'flex';
+            th.style.alignItems = 'center';
+            th.style.gap = '6px';
+            th.style.whiteSpace = 'nowrap';
+            th.style.justifyContent = 'flex-start';
+            const rowNumber = document.createElement('span');
+            rowNumber.textContent = rowIndex + 2;
+            const insertBtn = document.createElement('button');
+            insertBtn.type = 'button';
+            insertBtn.textContent = '➕';
+            insertBtn.title = 'Chèn dòng dưới';
+            insertBtn.style.border = '1px solid #d1d5db';
+            insertBtn.style.borderRadius = '6px';
+            insertBtn.style.padding = '2px 6px';
+            insertBtn.style.background = '#f9fafb';
+            insertBtn.style.cursor = 'pointer';
+            insertBtn.style.fontSize = '11px';
+            insertBtn.addEventListener('click', () => insertRowAfter(rowIndex));
+            th.appendChild(rowNumber);
+            th.appendChild(insertBtn);
             tr.appendChild(th);
             // Create editable cells for each defined column
             columns.forEach(col => {
@@ -445,4 +464,42 @@
 
     // Kick off the initial render
     renderTable();
+
+    /**
+     * Insert a blank row immediately below the given index.
+     * Keeps existing data intact and scrolls to the new row.
+     */
+    function insertRowAfter(index) {
+        if (index < -1 || index >= data.length) return;
+        const base = data[index] || {};
+        const newRow = { date: base.date || '', money: '', name: '', chia: '', khoa: '', note: '', tt: '' };
+        data.splice(index + 1, 0, newRow);
+        saveData('AE_sheet', data);
+        renderTable();
+        // Scroll to the newly inserted row
+        const inserted = tableBody?.children[index + 1];
+        if (inserted) {
+            inserted.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            highlightRecentRow(inserted, 3000);
+        }
+    }
+
+    /**
+     * Append a blank row to the end of the sheet.
+     */
+    function addRowToEnd() {
+        const newRow = { date: '', money: '', name: '', chia: '', khoa: '', note: '', tt: '' };
+        data.push(newRow);
+        saveData('AE_sheet', data);
+        renderTable();
+        const last = tableBody?.lastElementChild;
+        if (last) {
+            last.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            highlightRecentRow(last, 3000);
+        }
+    }
+
+    // Expose for debugging (optional)
+    window.AE_insertRowAfter = insertRowAfter;
+    window.AE_addRowToEnd = addRowToEnd;
 })();

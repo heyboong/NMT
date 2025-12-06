@@ -2,10 +2,16 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bảng AE-QT</title>
+    
+    <!-- Preconnect to CDN -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    
     <link rel="stylesheet" href="assets/css/style.css" />
     <link rel="stylesheet" href="assets/css/sheet.css" />
+    <link rel="stylesheet" href="assets/css/text-color-highlight.css" />
 </head>
 <body>
     <nav class="navbar">
@@ -14,12 +20,18 @@
         <a href="AE.html">💼 Bảng AE</a>
         <a href="AE-QT.html" class="active">🌐 Bảng AE-QT</a>
         <a href="balance.html">👥 Danh Sách Tên</a>
-        <a href="usdt.html">💵 Nhập USDT</a>
+        <a href="usdt-purchase.html">💰 Nhập USDT</a>
         <a href="rate.html">💱 Tỷ Giá USD</a>
         <a href="settings.html">⚙️ Cài Đặt</a>
     </nav>
     <div class="container">
-        <h2>🌐 Bảng AE-QT</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px;">
+            <h2 style="margin:0;">🌐 Bảng AE-QT</h2>
+            <div style="display:flex; gap:8px;">
+                <button type="button" onclick="AEQT_addRowToEnd()" style="padding:8px 12px; background:#3b82f6; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer;">➕ Thêm dòng mới</button>
+                <span style="color:#6b7280; font-size:12px; align-self:center;">Hoặc dùng nút ➕ trên cột STT để chèn vào giữa</span>
+            </div>
+        </div>
         <table id="aeqt-table" class="sheet adjustable-table" data-row-resize="true">
             <thead>
                 <tr>
@@ -58,7 +70,6 @@
     <script src="assets/js/button-effects.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="assets/js/export.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="assets/js/supabase-sync.js"></script>
     <script src="assets/js/aeqt.js"></script>
     <script>
@@ -113,21 +124,6 @@
             } else {
                 localStorage.setItem('AEQT_migration_v0.8', 'done');
                 console.log('✅ All TT values already correct (×0.8)');
-            }
-        });
-    </script>
-    <script src="assets/js/row-manager.js"></script>
-    <script>
-        // Initialize Row Manager for AE-QT table
-        document.addEventListener('DOMContentLoaded', function() {
-            const aeqtTable = document.getElementById('AE-QT_sheet');
-            if (aeqtTable) {
-                initRowManager('AE-QT_sheet', {
-                    dateColumn: 0,
-                    storageKey: 'aeqt_table_rows',
-                    autoAddToday: true,
-                    maxRows: 200
-                });
             }
         });
     </script>

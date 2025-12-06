@@ -3,109 +3,17 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nhập USDT - Hệ Thống Quản Lý</title>
+    <meta http-equiv="refresh" content="0;url=usdt-purchase.html">
+    <title>Chuyển hướng...</title>
     <link rel="stylesheet" href="assets/css/style.css" />
-    <link rel="stylesheet" href="assets/css/sheet.css" />
-    <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <a href="index.html">🏠 Trang Chủ</a>
-        <a href="dashboard.html">📊 Bảng Chính</a>
-        <a href="AE.html">💼 Bảng AE</a>
-        <a href="AE-QT.html">🌐 Bảng AE-QT</a>
-        <a href="balance.html">👥 Danh Sách Tên</a>
-        <a href="usdt.html" class="active">💵 Nhập USDT</a>
-        <a href="rate.html">💱 Tỷ Giá USD</a>
-        <a href="settings.html">⚙️ Cài Đặt</a>
-        <a href="system.html">🔧 Quản Lý</a>
-    </nav>
-
-    <div class="container">
-        <!-- Header -->
-        <div style="margin-bottom: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h1 style="margin: 0; color: #1f2937; display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 32px;">💵</span>
-                    Quản Lý Nhập USDT
-                </h1>
-                <div style="display: flex; gap: 12px; align-items: center;">
-                    <div id="p2p-rate-badge" style="padding: 10px 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                        <span>💱 Giá P2P:</span>
-                        <span id="current-p2p-rate">Đang tải...</span>
-                    </div>
-                    <button id="add-row-btn" style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                        <span>➕</span> Thêm Dòng
-                    </button>
-                    <button id="export-btn" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                        <span>📥</span> Xuất Excel
-                    </button>
-                </div>
-            </div>
-
-            <!-- Thống kê -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px;">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 16px; border-radius: 10px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Tổng Tiền Nhập</div>
-                    <div id="stat-total-input" style="font-size: 24px; font-weight: 700;">0₫</div>
-                </div>
-                <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 16px; border-radius: 10px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Tổng USDT Nhận</div>
-                    <div id="stat-total-usdt" style="font-size: 24px; font-weight: 700;">0 $</div>
-                </div>
-                <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 16px; border-radius: 10px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Giá Nhập TB</div>
-                    <div id="stat-avg-price" style="font-size: 24px; font-weight: 700;">0₫</div>
-                </div>
-                <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 16px; border-radius: 10px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Tổng Lãi/Lỗ (%)</div>
-                    <div id="stat-profit-percent" style="font-size: 24px; font-weight: 700;">0%</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bảng dữ liệu -->
-        <div class="table-container" style="background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden;">
-            <table id="usdt-table">
-                <thead>
-                    <tr>
-                        <th style="width: 140px;">Ngày Nhập</th>
-                        <th style="width: 160px;">Tiền Nhập (VND)</th>
-                        <th style="width: 140px;">Nhận USDT ($)</th>
-                        <th style="width: 160px;">Giá Nhập (VND)</th>
-                        <th style="width: 160px;">Giá P2P (VND)</th>
-                        <th style="width: 140px;">Lãi/Lỗ (%)</th>
-                        <th style="width: 100px;">Thao Tác</th>
-                    </tr>
-                </thead>
-                <tbody id="usdt-tbody">
-                    <!-- Data rows will be inserted here -->
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Hướng dẫn -->
-        <div style="margin-top: 24px; padding: 16px; background: #f0f9ff; border-left: 4px solid #3b82f6; border-radius: 8px;">
-            <h3 style="margin: 0 0 12px 0; color: #1e40af; font-size: 16px;">📖 Hướng Dẫn Sử Dụng</h3>
-            <ul style="margin: 0; padding-left: 20px; color: #1e40af; line-height: 1.8;">
-                <li><strong>Ngày Nhập:</strong> Ngày thực hiện giao dịch mua USDT</li>
-                <li><strong>Tiền Nhập:</strong> Số tiền VND bạn đã chi ra</li>
-                <li><strong>Nhận USDT:</strong> Số lượng USDT bạn nhận được</li>
-                <li><strong>Giá Nhập:</strong> <span style="color: #059669; font-weight: 600;">Nhập thủ công</span> - Giá bạn đã mua USDT</li>
-                <li><strong>Giá P2P:</strong> <span style="color: #92400e; font-weight: 600;">Tự động cập nhật</span> - Giá thị trường hiện tại (10 phút/lần)</li>
-                <li><strong>Lãi/Lỗ:</strong> % chênh lệch = ((Giá P2P - Giá Nhập) ÷ Giá Nhập) × 100</li>
-            </ul>
+    <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div style="text-align: center; color: white;">
+            <div style="font-size: 48px; margin-bottom: 16px;">💰</div>
+            <h1 style="margin-bottom: 12px;">Đang chuyển đến trang Nhập USDT...</h1>
+            <p>Nếu không tự động chuyển, <a href="usdt-purchase.html" style="color: #fbbf24; text-decoration: underline;">nhấn vào đây</a></p>
         </div>
     </div>
-
-    <!-- Scripts -->
-    <script src="assets/js/app.js"></script>
-    <script src="assets/js/button-effects.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="assets/js/supabase-sync.js"></script>
-    <script src="assets/js/usdt.js"></script>
 </body>
 </html>

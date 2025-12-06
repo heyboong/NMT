@@ -4,13 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bảng Chính</title>
+    
+    <!-- Preconnect to CDN -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    
     <link rel="stylesheet" href="assets/css/style.css" />
-    <!-- Spreadsheet style for dashboard tables -->
     <link rel="stylesheet" href="assets/css/sheet.css" />
-    <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="assets/css/text-color-highlight.css" />
+    
+    <!-- External libraries with defer -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <nav class="navbar">
@@ -19,7 +24,7 @@
         <a href="AE.html">💼 Bảng AE</a>
         <a href="AE-QT.html">🌐 Bảng AE-QT</a>
         <a href="balance.html">👥 Danh Sách Tên</a>
-        <a href="usdt.html">💵 Nhập USDT</a>
+        <a href="usdt-purchase.html">💰 Nhập USDT</a>
         <a href="rate.html">💱 Tỷ Giá USD</a>
         <a href="settings.html">⚙️ Cài Đặt</a>
     </nav>
@@ -45,27 +50,27 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Ngày hôm nay</td>
+                            <td>Ngày Hôm Nay</td>
                             <td id="dash-today-date"></td>
                         </tr>
                         <tr class="hidden-row">
-                            <td>Giá bán (VND)</td>
+                            <td>Giá Bán (VND)</td>
                             <td id="dash-sell-price"></td>
                         </tr>
                         <tr>
-                            <td>Giá mua P2P (VND)</td>
+                            <td>Giá Mua P2P (VND)</td>
                             <td id="dash-buy-price" style="font-weight: 700; color: #059669;"></td>
                         </tr>
                         <tr>
-                            <td><label for="dash-usdt-amount" id="dash-usdt-amount-label">Nhập số USDT (USDT)</label></td>
+                            <td><label for="dash-usdt-amount" id="dash-usdt-amount-label">Nhập Số USDT (USDT)</label></td>
                             <td><input type="number" id="dash-usdt-amount" step="0.01" min="0" title="Nhập số lượng USDT" placeholder="0.00 USDT" aria-labelledby="dash-usdt-amount-label"></td>
                         </tr>
                         <tr class="hidden-row">
-                            <td>Giá trị bán (VND)</td>
+                            <td>Giá Trị Bán (VND)</td>
                             <td id="dash-usdt-value-sell"></td>
                         </tr>
                         <tr>
-                            <td>Giá trị mua (VND)</td>
+                            <td>Giá Trị Mua (VND)</td>
                             <td id="dash-usdt-value-buy"></td>
                         </tr>
                     </tbody>
@@ -80,11 +85,11 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Tổng USDT (USDT)</td>
+                            <td>Tổng USDT ($)</td>
                             <td id="total-usdt">0.00 USDT</td>
                         </tr>
                         <tr>
-                            <td>Tổng USD (USD)</td>
+                            <td>Tổng USD ($)</td>
                             <td id="total-usd">0.00 USD</td>
                         </tr>
                         <tr>
@@ -107,19 +112,19 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Tổng Bank Đẹp (₫)</td>
+                            <td>Bank Đẹp (₫)</td>
                             <td id="total-bank-dep">0 ₫</td>
                         </tr>
                         <tr>
-                            <td>Tổng Bank Xấu (₫)</td>
+                            <td>Bank Xấu (₫)</td>
                             <td id="total-bank-bad">0 ₫</td>
                         </tr>
                         <tr>
-                            <td>Tổng VISA (₫)</td>
+                            <td>Visa TT (₫)</td>
                             <td id="total-visa">0 ₫</td>
                         </tr>
                         <tr>
-                            <td><strong>Tổng Toàn Bộ (₫)</strong></td>
+                            <td><strong>Tổng Lấy VND (₫)</strong></td>
                             <td id="total-withdraw-all"><strong>0 ₫</strong></td>
                         </tr>
                     </tbody>
@@ -134,6 +139,13 @@
         <div class="sheet-grid">
             <!-- Conversion table (NGÀY ĐỔI) -->
             <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin:0 0 8px 0;">
+                    <h3 style="margin:0; font-size:16px; color:#1f2937;">BẢNG NGÀY ĐỔI</h3>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <button type="button" onclick="DASH_addConversionRow()" style="padding:6px 12px; background:#3b82f6; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer;">➕ Thêm dòng mới</button>
+                        <span style="font-size:12px; color:#6b7280;">Nút ➕ dòng</span>
+                    </div>
+                </div>
                 <table id="conversion-table" class="sheet">
                     <thead>
                         <tr>
@@ -147,7 +159,7 @@
                         </tr>
                         <tr>
                             <th class="row-header">1</th>
-                            <th>Ngày đổi</th>
+                            <th>Ngày Đổi</th>
                             <th>USDT ($)</th>
                             <th>USD ($)</th>
                             <th>Giá (VND)</th>
@@ -163,6 +175,13 @@
             </div>
             <!-- Withdraw table (NGÀY LẤY) -->
             <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin:0 0 8px 0;">
+                    <h3 style="margin:0; font-size:16px; color:#1f2937;">BẢNG NGÀY LẤY</h3>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <button type="button" onclick="DASH_addWithdrawRow()" style="padding:6px 12px; background:#3b82f6; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer;">➕ Thêm dòng mới</button>
+                        <span style="font-size:12px; color:#6b7280;">Nút ➕ dòng</span>
+                    </div>
+                </div>
                 <table id="withdraw-table" class="sheet">
                     <thead>
                         <tr>
@@ -175,10 +194,10 @@
                         </tr>
                         <tr>
                             <th class="row-header">1</th>
-                            <th>Ngày lấy</th>
-                            <th>Bank đẹp (VND)</th>
-                            <th>Bank xấu (VND)</th>
-                            <th>Visa (VND)</th>
+                            <th>Ngày Lấy</th>
+                            <th>Bank Đẹp (VND)</th>
+                            <th>Bank Xấu (VND)</th>
+                            <th>Visa TT (VND)</th>
                             <th>Tên NV</th>
                         </tr>
                     </thead>
@@ -186,7 +205,7 @@
                         <!-- Rows populated by JS -->
                     </tbody>
                 </table>
-                <p id="withdraw-total-display" class="total-display">Tổng cộng: 0</p>
+                <p id="withdraw-total-display" class="total-display">Tổng Lấy VND = 0 ₫</p>
             </div>
         </div>
         <p class="text-hint">Nhập dữ liệu trực tiếp vào ô. Cột VND ở bảng Quy đổi được tính bằng USDT × Giá hoặc USD × Giá nếu không nhập giá trị VND thủ công.</p>
@@ -197,9 +216,9 @@
     <script src="assets/js/app.js"></script>
     <script src="assets/js/note-manager.js"></script>
     <script src="assets/js/button-effects.js"></script>
+    <script src="assets/js/text-color-highlight.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="assets/js/export.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="assets/js/supabase-sync.js"></script>
     <script src="assets/js/dashboard.js"></script>
     <script>
@@ -277,27 +296,6 @@
             exportContainer.appendChild(shareInfo);
             
             container.appendChild(exportContainer);
-        });
-    </script>
-    <script src="assets/js/row-manager.js"></script>
-    <script>
-        // Initialize Row Manager for dashboard tables
-        document.addEventListener('DOMContentLoaded', function() {
-            // Conversion table (NGÀY ĐỔI)
-            initRowManager('conversion-table', {
-                dateColumn: 0,
-                storageKey: 'conversion_table_rows',
-                autoAddToday: true,
-                maxRows: 100
-            });
-
-            // Withdraw table (NGÀY LẤY)
-            initRowManager('withdraw-table', {
-                dateColumn: 0,
-                storageKey: 'withdraw_table_rows',
-                autoAddToday: true,
-                maxRows: 100
-            });
         });
     </script>
     <script src="assets/js/universal-autocomplete.js"></script>

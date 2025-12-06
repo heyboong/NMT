@@ -11,6 +11,7 @@ publish = "C:\\"
 publishOrigin = "config"
 commandOrigin = "config"
 command = "echo 'No build needed - static site'"
+ignore = "git diff --quiet HEAD^ HEAD ./"
 
 [build.environment]
 

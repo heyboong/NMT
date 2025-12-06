@@ -461,20 +461,9 @@
 
     function renderConversionTable() {
         convTableBody.innerHTML = '';
-        
-        // Sắp xếp dữ liệu theo ngày để dòng kẻ xanh hoạt động đúng
-        const sortedData = [...convData].sort((a, b) => {
-            const dateA = normalizeDateForComparison(a.date);
-            const dateB = normalizeDateForComparison(b.date);
-            if (!dateA) return 1;
-            if (!dateB) return -1;
-            return dateA.localeCompare(dateB);
-        });
-        
         let previousDate = null; // Theo dõi ngày trước đó (normalized)
         
-        sortedData.forEach((row, rowIndex) => {
-            const originalIndex = convData.indexOf(row);
+        convData.forEach((row, rowIndex) => {
             const tr = document.createElement('tr');
             
             // Chuẩn hóa và kiểm tra nếu ngày thay đổi so với dòng trước
@@ -488,11 +477,30 @@
             
             const header = document.createElement('th');
             header.className = 'row-header';
-            header.textContent = rowIndex + 2;
+            header.style.display = 'flex';
+            header.style.alignItems = 'center';
+            header.style.gap = '6px';
+            header.style.whiteSpace = 'nowrap';
+            header.style.justifyContent = 'flex-start';
+            const rowNumber = document.createElement('span');
+            rowNumber.textContent = rowIndex + 2;
+            const insertBtn = document.createElement('button');
+            insertBtn.type = 'button';
+            insertBtn.textContent = '➕';
+            insertBtn.title = 'Chèn dòng dưới';
+            insertBtn.style.border = '1px solid #d1d5db';
+            insertBtn.style.borderRadius = '6px';
+            insertBtn.style.padding = '2px 6px';
+            insertBtn.style.background = '#f9fafb';
+            insertBtn.style.cursor = 'pointer';
+            insertBtn.style.fontSize = '11px';
+            insertBtn.addEventListener('click', () => insertConversionRowAfter(rowIndex));
+            header.appendChild(rowNumber);
+            header.appendChild(insertBtn);
             tr.appendChild(header);
             convColumns.forEach(col => {
                 const td = document.createElement('td');
-                td.dataset.row = originalIndex;
+                td.dataset.row = rowIndex;
                 td.dataset.col = col;
                 td.setAttribute('contenteditable', 'true');
                 
@@ -530,7 +538,7 @@
                 
                 // Add blur event to reformat after editing
                 td.addEventListener('blur', function() {
-                    const savedValue = convData[originalIndex][col];
+                    const savedValue = convData[rowIndex][col];
                     if (savedValue && ['price', 'vnd'].includes(col)) {
                         const numValue = parseFloat(savedValue);
                         if (!isNaN(numValue)) {
@@ -549,7 +557,7 @@
                 
                 // Add focus event to show raw number for easier editing
                 td.addEventListener('focus', function() {
-                    const savedValue = convData[originalIndex][col];
+                    const savedValue = convData[rowIndex][col];
                     if (savedValue && ['price', 'vnd', 'usdt', 'usd'].includes(col)) {
                         td.textContent = savedValue;
                     }
@@ -561,6 +569,42 @@
         });
         updateConversionTotal();
         refreshTableResize('conversion-table', { enableRowResize: true });
+    }
+
+    function createEmptyConversionRow(base = {}) {
+        return { date: base.date || '', usdt: '', usd: '', price: base.price || '', vnd: '', staff: '' };
+    }
+
+    function insertConversionRowAfter(index) {
+        if (convData.length >= CONV_MAX_ROWS) {
+            alert('Đã đạt tối đa ' + CONV_MAX_ROWS + ' dòng. Vui lòng xóa bớt trước khi chèn thêm.');
+            return;
+        }
+        const base = convData[index] || {};
+        convData.splice(index + 1, 0, createEmptyConversionRow(base));
+        saveData('dashboard_conversion', convData);
+        renderConversionTable();
+        const inserted = convTableBody?.children[index + 1];
+        if (inserted) {
+            inserted.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            highlightRecentRow(inserted, 3000);
+        }
+    }
+
+    function addConversionRowToEnd() {
+        if (convData.length >= CONV_MAX_ROWS) {
+            alert('Đã đạt tối đa ' + CONV_MAX_ROWS + ' dòng. Vui lòng xóa bớt trước khi thêm.');
+            return;
+        }
+        const base = convData[convData.length - 1] || {};
+        convData.push(createEmptyConversionRow(base));
+        saveData('dashboard_conversion', convData);
+        renderConversionTable();
+        const last = convTableBody?.lastElementChild;
+        if (last) {
+            last.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            highlightRecentRow(last, 3000);
+        }
     }
 
     /**
@@ -890,8 +934,8 @@
 
     /**
      * Compute total for a withdrawal row - uses FormulaEngine.
-     * 
-     * Calculation: Bank đẹp + Bank xấu + Visa
+    * 
+    * Calculation: Bank đẹp + Bank xấu + Visa TT
      * 
      * Business Rule: All withdrawal sources are additive
      * - Each field is optional (defaults to 0 if empty)
@@ -933,20 +977,16 @@
      */
     function renderWithdrawTable() {
         wTableBody.innerHTML = '';
-        
-        // Sắp xếp dữ liệu theo ngày để dòng kẻ xanh hoạt động đúng
-        const sortedData = [...wData].sort((a, b) => {
-            const dateA = normalizeDateForComparison(a.date);
-            const dateB = normalizeDateForComparison(b.date);
-            if (!dateA) return 1;
-            if (!dateB) return -1;
-            return dateA.localeCompare(dateB);
-        });
-        
         let previousDate = null; // Theo dõi ngày trước đó (normalized)
         
-        sortedData.forEach((row, rowIndex) => {
-            const originalIndex = wData.indexOf(row);
+        console.log('🔍 Rendering withdraw table with', wData.length, 'rows');
+        
+        wData.forEach((row, rowIndex) => {
+            // Debug: Log row data to check bankbad values
+            if (row.bankbad) {
+                console.log(`Row ${rowIndex}: bankbad =`, row.bankbad);
+            }
+            
             const tr = document.createElement('tr');
             
             // Chuẩn hóa và kiểm tra nếu ngày thay đổi so với dòng trước
@@ -960,11 +1000,30 @@
             
             const header = document.createElement('th');
             header.className = 'row-header';
-            header.textContent = rowIndex + 2;
+            header.style.display = 'flex';
+            header.style.alignItems = 'center';
+            header.style.gap = '6px';
+            header.style.whiteSpace = 'nowrap';
+            header.style.justifyContent = 'flex-start';
+            const rowNumber = document.createElement('span');
+            rowNumber.textContent = rowIndex + 2;
+            const insertBtn = document.createElement('button');
+            insertBtn.type = 'button';
+            insertBtn.textContent = '➕';
+            insertBtn.title = 'Chèn dòng dưới';
+            insertBtn.style.border = '1px solid #d1d5db';
+            insertBtn.style.borderRadius = '6px';
+            insertBtn.style.padding = '2px 6px';
+            insertBtn.style.background = '#f9fafb';
+            insertBtn.style.cursor = 'pointer';
+            insertBtn.style.fontSize = '11px';
+            insertBtn.addEventListener('click', () => insertWithdrawRowAfter(rowIndex));
+            header.appendChild(rowNumber);
+            header.appendChild(insertBtn);
             tr.appendChild(header);
             wColumns.forEach(col => {
                 const td = document.createElement('td');
-                td.dataset.row = originalIndex;
+                td.dataset.row = rowIndex;
                 td.dataset.col = col;
                 td.setAttribute('contenteditable', 'true');
                 
@@ -987,7 +1046,7 @@
                 
                 // Add blur event to reformat after editing
                 td.addEventListener('blur', function() {
-                    const savedValue = wData[originalIndex][col];
+                    const savedValue = wData[rowIndex][col];
                     if (savedValue && ['bankdep', 'bankbad', 'visa'].includes(col)) {
                         const numValue = parseFloat(savedValue);
                         if (!isNaN(numValue)) {
@@ -998,7 +1057,7 @@
                 
                 // Add focus event to show raw number for easier editing
                 td.addEventListener('focus', function() {
-                    const savedValue = wData[originalIndex][col];
+                    const savedValue = wData[rowIndex][col];
                     if (savedValue && ['bankdep', 'bankbad', 'visa'].includes(col)) {
                         td.textContent = savedValue;
                     }
@@ -1010,6 +1069,42 @@
         });
         updateWithdrawTotal();
         refreshTableResize('withdraw-table', { enableRowResize: true });
+    }
+
+    function createEmptyWithdrawRow(base = {}) {
+        return { date: base.date || '', bankdep: '', bankbad: '', visa: '', staff: '' };
+    }
+
+    function insertWithdrawRowAfter(index) {
+        if (wData.length >= W_MAX_ROWS) {
+            alert('Đã đạt tối đa ' + W_MAX_ROWS + ' dòng. Vui lòng xóa bớt trước khi chèn thêm.');
+            return;
+        }
+        const base = wData[index] || {};
+        wData.splice(index + 1, 0, createEmptyWithdrawRow(base));
+        saveData('dashboard_withdraw', wData);
+        renderWithdrawTable();
+        const inserted = wTableBody?.children[index + 1];
+        if (inserted) {
+            inserted.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            highlightRecentRow(inserted, 3000);
+        }
+    }
+
+    function addWithdrawRowToEnd() {
+        if (wData.length >= W_MAX_ROWS) {
+            alert('Đã đạt tối đa ' + W_MAX_ROWS + ' dòng. Vui lòng xóa bớt trước khi thêm.');
+            return;
+        }
+        const base = wData[wData.length - 1] || {};
+        wData.push(createEmptyWithdrawRow(base));
+        saveData('dashboard_withdraw', wData);
+        renderWithdrawTable();
+        const last = wTableBody?.lastElementChild;
+        if (last) {
+            last.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            highlightRecentRow(last, 3000);
+        }
     }
 
     /**
@@ -1070,7 +1165,7 @@
             const v = computeWithdrawTotal(row);
             if (typeof v === 'number' && !isNaN(v)) sum += v;
         });
-        wTotalDisplay.textContent = 'Tổng cộng: ' + formatVND(sum);
+        wTotalDisplay.textContent = 'TỔNG LẤY VND = Bank đẹp + Bank xấu + Visa TT: ' + formatVND(sum);
         
         // Cập nhật tổng trong bảng tổng
         updateTotalsTable();
@@ -1100,6 +1195,10 @@
             fetchRates();
         });
     }
+
+    // Expose row add helpers for buttons
+    window.DASH_addConversionRow = addConversionRowToEnd;
+    window.DASH_addWithdrawRow = addWithdrawRowToEnd;
     
     renderConversionTable();
     renderWithdrawTable();
