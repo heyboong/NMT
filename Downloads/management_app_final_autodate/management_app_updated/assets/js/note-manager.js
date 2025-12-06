@@ -318,8 +318,11 @@
         contextMenu.classList.add('active');
         contextMenuVisible = true;
 
-        // Update menu items based on note existence
-        const rowIndex = Array.from(row.parentElement.children).indexOf(row);
+        // Get row index from data attribute or calculate from tbody children
+        const rowIndex = row.hasAttribute('data-row-index') 
+            ? parseInt(row.getAttribute('data-row-index'))
+            : Array.from(row.parentElement.children).indexOf(row);
+        
         const hasNote = getNote(currentTable, rowIndex) !== null;
         
         const viewItem = contextMenu.querySelector('[data-action="view-note"]');
@@ -453,7 +456,9 @@
     function saveCurrentNote() {
         if (!currentRow || !currentTable) return;
 
-        const rowIndex = Array.from(currentRow.parentElement.children).indexOf(currentRow);
+        const rowIndex = currentRow.hasAttribute('data-row-index')
+            ? parseInt(currentRow.getAttribute('data-row-index'))
+            : Array.from(currentRow.parentElement.children).indexOf(currentRow);
         const noteText = textarea.value.trim();
 
         saveNote(currentTable, rowIndex, noteText);
@@ -474,7 +479,9 @@
             return;
         }
 
-        const rowIndex = Array.from(currentRow.parentElement.children).indexOf(currentRow);
+        const rowIndex = currentRow.hasAttribute('data-row-index')
+            ? parseInt(currentRow.getAttribute('data-row-index'))
+            : Array.from(currentRow.parentElement.children).indexOf(currentRow);
         deleteNote(currentTable, rowIndex);
         
         showNotification('🗑️ Ghi chú đã được xóa!', 'info');

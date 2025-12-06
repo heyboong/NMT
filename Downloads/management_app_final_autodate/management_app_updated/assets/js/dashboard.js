@@ -496,6 +496,7 @@
         
         convData.forEach((row, rowIndex) => {
             const tr = document.createElement('tr');
+            tr.setAttribute('data-row-index', rowIndex); // For note manager and text highlight
             
             // Chuẩn hóa và kiểm tra nếu ngày thay đổi so với dòng trước
             const currentDate = normalizeDateForComparison(row.date);
@@ -1022,6 +1023,7 @@
             }
             
             const tr = document.createElement('tr');
+            tr.setAttribute('data-row-index', rowIndex); // For note manager
             
             // Chuẩn hóa và kiểm tra nếu ngày thay đổi so với dòng trước
             const currentDate = normalizeDateForComparison(row.date);
