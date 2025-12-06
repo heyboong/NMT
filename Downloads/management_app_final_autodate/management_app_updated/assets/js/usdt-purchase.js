@@ -149,18 +149,16 @@ function loadData() {
                 time: '',
                 purchaseAmount: 0,      // Tiền Nhập (VND) - Số tiền VND nhập vào
                 usdtBuy: 0,             // USDT ($) - Số USDT nhận được
-                buyPrice: 0,            // Giá Nhập (VND) - Giá mua thủ công
                 sellPrice: 0            // Giá P2P Bán (VND) - Giá P2P hiện tại
             });
         }
         saveData();
     }
 
-    // Migration: ensure time and buyPrice fields exist
+    // Migration: ensure time field exists
     usdtPurchaseData = usdtPurchaseData.map(row => ({
         ...row,
-        time: row.time || '',
-        buyPrice: row.buyPrice || 0  // Thêm buyPrice nếu chưa có
+        time: row.time || ''
     }));
     
     renderTable();
@@ -273,8 +271,8 @@ function renderTable() {
     const workTotals = buildWorkTotalsByDate();
 
     tbody.innerHTML = usdtPurchaseData.map((row, index) => {
-        // Giá Nhập (VND) - Manual input từ user
-        const buyPrice = parseFloat(row.buyPrice) || 0;
+        // Giá Nhập (VND) - Auto-calculated: Tiền Nhập ÷ USDT
+        const buyPrice = row.usdtBuy > 0 ? (row.purchaseAmount / row.usdtBuy) : 0;
         
         // Tiền Làm từ bảng AE + AE-QT (cùng ngày)
         const dateKey = normalizeDateKey(row.date);
@@ -324,10 +322,10 @@ function renderTable() {
                 <td>
                     <input type="text" 
                         value="${buyPrice > 0 ? formatCurrency(buyPrice) : ''}" 
-                        onfocus="this.value = this.value.replace(/[^0-9]/g, '')" 
-                        onblur="updateCellCurrency(${index}, 'buyPrice', this.value); this.value = formatCurrency(parseFloat(this.value.replace(/[^0-9]/g, '')) || 0)"
+                        readonly
                         placeholder="0₫"
-                        style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right; background: #fff3cd; font-weight: 600; color: #856404;">
+                        title="Tự động tính: Tiền Nhập ÷ USDT"
+                        style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right; background: #f3f4f6; font-weight: 600; color: #6b7280; cursor: not-allowed;">
                 </td>
                 <td>
                     <input type="text" 
@@ -399,7 +397,6 @@ function updateCellCurrency(index, field, value) {
     if (numericValue > 0 && typeof showSuccess === 'function') {
         const fieldNames = {
             'purchaseAmount': 'Tiền Nhập',
-            'buyPrice': 'Giá Nhập',
             'sellPrice': 'Giá P2P Bán'
         };
         showSuccess(`Đã cập nhật ${fieldNames[field] || field}: ${formatCurrency(numericValue)}`, 2000);
@@ -437,7 +434,6 @@ function addNewRow() {
         time: nowTime,
         purchaseAmount: 0,
         usdtBuy: 0,
-        buyPrice: 0,
         sellPrice: currentP2PRate > 0 ? currentP2PRate : 0  // Tự động điền giá P2P nếu có
     });
     
@@ -471,7 +467,6 @@ function insertRowAfter(index) {
         time: baseTime,
         purchaseAmount: 0,
         usdtBuy: 0,
-        buyPrice: 0,
         sellPrice: currentP2PRate > 0 ? currentP2PRate : (usdtPurchaseData[index]?.sellPrice || 0)
     };
 
@@ -666,7 +661,6 @@ async function clearAllData() {
                 time: '',
                 purchaseAmount: 0,
                 usdtBuy: 0,
-                buyPrice: 0,
                 sellPrice: currentP2PRate > 0 ? currentP2PRate : 0
             });
         }
