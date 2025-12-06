@@ -102,9 +102,19 @@
         // Try to add to dashboard toolbar first, fallback to body
         const toolbar = document.getElementById('dashboard-toolbar');
         if (toolbar) {
+            console.log('✓ Found dashboard toolbar, adding button to toolbar');
             toolbar.appendChild(btn);
         } else {
+            console.log('⚠️ Dashboard toolbar not found, adding button to body');
             document.body.appendChild(btn);
+        }
+        
+        // Verify button was added
+        const addedBtn = document.getElementById('text-color-toggle');
+        if (addedBtn) {
+            console.log('✓ Toggle button successfully added to DOM');
+        } else {
+            console.error('❌ Toggle button not found in DOM after creation');
         }
     }
 
