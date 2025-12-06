@@ -365,6 +365,78 @@ function renderTable() {
             </tr>
         `;
     }).join('');
+    
+    // Tính và cập nhật tổng
+    updateTotals();
+}
+
+// ====================================
+// TÍNH TỔNG
+// ====================================
+
+function updateTotals() {
+    let totalTienNhap = 0;
+    let totalUsdt = 0;
+    let totalTienLam = 0;
+    let sumGiaNhap = 0;
+    let countGiaNhap = 0;
+    let sumLaiLo = 0;
+    let countLaiLo = 0;
+
+    const workTotals = buildWorkTotalsByDate();
+
+    usdtPurchaseData.forEach(row => {
+        // Tổng Tiền Nhập
+        totalTienNhap += parseFloat(row.purchaseAmount) || 0;
+        
+        // Tổng USDT
+        totalUsdt += parseFloat(row.usdtBuy) || 0;
+        
+        // Giá Nhập (để tính trung bình)
+        const buyPrice = row.usdtBuy > 0 ? (row.purchaseAmount / row.usdtBuy) : 0;
+        if (buyPrice > 0) {
+            sumGiaNhap += buyPrice;
+            countGiaNhap++;
+        }
+        
+        // Tiền Làm từ bảng AE + AE-QT
+        const dateKey = normalizeDateKey(row.date);
+        const workAmount = dateKey ? (workTotals[dateKey] || 0) : 0;
+        totalTienLam += workAmount;
+        
+        // Lãi/Lỗ %
+        const profitPercent = (buyPrice > 0 && row.sellPrice > 0)
+            ? ((row.sellPrice - buyPrice) / buyPrice) * 100
+            : null;
+        if (profitPercent !== null) {
+            sumLaiLo += profitPercent;
+            countLaiLo++;
+        }
+    });
+
+    // Giá nhập trung bình
+    const avgGiaNhap = countGiaNhap > 0 ? sumGiaNhap / countGiaNhap : 0;
+    
+    // Lãi/Lỗ trung bình
+    const avgLaiLo = countLaiLo > 0 ? sumLaiLo / countLaiLo : 0;
+
+    // Cập nhật các ô tổng
+    const totalTienNhapEl = document.getElementById('total-tien-nhap');
+    const totalUsdtEl = document.getElementById('total-usdt');
+    const avgGiaNhapEl = document.getElementById('avg-gia-nhap');
+    const totalTienLamEl = document.getElementById('total-tien-lam');
+    const avgLaiLoEl = document.getElementById('avg-lai-lo');
+
+    if (totalTienNhapEl) totalTienNhapEl.textContent = formatCurrency(totalTienNhap);
+    if (totalUsdtEl) totalUsdtEl.textContent = formatUSDT(totalUsdt) + ' $';
+    if (avgGiaNhapEl) avgGiaNhapEl.textContent = formatCurrency(avgGiaNhap);
+    if (totalTienLamEl) totalTienLamEl.textContent = formatCurrency(totalTienLam);
+    
+    if (avgLaiLoEl) {
+        const color = avgLaiLo > 0 ? '#10b981' : avgLaiLo < 0 ? '#ef4444' : '#6b7280';
+        avgLaiLoEl.textContent = avgLaiLo.toFixed(2) + '%';
+        avgLaiLoEl.style.color = color;
+    }
 }
 
 // ====================================
