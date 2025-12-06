@@ -5,15 +5,59 @@
 let usdtPurchaseData = [];
 let currentP2PRate = 0;
 
-// Fetch live P2P sell price (proxy -> direct ticker -> P2P search)
+// Fetch live P2P sell price (Direct Binance P2P API first)
 async function fetchBinanceP2PRate() {
+    console.log('🚀 Fetching P2P rate from Binance...');
+    
+    // Method 1: Direct Binance P2P API (Primary - Most accurate)
+    try {
+        const body = {
+            page: 1,
+            rows: 10,
+            payTypes: [],
+            asset: 'USDT',
+            tradeType: 'SELL',
+            fiat: 'VND',
+            publisherType: null
+        };
+        
+        const res = await fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+        
+        if (res.ok) {
+            const data = await res.json();
+            const ads = data?.data || [];
+            
+            if (ads.length > 0) {
+                // Get top 5 prices and calculate average
+                const prices = ads.slice(0, 5)
+                    .map(ad => parseFloat(ad?.adv?.price))
+                    .filter(price => price > 0);
+                
+                if (prices.length > 0) {
+                    const avg = prices.reduce((sum, p) => sum + p, 0) / prices.length;
+                    console.log('✅ Binance P2P Direct API:', avg, 'VND');
+                    console.log('📊 Top 5 prices:', prices);
+                    return { sellPrice: avg, buyPrice: avg, source: 'binance-p2p' };
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('⚠️ Binance P2P API failed:', e.message);
+    }
+    
+    // Method 2: Try proxy endpoints if configured
     const origin = window.location.origin;
     const proxyUrls = [
         window.RATE_PROXY_URL,
         `${origin}/api/p2p-rate`,
-        `${origin}/.netlify/functions/p2p-rate`,
-        'http://localhost:3000/api/p2p-rate',
-        'http://localhost:3001/api/p2p-rate'
+        `${origin}/.netlify/functions/p2p-rate`
     ].filter(Boolean);
 
     for (const url of proxyUrls) {
@@ -23,56 +67,27 @@ async function fetchBinanceP2PRate() {
             const data = await res.json();
             const sellPrice = parseFloat(data.sellPrice) || 0;
             if (sellPrice > 0) {
+                console.log('✅ Proxy API success:', sellPrice, 'VND');
                 return { sellPrice, buyPrice: sellPrice, source: data.source || 'proxy' };
             }
         } catch (e) {
-            console.warn('Proxy P2P rate failed:', e.message);
+            console.warn('Proxy failed:', e.message);
         }
     }
 
-    // Try simple ticker
+    // Method 3: Binance Spot Ticker (Fallback)
     try {
         const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTVND');
         if (res.ok) {
             const data = await res.json();
             const price = parseFloat(data.price) || 0;
             if (price > 0) {
-                return { sellPrice: price, buyPrice: price, source: 'binance-direct' };
+                console.log('✅ Binance Ticker:', price, 'VND');
+                return { sellPrice: price, buyPrice: price, source: 'binance-ticker' };
             }
         }
     } catch (e) {
         console.warn('Ticker fallback failed:', e.message);
-    }
-
-    // P2P search (average top 5 SELL USDT/VND)
-    try {
-        const body = {
-            page: 1,
-            rows: 5,
-            payTypes: [],
-            asset: 'USDT',
-            tradeType: 'SELL',
-            fiat: 'VND',
-            publisherType: null
-        };
-        const res = await fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        if (res.ok) {
-            const data = await res.json();
-            const ads = data?.data || [];
-            const prices = ads.slice(0, 5)
-                .map(a => parseFloat(a?.adv?.price))
-                .filter(v => isFinite(v) && v > 0);
-            if (prices.length > 0) {
-                const avg = prices.reduce((s, v) => s + v, 0) / prices.length;
-                return { sellPrice: avg, buyPrice: avg, source: 'binance-p2p' };
-            }
-        }
-    } catch (e) {
-        console.warn('P2P endpoint failed:', e.message);
     }
 
     return null;

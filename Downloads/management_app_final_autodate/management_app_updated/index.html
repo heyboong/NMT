@@ -297,56 +297,113 @@
                 return isNaN(parsed) ? 0 : parsed;
             };
             
-        // Fetch Binance P2P Rate
+        // Fetch Binance P2P Rate (Direct API)
         window.fetchBinanceP2PRate = async function() {
-            // Try multiple API endpoints (proxy first, then direct)
+            console.log('🚀 Fetching P2P rate from Binance...');
+            
+            // Method 1: Direct Binance P2P API (Primary)
+            try {
+                const body = {
+                    page: 1,
+                    rows: 10,
+                    payTypes: [],
+                    asset: 'USDT',
+                    tradeType: 'SELL',
+                    fiat: 'VND',
+                    publisherType: null
+                };
+                
+                const response = await fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const ads = data?.data || [];
+                    
+                    if (ads.length > 0) {
+                        // Get top 5 prices and calculate average
+                        const prices = ads.slice(0, 5)
+                            .map(ad => parseFloat(ad?.adv?.price))
+                            .filter(price => price > 0);
+                        
+                        if (prices.length > 0) {
+                            const avgPrice = prices.reduce((sum, p) => sum + p, 0) / prices.length;
+                            console.log('✅ Binance P2P API success:', avgPrice, 'VND');
+                            console.log('📊 Prices:', prices);
+                            
+                            return {
+                                sellPrice: avgPrice,
+                                buyPrice: avgPrice,
+                                source: 'binance-p2p',
+                                lastFetchedAt: new Date().toISOString()
+                            };
+                        }
+                    }
+                }
+            } catch (error) {
+                console.warn('⚠️ Binance P2P API failed:', error.message);
+            }
+            
+            // Method 2: Try proxy endpoints if configured
             const origin = window.location.origin;
-            const apiUrls = [
-                window.RATE_PROXY_URL, // custom override if set
-                `${origin}/api/p2p-rate`, // Netlify/FE proxy route
-                `${origin}/.netlify/functions/p2p-rate`, // Netlify function route
-                'http://localhost:3000/api/p2p-rate',
-                'http://localhost:3001/api/p2p-rate',
-                'https://api.binance.com/api/v3/ticker/price?symbol=USDTVND' // Direct fallback
+            const proxyUrls = [
+                window.RATE_PROXY_URL,
+                `${origin}/api/p2p-rate`,
+                `${origin}/.netlify/functions/p2p-rate`
             ].filter(Boolean);
             
-            for (let apiUrl of apiUrls) {
+            for (let proxyUrl of proxyUrls) {
                 try {
-                    console.log(`🔄 Trying API: ${apiUrl}`);
-                    const response = await fetch(apiUrl, {
+                    console.log(`🔄 Trying proxy: ${proxyUrl}`);
+                    const response = await fetch(proxyUrl, {
                         method: 'GET',
-                        headers: { 'Content-Type': 'application/json' },
-                        timeout: 5000
+                        headers: { 'Content-Type': 'application/json' }
                     });
                     
-                    if (!response.ok) {
-                        console.warn(`⚠️ API ${apiUrl} returned status: ${response.status}`);
-                        continue;
+                    if (response.ok) {
+                        const data = await response.json();
+                        const sellPrice = parseFloat(data.sellPrice) || 0;
+                        
+                        if (sellPrice > 0) {
+                            console.log('✅ Proxy API success:', sellPrice, 'VND');
+                            return {
+                                sellPrice: sellPrice,
+                                buyPrice: parseFloat(data.buyPrice) || sellPrice,
+                                source: data.source || 'proxy',
+                                lastFetchedAt: data.lastFetchedAt || new Date().toISOString()
+                            };
+                        }
                     }
-                    
+                } catch (error) {
+                    console.warn(`⚠️ Proxy ${proxyUrl} failed:`, error.message);
+                }
+            }
+            
+            // Method 3: Fallback to Binance Spot Price (ticker)
+            try {
+                console.log('🔄 Trying Binance Spot Ticker...');
+                const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTVND');
+                if (response.ok) {
                     const data = await response.json();
-                    
-                    // Handle direct Binance API response
-                    if (data.price && apiUrl.includes('binance.com')) {
+                    const price = parseFloat(data.price) || 0;
+                    if (price > 0) {
+                        console.log('✅ Binance Ticker success:', price, 'VND');
                         return {
-                            sellPrice: parseFloat(data.price) || 0,
-                            buyPrice: parseFloat(data.price) || 0,
-                            source: 'binance-direct',
+                            sellPrice: price,
+                            buyPrice: price,
+                            source: 'binance-ticker',
                             lastFetchedAt: new Date().toISOString()
                         };
                     }
-                    
-                    // Handle proxy API response
-                    return {
-                        sellPrice: parseFloat(data.sellPrice) || 0,
-                        buyPrice: parseFloat(data.buyPrice) || 0,
-                        source: data.source || 'proxy',
-                        lastFetchedAt: data.lastFetchedAt || new Date().toISOString()
-                    };
-                } catch (error) {
-                    console.warn(`⚠️ Failed to fetch from ${apiUrl}:`, error.message);
-                    continue;
                 }
+            } catch (error) {
+                console.warn('⚠️ Binance Ticker failed:', error.message);
             }
             
             // All APIs failed, use localStorage fallback
