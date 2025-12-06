@@ -287,11 +287,12 @@ function renderTable() {
                     </div>
                 </td>
                 <td>
-                    <input type="number" 
-                        value="${row.purchaseAmount || ''}" 
-                        onchange="updateCell(${index}, 'purchaseAmount', parseFloat(this.value) || 0)"
-                        placeholder="0"
-                        style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right;">
+                    <input type="text" 
+                        value="${row.purchaseAmount ? formatCurrency(row.purchaseAmount) : ''}" 
+                        onfocus="this.value = this.value.replace(/[^0-9]/g, '')" 
+                        onblur="updateCellCurrency(${index}, 'purchaseAmount', this.value); this.value = formatCurrency(parseFloat(this.value.replace(/[^0-9]/g, '')) || 0)"
+                        placeholder="0₫"
+                        style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right; font-weight: 600;">
                 </td>
                 <td>
                     <input type="number" 
@@ -302,10 +303,10 @@ function renderTable() {
                         style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right; background: #eff6ff; font-weight: 600; color: #3b82f6;">
                 </td>
                 <td>
-                    <input type="number" 
-                        value="${buyPrice > 0 ? buyPrice.toFixed(0) : ''}" 
+                    <input type="text" 
+                        value="${buyPrice > 0 ? formatCurrency(buyPrice) : ''}" 
                         readonly
-                        placeholder="0"
+                        placeholder="0₫"
                         style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right; background: #f3f4f6; font-weight: 600; color: #6b7280; cursor: not-allowed;">
                 </td>
                 <td>
@@ -316,11 +317,12 @@ function renderTable() {
                         style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right; background: #f8fafc; font-weight: 700; color: #0f172a; cursor: not-allowed;">
                 </td>
                 <td>
-                    <input type="number" 
-                        value="${row.sellPrice || ''}" 
-                        onchange="updateCell(${index}, 'sellPrice', parseFloat(this.value) || 0)"
-                        placeholder="${currentP2PRate > 0 ? currentP2PRate : '0'}"
-                        style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right; background: ${row.sellPrice ? 'white' : '#fef3c7'};">
+                    <input type="text" 
+                        value="${row.sellPrice ? formatCurrency(row.sellPrice) : ''}" 
+                        onfocus="this.value = this.value.replace(/[^0-9]/g, '')" 
+                        onblur="updateCellCurrency(${index}, 'sellPrice', this.value); this.value = formatCurrency(parseFloat(this.value.replace(/[^0-9]/g, '')) || 0)"
+                        placeholder="${currentP2PRate > 0 ? formatCurrency(currentP2PRate) : '0₫'}"
+                        style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right; background: ${row.sellPrice ? 'white' : '#fef3c7'}; font-weight: 600;">
                 </td>
                 <td>
                     <input type="text" 
@@ -353,6 +355,21 @@ function updateCell(index, field, value) {
     if (!usdtPurchaseData[index]) return;
     
     usdtPurchaseData[index][field] = value;
+    saveData();
+    renderTable();
+    updateStatistics();
+}
+
+// ====================================
+// Update Cell Currency (for formatted inputs)
+// ====================================
+function updateCellCurrency(index, field, value) {
+    if (!usdtPurchaseData[index]) return;
+    
+    // Remove all non-numeric characters and parse
+    const numericValue = parseFloat(value.replace(/[^0-9]/g, '')) || 0;
+    usdtPurchaseData[index][field] = numericValue;
+    
     saveData();
     renderTable();
     updateStatistics();
@@ -611,5 +628,6 @@ function formatNumber(value, decimals = 0) {
 
 // Make functions globally accessible
 window.updateCell = updateCell;
+window.updateCellCurrency = updateCellCurrency;
 window.deleteRow = deleteRow;
 window.addNewRow = addNewRow;
