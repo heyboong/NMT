@@ -145,18 +145,23 @@ function loadData() {
                 date: '',
                 time: '',
                 purchaseAmount: 0,      // Tiền Nhập (VND) - Số tiền VND nhập vào
-                usdtBuy: 0,             // USDT ($) - Số USDT nhận được
-                sellPrice: 0            // Giá P2P Bán (VND) - Giá P2P hiện tại
+                usdtBuy: 0              // USDT ($) - Số USDT nhận được
+                // sellPrice removed - now uses currentP2PRate from system
             });
         }
         saveData();
     }
 
-    // Migration: ensure time field exists
-    usdtPurchaseData = usdtPurchaseData.map(row => ({
-        ...row,
-        time: row.time || ''
-    }));
+    // Migration: ensure time field exists and remove old sellPrice
+    usdtPurchaseData = usdtPurchaseData.map(row => {
+        const cleanRow = {
+            ...row,
+            time: row.time || ''
+        };
+        // Remove sellPrice from old data
+        delete cleanRow.sellPrice;
+        return cleanRow;
+    });
     
     renderTable();
     updateStatistics();
@@ -279,9 +284,9 @@ function renderTable() {
         const dateKey = normalizeDateKey(row.date);
         const workAmount = dateKey ? (workTotals[dateKey] || 0) : 0;
 
-        // Lãi/Lỗ % theo giá P2P bán so với giá nhập
-        const profitPercent = (buyPrice > 0 && row.sellPrice > 0)
-            ? ((row.sellPrice - buyPrice) / buyPrice) * 100
+        // Lãi/Lỗ % theo giá P2P bán (hệ thống) so với giá nhập
+        const profitPercent = (buyPrice > 0 && currentP2PRate > 0)
+            ? ((currentP2PRate - buyPrice) / buyPrice) * 100
             : null;
         const profitColor = profitPercent === null
             ? '#6b7280'
@@ -339,11 +344,11 @@ function renderTable() {
                 </td>
                 <td>
                     <input type="text" 
-                        value="${row.sellPrice ? formatCurrency(row.sellPrice) : ''}" 
-                        onfocus="this.value = this.value.replace(/[^0-9]/g, '')" 
-                        onblur="updateCellCurrency(${index}, 'sellPrice', this.value); this.value = formatCurrency(parseFloat(this.value.replace(/[^0-9]/g, '')) || 0)"
-                        placeholder="${currentP2PRate > 0 ? formatCurrency(currentP2PRate) : '0₫'}"
-                        style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right; background: ${row.sellPrice ? 'white' : '#fef3c7'}; font-weight: 600;">
+                        value="${currentP2PRate > 0 ? formatCurrency(currentP2PRate) : ''}" 
+                        readonly
+                        placeholder="0₫"
+                        title="Giá P2P tự động cập nhật từ hệ thống (mỗi 5 phút)"
+                        style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right; background: #fef3c7; font-weight: 700; color: #92400e; cursor: not-allowed;">
                 </td>
                 <td>
                     <input type="text" 
@@ -407,9 +412,9 @@ function updateTotals() {
         const workAmount = row.workAmount !== undefined ? row.workAmount : autoWorkAmount;
         totalTienLam += workAmount;
         
-        // Lãi/Lỗ %
-        const profitPercent = (buyPrice > 0 && row.sellPrice > 0)
-            ? ((row.sellPrice - buyPrice) / buyPrice) * 100
+        // Lãi/Lỗ % - Sử dụng giá P2P hiện tại của hệ thống
+        const profitPercent = (buyPrice > 0 && currentP2PRate > 0)
+            ? ((currentP2PRate - buyPrice) / buyPrice) * 100
             : null;
         if (profitPercent !== null) {
             sumLaiLo += profitPercent;
@@ -472,7 +477,6 @@ function updateCellCurrency(index, field, value) {
     if (numericValue > 0 && typeof showSuccess === 'function') {
         const fieldNames = {
             'purchaseAmount': 'Tiền Nhập',
-            'sellPrice': 'Giá P2P Bán',
             'workAmount': 'Tiền Làm'
         };
         showSuccess(`Đã cập nhật ${fieldNames[field] || field}: ${formatCurrency(numericValue)}`, 2000);
@@ -530,8 +534,8 @@ function addNewRow() {
         time: nowTime,
         purchaseAmount: 0,
         usdtBuy: 0,
-        workAmount: undefined,  // Để undefined để tự động tính từ AE/AE-QT
-        sellPrice: currentP2PRate > 0 ? currentP2PRate : 0  // Tự động điền giá P2P nếu có
+        workAmount: undefined  // Để undefined để tự động tính từ AE/AE-QT
+        // sellPrice removed - now uses currentP2PRate from system
     });
     
     saveData();
@@ -564,8 +568,8 @@ function insertRowAfter(index) {
         time: baseTime,
         purchaseAmount: 0,
         usdtBuy: 0,
-        workAmount: undefined,  // Để undefined để tự động tính từ AE/AE-QT
-        sellPrice: currentP2PRate > 0 ? currentP2PRate : (usdtPurchaseData[index]?.sellPrice || 0)
+        workAmount: undefined  // Để undefined để tự động tính từ AE/AE-QT
+        // sellPrice removed - now uses currentP2PRate from system
     };
 
     usdtPurchaseData.splice(index + 1, 0, newRow);
