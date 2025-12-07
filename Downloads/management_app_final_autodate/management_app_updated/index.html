@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://cdn.sheetjs.com https://*.supabase.co wss://*.supabase.co; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.sheetjs.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.exchangerate-api.com https://open.er-api.com https://api.binance.com https://p2p.binance.com https://*.netlify.app https://*.onrender.com;">
     <title>Hệ Thống Quản Lý</title>
     
     <!-- Preconnect to CDN for faster loading -->
@@ -41,6 +42,7 @@
         <a href="balance.html">👥 Danh Sách Tên</a>
         <a href="usdt-purchase.html">💰 Nhập USDT</a>
         <a href="rate.html">💱 Tỷ Giá USD</a>
+        <a href="expense.html">💸 Thu Chi</a>
         <a href="settings.html">⚙️ Cài Đặt</a>
     </nav>
 
@@ -48,10 +50,9 @@
         <!-- Hero Section -->
         <section class="page-hero">
             <div class="hero-text">
-                <p class="eyebrow">Bảng điều khiển</p>
-                <h1>Hệ thống quản lý tài chính</h1>
+                <p class="eyebrow">Bảng Điều Khiển</p>
                 <div class="hero-actions">
-                    <a class="btn btn-primary" href="dashboard.html">Mở bảng chính</a>
+                    <a class="btn btn-primary" href="dashboard.html">Mở Bảng Chính</a>
                     <a class="btn btn-ghost" href="usdt-purchase.html">💰 Nhập USDT</a>
                     <a class="btn btn-ghost" href="AE.html">Bảng AE & AE-QT</a>
                 </div>
@@ -148,8 +149,8 @@
                     <div class="card-body">
                         <h3 class="card-title"><span class="card-icon">💱</span> Tổng tháng trước</h3>
                         <div class="p2p-grid">
-                            <div class="p2p-block">
-                                <div class="p2p-label">Tổng tháng này</div>
+                            <div class="p2p-block p2p-block--month-total">
+                                <div class="p2p-label" id="current-month-label">TỔNG THÁNG 12</div>
                                 <div class="p2p-value" id="home-total-current">—</div>
                             </div>
                             <div class="p2p-block">
@@ -158,7 +159,7 @@
                                 <input id="home-total-prev-input" type="number" step="0.01" placeholder="Nhập giá trị" class="p2p-input">
                             </div>
                             <div class="p2p-block p2p-block--strong p2p-block--red-border">
-                                <div class="p2p-label">TỔNG HIỆN NAY</div>
+                                <div class="p2p-label">TỔNG HIỆN TẠI</div>
                                 <div class="p2p-value" id="home-total-combined">—</div>
                             </div>
                         </div>
@@ -171,9 +172,9 @@
         <div style="margin-bottom: 48px;">
             <h2 style="font-size: 28px; font-weight: 700; color: #1e293b; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
                 <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 4px; height: 32px; border-radius: 2px;"></span>
-                <span>📊 Thống Kê Theo Tháng</span>
-                <span id="monthly-total-current" style="margin-left: auto; background: linear-gradient(135deg, #0ea5e9, #6366f1); color: #f8fafc; padding: 8px 12px; border-radius: 12px; font-size: 14px; font-weight: 800; box-shadow: 0 6px 16px rgba(99,102,241,0.25); white-space: nowrap;">
-                    💎 Tổng: —
+                <span>📊 Thống Kê Tháng</span>
+                <span id="monthly-total-current" style="margin-left: auto; background: linear-gradient(135deg, #0ea5e9, #6366f1); color: #f8fafc; padding: 8px 12px; border-radius: 12px; font-size: 14px; font-weight: 800; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3), 0 0 20px rgba(239, 68, 68, 0.4), 0 6px 16px rgba(99,102,241,0.25); border: 3px solid #ef4444; white-space: nowrap;">
+                    💎 <span id="monthly-badge-label">TỔNG THÁNG 12</span>: —
                 </span>
             </h2>
             
@@ -233,7 +234,7 @@
                             <th style="padding: 12px 8px; text-align: center; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; background: rgba(220, 38, 38, 0.95); border-top-right-radius: 16px; position: relative;">
                                 <div class="stat-head">
                                     <span style="font-size: 12px;">💸</span>
-                                    <span>T.Làm</span>
+                                    <span>Tiền Làm</span>
                                 </div>
                             </th>
                         </tr>
@@ -249,14 +250,14 @@
                 <div style="background: white; padding: 28px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s ease;">
                     <h3 style="margin: 0 0 20px 0; font-size: 18px; font-weight: 700; color: #1e293b; display: flex; align-items: center;">
                         <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 4px; height: 24px; border-radius: 2px; margin-right: 10px;"></span>
-                        📈 Biểu đồ VND theo tháng
+                        📈 Biểu đồ VND tháng
                     </h3>
                     <canvas id="vnd-chart"></canvas>
                 </div>
                 <div style="background: white; padding: 28px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s ease;">
                     <h3 style="margin: 0 0 20px 0; font-size: 18px; font-weight: 700; color: #1e293b; display: flex; align-items: center;">
                         <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 4px; height: 24px; border-radius: 2px; margin-right: 10px;"></span>
-                        💵 Biểu đồ USD/USDT theo tháng
+                        💵 Biểu đồ USD/USDT tháng
                     </h3>
                     <canvas id="usd-chart"></canvas>
                 </div>
@@ -271,6 +272,7 @@
     <script src="assets/js/button-effects.js"></script>
     <script src="assets/js/supabase-sync.js"></script>
     <script src="assets/js/monthly-stats.js"></script>
+    <script src="assets/js/month-label-updater.js"></script>
     <script>
         // Wait for all scripts to load before defining functions
         (function() {

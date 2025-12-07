@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.sheetjs.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.exchangerate-api.com https://open.er-api.com https://api.binance.com https://p2p.binance.com https://*.netlify.app https://*.onrender.com;">
+    <title>Quản Lý Thu Chi</title>
+    
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="assets/css/sheet.css" />
+    <link rel="stylesheet" href="assets/css/expense-enhancements.css" />
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html">🏠 Trang Chủ</a>
+        <a href="dashboard.html">📊 Bảng Chính</a>
+        <a href="AE.html">💼 Bảng AE</a>
+        <a href="AE-QT.html">🌐 Bảng AE-QT</a>
+        <a href="balance.html">👥 Danh Sách Tên</a>
+        <a href="usdt-purchase.html">💰 Nhập USDT</a>
+        <a href="rate.html">💱 Tỷ Giá USD</a>
+        <a href="expense.html" class="active">💸 Thu Chi</a>
+        <a href="settings.html">⚙️ Cài Đặt</a>
+    </nav>
+    
+    <div class="container">
+        <!-- Controls -->
+        <div style="background: white; border-radius: 8px; padding: 20px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb;">
+            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px;">
+                <select id="month-selector" style="padding: 10px 14px; border-radius: 6px; border: 1px solid #d1d5db; background: white; font-size: 14px; font-weight: 500; cursor: pointer; min-width: 160px; color: #374151;">
+                    <!-- Will be populated by JS -->
+                </select>
+                <input type="text" id="search-input" placeholder="Tìm kiếm..." style="flex: 1; min-width: 200px; padding: 10px 14px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 14px; color: #374151;">
+                <input type="date" id="filter-date-from" style="padding: 10px 14px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 14px; color: #374151;">
+                <input type="date" id="filter-date-to" style="padding: 10px 14px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 14px; color: #374151;">
+                <button id="clear-filter-btn" style="padding: 10px 16px; border-radius: 6px; border: 1px solid #d1d5db; background: white; color: #6b7280; font-size: 14px; font-weight: 500; cursor: pointer;">
+                    Xóa Lọc
+                </button>
+                <button id="export-btn" style="padding: 10px 16px; border-radius: 6px; border: 1px solid #3b82f6; background: #3b82f6; color: white; font-size: 14px; font-weight: 500; cursor: pointer;">
+                    Xuất Excel
+                </button>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
+            <div style="background: white; border-radius: 8px; padding: 20px; border: 2px solid #10b981; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div style="font-size: 13px; color: #6b7280; margin-bottom: 8px; font-weight: 600;">Tổng Thu</div>
+                <div style="font-size: 28px; font-weight: 700; color: #10b981; margin-bottom: 4px;" id="total-income">0 ₫</div>
+                <div style="font-size: 13px; color: #9ca3af; font-weight: 500;" id="income-count">0 khoản</div>
+            </div>
+            
+            <div style="background: white; border-radius: 8px; padding: 20px; border: 2px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div style="font-size: 13px; color: #6b7280; margin-bottom: 8px; font-weight: 600;">Tổng Chi</div>
+                <div style="font-size: 28px; font-weight: 700; color: #ef4444; margin-bottom: 4px;" id="total-expense">0 ₫</div>
+                <div style="font-size: 13px; color: #9ca3af; font-weight: 500;" id="expense-count">0 khoản</div>
+            </div>
+            
+            <div style="background: white; border-radius: 8px; padding: 20px; border: 2px solid #3b82f6; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div style="font-size: 13px; color: #6b7280; margin-bottom: 8px; font-weight: 600;">Chênh Lệch</div>
+                <div style="font-size: 28px; font-weight: 700; color: #3b82f6; margin-bottom: 4px;" id="balance">0 ₫</div>
+                <div style="font-size: 13px; color: #9ca3af; font-weight: 500;" id="balance-status">Cân bằng</div>
+            </div>
+            
+            <div style="background: white; border-radius: 8px; padding: 20px; border: 2px solid #6b7280; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div style="font-size: 13px; color: #6b7280; margin-bottom: 8px; font-weight: 600;">Tỷ Lệ Chi</div>
+                <div style="font-size: 28px; font-weight: 700; color: #6b7280; margin-bottom: 4px;" id="expense-ratio">0%</div>
+                <div style="font-size: 13px; color: #9ca3af; font-weight: 500;" id="ratio-status">Tiết kiệm tốt</div>
+            </div>
+        </div>
+
+        <!-- Expense Categories Summary -->
+        <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px; border: 1px solid #e5e7eb;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="margin: 0; color: #374151; font-size: 16px; font-weight: 600;">Chi Tiết Theo Danh Mục</h3>
+                <button id="toggle-category-view" style="padding: 6px 12px; background: #f9fafb; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: #6b7280;">
+                    Xem Biểu Đồ
+                </button>
+            </div>
+            <div id="category-summary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                <!-- Will be populated by JS -->
+            </div>
+        </div>
+
+        <!-- Income & Expense Tables Side by Side -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+            <!-- Expense Table (Left) -->
+            <div>
+                <div style="background: white; border-radius: 8px; padding: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; overflow: hidden;">
+                    <div style="background: #fef2f2; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #fecaca;">
+                        <div>
+                            <h3 style="margin: 0; color: #991b1b; font-size: 16px; font-weight: 600;">Bảng Chi Tiêu</h3>
+                            <p style="margin: 4px 0 0 0; color: #dc2626; font-size: 13px; font-weight: 600;">Tổng: <span id="expense-total-display" style="font-weight: 700;">0 ₫</span></p>
+                        </div>
+                        <button id="add-expense-btn" class="btn-primary" style="padding: 8px 14px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                            + Thêm Dòng
+                        </button>
+                    </div>
+                    <div class="table-container" style="overflow-x: auto; max-height: 600px; overflow-y: auto;">
+                        <table class="sheet" id="expense-table" style="margin: 0; width: 100%; table-layout: fixed;">
+                            <thead style="position: sticky; top: 0; z-index: 10;">
+                                <tr style="background: #f9fafb; color: #374151; font-weight: 600; font-size: 12px;">
+                                    <th style="width: 40px; border: none; padding: 8px 4px; text-align: center;">STT</th>
+                                    <th style="width: 110px; border: none; padding: 8px 4px;">Ngày</th>
+                                    <th style="width: 150px; border: none; padding: 8px 4px;">Danh Mục</th>
+                                    <th style="width: 75px; border: none; padding: 8px 4px; text-align: center;">Tiền</th>
+                                    <th style="width: 130px; border: none; padding: 8px 4px; text-align: right;">Số Tiền</th>
+                                    <th style="width: 130px; border: none; padding: 8px 4px; text-align: right;">VND</th>
+                                    <th style="width: 60px; border: none; padding: 8px 4px; text-align: center;">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expense-tbody">
+                                <!-- Will be populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Income Table (Right) -->
+            <div>
+                <div style="background: white; border-radius: 8px; padding: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; overflow: hidden;">
+                    <div style="background: #f0fdf4; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #bbf7d0;">
+                        <div>
+                            <h3 style="margin: 0; color: #065f46; font-size: 16px; font-weight: 600;">Bảng Thu Nhập</h3>
+                            <p style="margin: 4px 0 0 0; color: #059669; font-size: 13px; font-weight: 600;">Tổng: <span id="income-total-display" style="font-weight: 700;">0 ₫</span></p>
+                        </div>
+                        <button id="add-income-btn" class="btn-primary" style="padding: 8px 14px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                            + Thêm Dòng
+                        </button>
+                    </div>
+                    <div class="table-container" style="overflow-x: auto; max-height: 600px; overflow-y: auto;">
+                        <table class="sheet" id="income-table" style="margin: 0; width: 100%; table-layout: fixed;">
+                            <thead style="position: sticky; top: 0; z-index: 10;">
+                                <tr style="background: #f9fafb; color: #374151; font-weight: 600; font-size: 12px;">
+                                    <th style="width: 40px; border: none; padding: 8px 4px; text-align: center;">STT</th>
+                                    <th style="width: 110px; border: none; padding: 8px 4px;">Ngày</th>
+                                    <th style="width: 150px; border: none; padding: 8px 4px;">Nguồn Thu</th>
+                                    <th style="width: 75px; border: none; padding: 8px 4px; text-align: center;">Tiền</th>
+                                    <th style="width: 130px; border: none; padding: 8px 4px; text-align: right;">Số Tiền</th>
+                                    <th style="width: 130px; border: none; padding: 8px 4px; text-align: right;">VND</th>
+                                    <th style="width: 60px; border: none; padding: 8px 4px; text-align: center;">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="income-tbody">
+                                <!-- Will be populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Suggestions Datalist -->
+    <datalist id="category-suggestions">
+        <option value="🏠 Thuê Nhà">
+        <option value="💡 Điện Nước">
+        <option value="📡 Internet">
+        <option value="🛒 Đi Chợ">
+        <option value="🍜 Ăn Uống">
+        <option value="🚗 Di Chuyển">
+        <option value="🏍️ Xe Cộ">
+        <option value="🏥 Y Tế">
+        <option value="💊 Thuốc Men">
+        <option value="🛡️ Bảo Hiểm">
+        <option value="📱 Thiết Bị">
+        <option value="📞 Điện Thoại">
+        <option value="👕 Quần Áo">
+        <option value="💄 Làm Đẹp">
+        <option value="🎮 Giải Trí">
+        <option value="📚 Học Tập">
+        <option value="❤️ Từ Thiện">
+        <option value="📦 Khác">
+    </datalist>
+
+    <!-- Income Source Suggestions Datalist -->
+    <datalist id="income-suggestions">
+        <option value="💼 Lương">
+        <option value="🎁 Thưởng">
+        <option value="💰 Kinh Doanh">
+        <option value="📈 Đầu Tư">
+        <option value="💻 Freelance">
+        <option value="🛍️ Bán Hàng">
+        <option value="🏠 Cho Thuê">
+        <option value="🏦 Lãi Suất">
+        <option value="💵 Tiền Lãi">
+        <option value="⏰ Thêm Giờ">
+        <option value="📊 Dự Án">
+        <option value="🤝 Hoa Hồng">
+        <option value="💸 Khác">
+    </datalist>
+
+    <!-- Income Modal -->
+    <div id="income-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                <h3 style="margin: 0; color: white; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 24px;">💰</span>
+                    <span>Thêm Khoản Thu</span>
+                </h3>
+                <button class="modal-close" onclick="closeIncomeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 6px;">
+                        <span>📅</span>
+                        <span>Ngày</span>
+                        <span style="color: #ef4444;">*</span>
+                    </label>
+                    <input type="date" id="income-date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 6px;">
+                        <span>💼</span>
+                        <span>Nguồn Thu</span>
+                        <span style="color: #ef4444;">*</span>
+                    </label>
+                    <input type="text" id="income-source" class="form-control" placeholder="VD: Lương tháng 12, Thưởng Tết, Lãi đầu tư..." required>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 6px;">
+                        <span>📝</span>
+                        <span>Mô Tả</span>
+                    </label>
+                    <textarea id="income-description" class="form-control" rows="3" placeholder="Ghi chú chi tiết về khoản thu này..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 6px;">
+                        <span>💵</span>
+                        <span>Số Tiền (₫)</span>
+                        <span style="color: #ef4444;">*</span>
+                    </label>
+                    <input type="text" id="income-amount" class="form-control" placeholder="Nhập số tiền" required style="font-size: 16px; font-weight: 600; color: #059669;">
+                    <small style="display: block; margin-top: 6px; color: #6b7280; font-size: 12px;">💡 Hệ thống tự động định dạng số tiền</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeIncomeModal()">✕ Hủy</button>
+                <button class="btn-primary" onclick="saveIncome()" style="background: #10b981;">💾 Lưu Khoản Thu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expense Modal -->
+    <div id="expense-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                <h3 style="margin: 0; color: white; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 24px;">💸</span>
+                    <span>Thêm Khoản Chi</span>
+                </h3>
+                <button class="modal-close" onclick="closeExpenseModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 6px;">
+                        <span>📅</span>
+                        <span>Ngày</span>
+                        <span style="color: #ef4444;">*</span>
+                    </label>
+                    <input type="date" id="expense-date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 6px;">
+                        <span>📂</span>
+                        <span>Danh Mục</span>
+                        <span style="color: #ef4444;">*</span>
+                    </label>
+                    <select id="expense-category" class="form-control" required style="font-size: 14px;">
+                        <option value="">-- Chọn danh mục chi tiêu --</option>
+                        <optgroup label="🏠 Nhà Ở & Sinh Hoạt">
+                            <option value="Thuê Nhà">🏠 Thuê Nhà</option>
+                            <option value="Điện Nước">💡 Điện Nước</option>
+                            <option value="Internet">📡 Internet/TV</option>
+                        </optgroup>
+                        <optgroup label="🍜 Ăn Uống">
+                            <option value="Đi Chợ">🛒 Đi Chợ/Siêu Thị</option>
+                            <option value="Ăn Uống">🍜 Ăn Uống/Nhà Hàng</option>
+                        </optgroup>
+                        <optgroup label="🚗 Di Chuyển">
+                            <option value="Di Chuyển">🚗 Xăng/Xe/Grab</option>
+                            <option value="Xe Cộ">🏍️ Bảo Dưỡng Xe</option>
+                        </optgroup>
+                        <optgroup label="💊 Sức Khỏe">
+                            <option value="Y Tế">🏥 Khám Bệnh</option>
+                            <option value="Thuốc Men">💊 Thuốc Men</option>
+                            <option value="Bảo Hiểm">🛡️ Bảo Hiểm</option>
+                        </optgroup>
+                        <optgroup label="📱 Công Nghệ & Thiết Bị">
+                            <option value="Thiết Bị">📱 Điện Tử/Thiết Bị</option>
+                            <option value="Điện Thoại">📞 Cước Điện Thoại</option>
+                        </optgroup>
+                        <optgroup label="👕 Cá Nhân">
+                            <option value="Quần Áo">👕 Quần Áo/Phụ Kiện</option>
+                            <option value="Làm Đẹp">💄 Làm Đẹp</option>
+                        </optgroup>
+                        <optgroup label="🎯 Khác">
+                            <option value="Giải Trí">🎮 Giải Trí</option>
+                            <option value="Học Tập">📚 Học Tập/Sách</option>
+                            <option value="Từ Thiện">❤️ Từ Thiện</option>
+                            <option value="Khác">📦 Khác</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 6px;">
+                        <span>📝</span>
+                        <span>Mô Tả</span>
+                    </label>
+                    <textarea id="expense-description" class="form-control" rows="3" placeholder="Ghi chú chi tiết về khoản chi này..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 6px;">
+                        <span>💵</span>
+                        <span>Số Tiền (₫)</span>
+                        <span style="color: #ef4444;">*</span>
+                    </label>
+                    <input type="text" id="expense-amount" class="form-control" placeholder="Nhập số tiền" required style="font-size: 16px; font-weight: 600; color: #dc2626;">
+                    <small style="display: block; margin-top: 6px; color: #6b7280; font-size: 12px;">💡 Hệ thống tự động định dạng số tiền</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeExpenseModal()">✕ Hủy</button>
+                <button class="btn-primary" onclick="saveExpense()" style="background: #ef4444;">💾 Lưu Khoản Chi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load scripts -->
+    <script src="assets/js/notification.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/supabase-sync.js"></script>
+    <script src="assets/js/expense.js"></script>
+</body>
+</html>

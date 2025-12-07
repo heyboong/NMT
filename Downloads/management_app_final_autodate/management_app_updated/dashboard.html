@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.sheetjs.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.exchangerate-api.com https://open.er-api.com https://api.binance.com https://p2p.binance.com https://*.netlify.app https://*.onrender.com;">
     <title>Bảng Chính</title>
     
     <!-- Preconnect to CDN -->
@@ -26,6 +27,7 @@
         <a href="balance.html">👥 Danh Sách Tên</a>
         <a href="usdt-purchase.html">💰 Nhập USDT</a>
         <a href="rate.html">💱 Tỷ Giá USD</a>
+        <a href="expense.html">💸 Thu Chi</a>
         <a href="settings.html">⚙️ Cài Đặt</a>
     </nav>
     <div class="container">
@@ -124,7 +126,7 @@
                             <td id="total-visa">0 ₫</td>
                         </tr>
                         <tr>
-                            <td><strong>Tổng Lấy VND (₫)</strong></td>
+                            <td><strong>Tổng cộng</strong></td>
                             <td id="total-withdraw-all"><strong>0 ₫</strong></td>
                         </tr>
                     </tbody>
@@ -142,17 +144,17 @@
                 <div style="display:flex; justify-content:space-between; align-items:center; margin:0 0 8px 0;">
                     <h3 style="margin:0; font-size:16px; color:#1f2937;">BẢNG NGÀY ĐỔI</h3>
                     <div style="display:flex; gap:8px; align-items:center;">
-                        <button type="button" id="text-color-toggle-conversion" class="text-color-toggle-btn" title="Tô màu chữ trong bảng">
-                            <span style="font-size: 16px;">🎨</span> <span>Tô Màu</span>
+                        <button type="button" id="text-color-toggle-conversion" class="text-color-toggle-btn" title="Tô màu chữ">
+                            <span style="font-size: 12px;">🎨</span> <span>Tô Màu</span>
                         </button>
                         <button type="button" onclick="DASH_addConversionRow()" style="padding:6px 12px; background:#3b82f6; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer;">➕ Thêm dòng mới</button>
-                        <span style="font-size:12px; color:#6b7280;">Nút ➕ dòng</span>
                     </div>
                 </div>
                 <table id="conversion-table" class="sheet">
                     <thead>
                         <tr>
                             <th class="row-header"></th>
+                            <th class="action-header"></th>
                             <th>A</th>
                             <th>B</th>
                             <th>C</th>
@@ -162,36 +164,37 @@
                         </tr>
                         <tr>
                             <th class="row-header">1</th>
+                            <th class="action-header">Chức Năng</th>
                             <th>Ngày Đổi</th>
                             <th>USDT ($)</th>
                             <th>USD ($)</th>
                             <th>Giá (VND)</th>
                             <th>VND (VND)</th>
-                            <th>Tên NV</th>
+                            <th style="color: white;">Tên NV</th>
                         </tr>
                     </thead>
                     <tbody>
                         <!-- Rows populated by JS -->
                     </tbody>
                 </table>
-                <p id="conversion-total-display" class="total-display">Tổng cộng: 0</p>
+                <p id="conversion-total-display" class="total-display">Tổng Cộng: 0 ₫</p>
             </div>
             <!-- Withdraw table (NGÀY LẤY) -->
             <div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin:0 0 8px 0;">
                     <h3 style="margin:0; font-size:16px; color:#1f2937;">BẢNG NGÀY LẤY</h3>
                     <div style="display:flex; gap:8px; align-items:center;">
-                        <button type="button" id="text-color-toggle-withdraw" class="text-color-toggle-btn" title="Tô màu chữ trong bảng">
-                            <span style="font-size: 16px;">🎨</span> <span>Tô Màu</span>
+                        <button type="button" id="text-color-toggle-withdraw" class="text-color-toggle-btn" title="Tô màu chữ">
+                            <span style="font-size: 12px;">🎨</span> <span>Tô Màu</span>
                         </button>
                         <button type="button" onclick="DASH_addWithdrawRow()" style="padding:6px 12px; background:#3b82f6; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer;">➕ Thêm dòng mới</button>
-                        <span style="font-size:12px; color:#6b7280;">Nút ➕ dòng</span>
                     </div>
                 </div>
                 <table id="withdraw-table" class="sheet">
                     <thead>
                         <tr>
                             <th class="row-header"></th>
+                            <th class="action-header"></th>
                             <th>A</th>
                             <th>B</th>
                             <th>C</th>
@@ -200,28 +203,28 @@
                         </tr>
                         <tr>
                             <th class="row-header">1</th>
+                            <th class="action-header">Chức Năng</th>
                             <th>Ngày Lấy</th>
                             <th>Bank Đẹp (VND)</th>
                             <th>Bank Xấu (VND)</th>
                             <th>Visa TT (VND)</th>
-                            <th>Tên NV</th>
+                            <th style="color: white;">Tên NV</th>
                         </tr>
                     </thead>
                     <tbody>
                         <!-- Rows populated by JS -->
                     </tbody>
                 </table>
-                <p id="withdraw-total-display" class="total-display">Tổng Lấy VND = 0 ₫</p>
+                <p id="withdraw-total-display" class="total-display">Tổng Cộng = 0 ₫</p>
             </div>
         </div>
-        <p class="text-hint">Nhập dữ liệu trực tiếp vào ô. Cột VND ở bảng Quy đổi được tính bằng USDT × Giá hoặc USD × Giá nếu không nhập giá trị VND thủ công.</p>
     </div>
 
     <!-- Load shared utilities and dashboard logic -->
     <script src="assets/js/notification.js"></script>
     <script src="assets/js/formulas.js"></script>
     <script src="assets/js/app.js"></script>
-    <script src="assets/js/note-manager.js"></script>
+    <script src="assets/js/inline-note-popup.js"></script>
     <script src="assets/js/button-effects.js"></script>
     <script src="assets/js/text-color-highlight.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
