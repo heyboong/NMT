@@ -30,13 +30,23 @@
         
         // Remove existing toolbar if any
         const existingToolbar = document.getElementById('text-color-toolbar');
-        if (existingToolbar) existingToolbar.remove();
+        if (existingToolbar) {
+            console.log('🗑️ Removing existing toolbar');
+            existingToolbar.remove();
+        }
         
         createToolbarHTML();
         console.log('✓ Toolbar HTML created');
         
-        // Don't create toggle button - use existing buttons in HTML
-        // createToggleButton();
+        // Verify toolbar was created
+        const toolbar = document.getElementById('text-color-toolbar');
+        if (toolbar) {
+            console.log('✅ Toolbar successfully created and found in DOM');
+            console.log('📍 Toolbar initial classes:', toolbar.className);
+            console.log('📍 Toolbar initial style.display:', toolbar.style.display);
+        } else {
+            console.error('❌ CRITICAL: Toolbar not found after creation!');
+        }
         
         attachEventListeners();
         console.log('✓ Event listeners attached');
@@ -52,32 +62,49 @@
         toolbar.id = 'text-color-toolbar';
         toolbar.className = 'text-color-toolbar';
         
+        // Set strong inline styles that override everything
+        toolbar.setAttribute('style', `
+            position: fixed !important;
+            top: 100px !important;
+            right: 20px !important;
+            background: white !important;
+            padding: 20px !important;
+            border-radius: 12px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+            border: 3px solid #3b82f6 !important;
+            z-index: 999999 !important;
+            min-width: 300px !important;
+            max-width: 320px !important;
+            display: none !important;
+        `);
+        
         toolbar.innerHTML = `
-            <div class="text-color-toolbar__header">
-                <div class="text-color-toolbar__title">🎨 Tô Màu Chữ</div>
-                <button class="text-color-toolbar__close" id="text-color-close">✕</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #e5e7eb;">
+                <div style="font-weight: 700; font-size: 16px; color: #1f2937;">🎨 Tô Màu Chữ</div>
+                <button id="text-color-close" style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer; font-weight: 600;">✕ Đóng</button>
             </div>
             
-            <div class="text-color-toolbar__section">
-                <div class="text-color-toolbar__section-title">Chọn Màu</div>
-                <div class="text-color-toolbar__colors" id="text-color-options">
+            <div style="margin-bottom: 16px;">
+                <div style="font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 8px; text-transform: uppercase;">Chọn Màu</div>
+                <div id="text-color-options" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
                     ${colors.map(color => `
-                        <button class="text-color-btn text-color-btn--${color.name}" 
+                        <button class="text-color-btn" 
                                 data-color="${color.class}"
-                                title="${color.label}">
+                                title="${color.label}"
+                                style="height: 45px; border: 2px solid transparent; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s;">
                             ${color.label}
                         </button>
                     `).join('')}
                 </div>
             </div>
             
-            <div class="text-color-toolbar__section">
-                <div class="text-color-toolbar__section-title">Định Dạng</div>
-                <div class="text-color-toolbar__actions">
-                    <button class="text-color-action-btn text-color-action-btn--bold" id="text-bold-btn">
+            <div>
+                <div style="font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 8px; text-transform: uppercase;">Định Dạng</div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                    <button id="text-bold-btn" style="padding: 12px; border: 1px solid #fbbf24; border-radius: 8px; background: #fef3c7; cursor: pointer; font-size: 13px; font-weight: 600; color: #92400e;">
                         <strong>B</strong> In Đậm
                     </button>
-                    <button class="text-color-action-btn text-color-action-btn--reset" id="text-reset-btn">
+                    <button id="text-reset-btn" style="padding: 12px; border: 1px solid #f87171; border-radius: 8px; background: #fee2e2; cursor: pointer; font-size: 13px; font-weight: 600; color: #991b1b;">
                         ✕ Xóa Màu
                     </button>
                 </div>
@@ -85,12 +112,32 @@
         `;
         
         document.body.appendChild(toolbar);
-        console.log('✓ Toolbar added to body, ID:', toolbar.id);
+        console.log('✅ Toolbar added to body with strong inline styles');
         
-        // Verify toolbar is in DOM
+        // Apply color button styles
+        setTimeout(() => {
+            const colorBtns = toolbar.querySelectorAll('.text-color-btn');
+            colorBtns.forEach((btn, index) => {
+                const color = colors[index];
+                if (color.name === 'red') btn.style.background = '#fee2e2';
+                if (color.name === 'orange') btn.style.background = '#ffedd5';
+                if (color.name === 'yellow') btn.style.background = '#fef3c7';
+                if (color.name === 'green') btn.style.background = '#dcfce7';
+                if (color.name === 'blue') btn.style.background = '#dbeafe';
+                if (color.name === 'purple') btn.style.background = '#f3e8ff';
+                if (color.name === 'pink') btn.style.background = '#fce7f3';
+                if (color.name === 'gray') btn.style.background = '#f3f4f6';
+            });
+        }, 50);
+        
+        // Verify
         setTimeout(() => {
             const check = document.getElementById('text-color-toolbar');
-            console.log('✓ Toolbar verification:', !!check, check ? 'Found' : 'Not found');
+            console.log('✅ Toolbar verification:', !!check);
+            if (check) {
+                const rect = check.getBoundingClientRect();
+                console.log('📍 Toolbar position:', { top: rect.top, right: window.innerWidth - rect.right, width: rect.width, height: rect.height });
+            }
         }, 100);
     }
 
@@ -130,6 +177,9 @@
         const toolbar = document.getElementById('text-color-toolbar');
         const toggleBtnConversion = document.getElementById('text-color-toggle-conversion');
         const toggleBtnWithdraw = document.getElementById('text-color-toggle-withdraw');
+        const toggleBtnAE = document.getElementById('text-color-toggle-ae');
+        const toggleBtnAEQT = document.getElementById('text-color-toggle-aeqt');
+        const toggleBtnExpense = document.getElementById('text-color-toggle-expense');
         const closeBtn = document.getElementById('text-color-close');
         const colorOptions = document.getElementById('text-color-options');
         const boldBtn = document.getElementById('text-bold-btn');
@@ -146,7 +196,7 @@
             return;
         }
 
-        // Toggle toolbar from conversion table button
+        // Toggle toolbar from conversion table button (Dashboard)
         if (toggleBtnConversion) {
             toggleBtnConversion.addEventListener('click', (e) => {
                 console.log('🖱️ Conversion table toggle button clicked!');
@@ -157,7 +207,7 @@
             console.log('✓ Conversion toggle button listener attached');
         }
 
-        // Toggle toolbar from withdraw table button
+        // Toggle toolbar from withdraw table button (Dashboard)
         if (toggleBtnWithdraw) {
             toggleBtnWithdraw.addEventListener('click', (e) => {
                 console.log('🖱️ Withdraw table toggle button clicked!');
@@ -166,6 +216,39 @@
                 toggleToolbar();
             });
             console.log('✓ Withdraw toggle button listener attached');
+        }
+
+        // Toggle toolbar from AE page button
+        if (toggleBtnAE) {
+            toggleBtnAE.addEventListener('click', (e) => {
+                console.log('🖱️ AE table toggle button clicked!');
+                e.preventDefault();
+                e.stopPropagation();
+                toggleToolbar();
+            });
+            console.log('✓ AE toggle button listener attached');
+        }
+
+        // Toggle toolbar from AE-QT page button
+        if (toggleBtnAEQT) {
+            toggleBtnAEQT.addEventListener('click', (e) => {
+                console.log('🖱️ AE-QT table toggle button clicked!');
+                e.preventDefault();
+                e.stopPropagation();
+                toggleToolbar();
+            });
+            console.log('✓ AE-QT toggle button listener attached');
+        }
+
+        // Toggle toolbar from Expense page button
+        if (toggleBtnExpense) {
+            toggleBtnExpense.addEventListener('click', (e) => {
+                console.log('🖱️ Expense table toggle button clicked!');
+                e.preventDefault();
+                e.stopPropagation();
+                toggleToolbar();
+            });
+            console.log('✓ Expense toggle button listener attached');
         }
 
         closeBtn.addEventListener('click', hideToolbar);
@@ -200,7 +283,10 @@
         // Close toolbar when clicking outside
         document.addEventListener('click', (e) => {
             const isToggleBtn = e.target.closest('#text-color-toggle-conversion') || 
-                                e.target.closest('#text-color-toggle-withdraw');
+                                e.target.closest('#text-color-toggle-withdraw') ||
+                                e.target.closest('#text-color-toggle-ae') ||
+                                e.target.closest('#text-color-toggle-aeqt') ||
+                                e.target.closest('#text-color-toggle-expense');
             
             if (toolbarVisible && 
                 !toolbar.contains(e.target) && 
@@ -235,14 +321,17 @@
     function toggleToolbar() {
         console.log('🔄 Toggling toolbar...');
         const toolbar = document.getElementById('text-color-toolbar');
-        const toggleBtnConversion = document.getElementById('text-color-toggle-conversion');
-        const toggleBtnWithdraw = document.getElementById('text-color-toggle-withdraw');
-        
-        console.log('📍 Toolbar element:', toolbar);
-        console.log('📍 Toggle buttons:', { conversion: !!toggleBtnConversion, withdraw: !!toggleBtnWithdraw });
+        const toggleBtns = [
+            document.getElementById('text-color-toggle-conversion'),
+            document.getElementById('text-color-toggle-withdraw'),
+            document.getElementById('text-color-toggle-ae'),
+            document.getElementById('text-color-toggle-aeqt'),
+            document.getElementById('text-color-toggle-expense')
+        ].filter(btn => btn !== null);
         
         if (!toolbar) {
-            console.error('❌ Toolbar not found in toggleToolbar');
+            console.error('❌ Toolbar not found!');
+            alert('⚠️ Lỗi: Không tìm thấy toolbar. Vui lòng reload trang!');
             return;
         }
         
@@ -250,15 +339,41 @@
         console.log('📊 Toolbar visible:', toolbarVisible);
         
         if (toolbarVisible) {
+            // FORCE SHOW with setAttribute to override everything
+            toolbar.setAttribute('style', `
+                position: fixed !important;
+                top: 100px !important;
+                right: 20px !important;
+                background: white !important;
+                padding: 20px !important;
+                border-radius: 12px !important;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+                border: 3px solid #10b981 !important;
+                z-index: 999999 !important;
+                min-width: 300px !important;
+                max-width: 320px !important;
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            `);
+            
             toolbar.classList.add('active');
-            console.log('📍 Toolbar classes after add:', toolbar.className);
-            if (toggleBtnConversion) toggleBtnConversion.classList.add('active');
-            if (toggleBtnWithdraw) toggleBtnWithdraw.classList.add('active');
+            toggleBtns.forEach(btn => btn.classList.add('active'));
+            
+            const rect = toolbar.getBoundingClientRect();
+            console.log('✅ TOOLBAR NOW VISIBLE!');
+            console.log('📍 Position:', { 
+                top: rect.top, 
+                right: window.innerWidth - rect.right, 
+                width: rect.width, 
+                height: rect.height,
+                display: window.getComputedStyle(toolbar).display,
+                zIndex: window.getComputedStyle(toolbar).zIndex
+            });
+            
             updateToolbarState();
-            console.log('✓ Toolbar opened');
         } else {
             hideToolbar();
-            console.log('✓ Toolbar closed');
         }
     }
 
@@ -267,19 +382,35 @@
      */
     function hideToolbar() {
         const toolbar = document.getElementById('text-color-toolbar');
-        const toggleBtnConversion = document.getElementById('text-color-toggle-conversion');
-        const toggleBtnWithdraw = document.getElementById('text-color-toggle-withdraw');
+        const toggleBtns = [
+            document.getElementById('text-color-toggle-conversion'),
+            document.getElementById('text-color-toggle-withdraw'),
+            document.getElementById('text-color-toggle-ae'),
+            document.getElementById('text-color-toggle-aeqt'),
+            document.getElementById('text-color-toggle-expense')
+        ].filter(btn => btn !== null);
         
         if (toolbar) {
+            toolbar.setAttribute('style', `
+                position: fixed !important;
+                top: 100px !important;
+                right: 20px !important;
+                background: white !important;
+                padding: 20px !important;
+                border-radius: 12px !important;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+                border: 3px solid #3b82f6 !important;
+                z-index: 999999 !important;
+                min-width: 300px !important;
+                max-width: 320px !important;
+                display: none !important;
+            `);
             toolbar.classList.remove('active');
         }
-        if (toggleBtnConversion) {
-            toggleBtnConversion.classList.remove('active');
-        }
-        if (toggleBtnWithdraw) {
-            toggleBtnWithdraw.classList.remove('active');
-        }
+        
+        toggleBtns.forEach(btn => btn.classList.remove('active'));
         toolbarVisible = false;
+        console.log('✓ Toolbar hidden');
     }
 
     /**

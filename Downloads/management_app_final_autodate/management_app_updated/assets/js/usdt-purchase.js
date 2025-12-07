@@ -245,6 +245,13 @@ window.loadP2PRate = loadP2PRate;
 function saveData() {
     try {
         localStorage.setItem('usdt_purchase_data', JSON.stringify(usdtPurchaseData));
+        
+        // Auto-sync to Supabase if available
+        if (window.SupabaseSync && typeof window.SupabaseSync.push === 'function') {
+            window.SupabaseSync.push('usdt_purchase_data').catch(err => {
+                console.log('⏭️ Supabase sync skipped:', err.message);
+            });
+        }
     } catch (e) {
         console.error('Error saving data:', e);
         if (typeof showError === 'function') {

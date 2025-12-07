@@ -183,6 +183,13 @@ async function fetchBinanceP2PRate() {
 function saveData() {
     try {
         localStorage.setItem('usdt_data', JSON.stringify(usdtData));
+        
+        // Auto-sync to Supabase if available
+        if (window.SupabaseSync && typeof window.SupabaseSync.push === 'function') {
+            window.SupabaseSync.push('usdt_data').catch(err => {
+                console.log('⏭️ Supabase sync skipped:', err.message);
+            });
+        }
     } catch (e) {
         console.error('Error saving data:', e);
         alert('Lỗi khi lưu dữ liệu!');

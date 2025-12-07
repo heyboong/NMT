@@ -131,9 +131,11 @@
         try {
             localStorage.setItem(key, JSON.stringify(data));
             
-            // Trigger Supabase sync if available
-            if (window.SupabaseSync && typeof window.SupabaseSync.syncToSupabase === 'function') {
-                window.SupabaseSync.syncToSupabase(key, data);
+            // Trigger Supabase sync if available (updated API)
+            if (window.SupabaseSync && typeof window.SupabaseSync.push === 'function') {
+                window.SupabaseSync.push(key).catch(err => {
+                    console.log('⏭️ Supabase sync skipped:', err.message);
+                });
             }
         } catch (err) {
             console.error('Error saving data:', err);

@@ -92,6 +92,13 @@
                 window.APP_SETTINGS = settings;
             }
             
+            // Auto-sync to Supabase if available
+            if (window.SupabaseSync && typeof window.SupabaseSync.push === 'function') {
+                window.SupabaseSync.push(SETTINGS_KEY).catch(err => {
+                    console.log('⏭️ Supabase sync skipped:', err.message);
+                });
+            }
+            
             return true;
         } catch (err) {
             console.error('Failed to save settings:', err);

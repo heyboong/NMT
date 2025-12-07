@@ -12,7 +12,6 @@
     
     <link rel="stylesheet" href="assets/css/style.css" />
     <link rel="stylesheet" href="assets/css/sheet.css" />
-    <link rel="stylesheet" href="assets/css/text-color-highlight.css" />
     
     <!-- External libraries with defer -->
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -31,7 +30,7 @@
         <a href="settings.html">⚙️ Cài Đặt</a>
     </nav>
     <div class="container">
-        <h2>📊 Tổng quan</h2>
+        <h2>📊 Tổng Quan</h2>
         <div class="alert-banner" id="rate-alert-banner" data-status="idle">
             <span class="alert-banner__message" id="rate-alert-message">Đang chờ dữ liệu cảnh báo...</span>
             <span class="alert-banner__badge" id="rate-alert-badge">Đang cập nhật</span>
@@ -135,23 +134,13 @@
         </div>
 
         <!-- Các bảng nhập dữ liệu trực tiếp giống mẫu -->
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-            <h2 style="margin:0;">📝 Bảng nhập dữ liệu</h2>
-            <div id="dashboard-toolbar" style="display: flex; gap: 8px; align-items: center;">
-                <!-- Text color highlight button will be added here -->
-            </div>
-        </div>
+        <h2>📝 Bảng nhập dữ liệu</h2>
         <div class="sheet-grid">
             <!-- Conversion table (NGÀY ĐỔI) -->
             <div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin:0 0 8px 0;">
                     <h3 style="margin:0; font-size:16px; color:#1f2937;">BẢNG NGÀY ĐỔI</h3>
-                    <div style="display:flex; gap:8px; align-items:center;">
-                        <button type="button" id="text-color-toggle-conversion" class="text-color-toggle-btn" title="Tô màu chữ">
-                            <span style="font-size: 12px;">🎨</span> <span>Tô Màu</span>
-                        </button>
-                        <button type="button" onclick="DASH_addConversionRow()" style="padding:6px 12px; background:#3b82f6; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer;">➕ Thêm dòng</button>
-                    </div>
+                    <button type="button" onclick="DASH_addConversionRow()" style="padding:6px 12px; background:#3b82f6; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer;">➕ Thêm dòng</button>
                 </div>
                 <table id="conversion-table" class="sheet">
                     <thead>
@@ -186,12 +175,7 @@
             <div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin:0 0 8px 0;">
                     <h3 style="margin:0; font-size:16px; color:#1f2937;">BẢNG NGÀY LẤY</h3>
-                    <div style="display:flex; gap:8px; align-items:center;">
-                        <button type="button" id="text-color-toggle-withdraw" class="text-color-toggle-btn" title="Tô màu chữ">
-                            <span style="font-size: 12px;">🎨</span> <span>Tô Màu</span>
-                        </button>
-                        <button type="button" onclick="DASH_addWithdrawRow()" style="padding:6px 12px; background:#3b82f6; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer;">➕ Thêm dòng</button>
-                    </div>
+                    <button type="button" onclick="DASH_addWithdrawRow()" style="padding:6px 12px; background:#3b82f6; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer;">➕ Thêm dòng</button>
                 </div>
                 <table id="withdraw-table" class="sheet">
                     <thead>
@@ -229,7 +213,6 @@
     <script src="assets/js/app.js"></script>
     <script src="assets/js/inline-note-popup.js"></script>
     <script src="assets/js/button-effects.js"></script>
-    <script src="assets/js/text-color-highlight.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="assets/js/export.js"></script>
     <script src="assets/js/supabase-sync.js"></script>

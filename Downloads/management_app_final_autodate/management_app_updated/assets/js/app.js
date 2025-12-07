@@ -47,12 +47,20 @@ window.addEventListener('settingsUpdated', (event) => {
 
 /**
  * Persist data under a given key in localStorage.
+ * Auto-triggers Supabase sync if available.
  * @param {string} key - Storage key.
  * @param {*} data - Data to save (will be JSON stringified).
  */
 function saveData(key, data) {
     try {
         localStorage.setItem(key, JSON.stringify(data));
+        
+        // Auto-sync to Supabase if sync module is available
+        if (window.SupabaseSync && typeof window.SupabaseSync.push === 'function') {
+            window.SupabaseSync.push(key).catch(err => {
+                console.log('⏭️ Supabase sync skipped:', err.message);
+            });
+        }
     } catch (err) {
         console.error('Error saving data for', key, err);
     }

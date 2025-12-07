@@ -144,6 +144,13 @@
     function saveNotes(notes) {
         try {
             localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes));
+            
+            // Auto-sync to Supabase if available
+            if (window.SupabaseSync && typeof window.SupabaseSync.push === 'function') {
+                window.SupabaseSync.push(NOTES_STORAGE_KEY).catch(err => {
+                    console.log('⏭️ Supabase sync skipped:', err.message);
+                });
+            }
         } catch (err) {
             console.error('Error saving notes:', err);
         }

@@ -40,6 +40,13 @@ function saveStaffList() {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(staffList));
         console.log('✅ Staff list saved');
+        
+        // Auto-sync to Supabase if available
+        if (window.SupabaseSync && typeof window.SupabaseSync.push === 'function') {
+            window.SupabaseSync.push(STORAGE_KEY).catch(err => {
+                console.log('⏭️ Supabase sync skipped:', err.message);
+            });
+        }
     } catch (e) {
         console.error('Error saving staff list:', e);
         alert('Lỗi khi lưu danh sách!');

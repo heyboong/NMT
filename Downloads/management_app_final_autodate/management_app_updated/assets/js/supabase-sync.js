@@ -21,9 +21,12 @@ const SYNC_KEYS = {
     'rate-settings': 'rate_settings',         // Cài đặt tỷ giá
     'system_categories': 'system_categories', // Danh mục hệ thống
     'table_row_notes': 'table_row_notes',     // Ghi chú dòng bảng
-    'usdt_data': 'usdt_data',                 // Bảng Nhập USDT (mới)
+    'usdt_data': 'usdt_data',                 // Bảng USDT
+    'usdt_purchase_data': 'usdt_purchase_data', // Bảng Nhập USDT (mới)
+    'staff_list': 'staff_list',               // Danh sách nhân viên
     'staff_list_ae': 'staff_list_ae',         // Danh sách NV Bảng AE
-    'staff_list_aeqt': 'staff_list_aeqt'      // Danh sách NV Bảng AE-QT
+    'staff_list_aeqt': 'staff_list_aeqt',     // Danh sách NV Bảng AE-QT
+    'app_settings': 'app_settings'            // Cài đặt ứng dụng
     // Note: System table data (system_table_*) will be synced dynamically
 };
 
