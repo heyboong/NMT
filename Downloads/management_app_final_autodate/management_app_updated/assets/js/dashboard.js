@@ -209,8 +209,6 @@
         
         let fetchedFromAPI = false;
         try {
-            console.log('🔄 Fetching P2P rates from API...');
-            
             // Try Netlify Function first (bypasses CORS)
             const origin = window.location.origin;
             const endpoints = [
@@ -220,7 +218,6 @@
             
             for (const endpoint of endpoints) {
                 try {
-                    console.log(`🔄 Trying: ${endpoint}`);
                     const res = await fetch(endpoint, {
                         cache: 'no-cache',
                         headers: {
@@ -230,12 +227,10 @@
                     });
                     
                     if (!res.ok) {
-                        console.log(`⏭️ Skipping unavailable endpoint: ${endpoint}`);
                         continue;
                     }
                     
                     const data = await res.json();
-                    console.log('📊 API Response:', data);
                     
                     if (data && (data.sellPrice || data.buyPrice)) {
                         sellPrice = parseFloat(data.sellPrice) || 0;

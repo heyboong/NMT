@@ -18,19 +18,17 @@ async function fetchBinanceP2PRate() {
     
     for (let url of netlifyUrls) {
         try {
-            console.log(`🔄 Trying Netlify Function: ${url}`);
             const res = await fetch(url, { method: 'GET' });
             if (res.ok) {
                 const data = await res.json();
                 const sellPrice = parseFloat(data.sellPrice) || 0;
                 if (sellPrice > 0) {
-                    console.log('✅ Netlify Function success:', sellPrice, 'VND');
+                    console.log('✅ P2P rate loaded:', sellPrice, 'VND');
                     return { sellPrice, buyPrice: sellPrice, source: data.source || 'netlify-function' };
                 }
             }
         } catch (e) {
-            // Silently skip if Netlify function doesn't exist
-            console.log(`⏭️ Skipping unavailable endpoint: ${url}`);
+            // Silently skip if endpoint unavailable
         }
     }
     
@@ -47,11 +45,11 @@ async function fetchBinanceP2PRate() {
             const data = await res.json();
             const sellPrice = parseFloat(data.sellPrice) || 0;
             if (sellPrice > 0) {
-                console.log('✅ Proxy API success:', sellPrice, 'VND');
+                console.log('✅ P2P rate loaded:', sellPrice, 'VND');
                 return { sellPrice, buyPrice: sellPrice, source: data.source || 'proxy' };
             }
         } catch (e) {
-            console.log('⏭️ Proxy not available');
+            // Silently skip
         }
     }
 
@@ -62,12 +60,12 @@ async function fetchBinanceP2PRate() {
             const data = await res.json();
             const price = parseFloat(data.price) || 0;
             if (price > 0) {
-                console.log('✅ Binance Ticker:', price, 'VND');
+                console.log('✅ P2P rate loaded:', price, 'VND');
                 return { sellPrice: price, buyPrice: price, source: 'binance-ticker' };
             }
         }
     } catch (e) {
-        console.log('⏭️ Ticker fallback not available');
+        // Ticker not available
     }
 
     return null;
