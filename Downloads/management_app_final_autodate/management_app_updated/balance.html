@@ -363,12 +363,17 @@
         // Save staff list to localStorage
         function saveStaffListData(type) {
             try {
-                if (type === 'ae') {
-                    localStorage.setItem(STAFF_AE_KEY, JSON.stringify(staffListAE));
-                    console.log('✅ Staff AE saved:', staffListAE);
-                } else {
-                    localStorage.setItem(STAFF_AEQT_KEY, JSON.stringify(staffListAEQT));
-                    console.log('✅ Staff AE-QT saved:', staffListAEQT);
+                const key = type === 'ae' ? STAFF_AE_KEY : STAFF_AEQT_KEY;
+                const list = type === 'ae' ? staffListAE : staffListAEQT;
+                
+                localStorage.setItem(key, JSON.stringify(list));
+                console.log(`✅ Staff ${type.toUpperCase()} saved:`, list.length, 'items');
+                
+                // Auto-sync to Supabase if available
+                if (window.SupabaseSync && typeof window.SupabaseSync.push === 'function') {
+                    window.SupabaseSync.push(key).catch(err => {
+                        console.log('⏭️ Supabase sync skipped:', err.message);
+                    });
                 }
             } catch (e) {
                 console.error('Error saving staff list:', e);
@@ -376,6 +381,33 @@
             }
         }
 
+        // HTML escape to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Validate staff name
+        function validateStaffName(name) {
+            if (!name || name.trim() === '') {
+                return { valid: false, message: 'Tên không được để trống!' };
+            }
+            const trimmed = name.trim();
+            if (trimmed.length < 2) {
+                return { valid: false, message: 'Tên phải có ít nhất 2 ký tự!' };
+            }
+            if (trimmed.length > 50) {
+                return { valid: false, message: 'Tên không được quá 50 ký tự!' };
+            }
+            // Allow Vietnamese characters, spaces, and basic punctuation
+            const validPattern = /^[a-zA-ZÀ-ỹ\s\-'.]+$/;
+            if (!validPattern.test(trimmed)) {
+                return { valid: false, message: 'Tên chỉ được chứa chữ cái, khoảng trắng và dấu gạch ngang!' };
+            }
+            return { valid: true, name: trimmed };
+        }
+        
         // Get staff list (public API for autocomplete)
         window.getStaffList = function(type) {
             loadStaffListData();
@@ -393,17 +425,20 @@
         window.addStaff = function(name, type, silent = false) {
             loadStaffListData();
             
-            if (!name || name.trim() === '') {
-                if (!silent) alert('Vui lòng nhập Tên NV!');
+            // Validate name
+            const validation = validateStaffName(name);
+            if (!validation.valid) {
+                if (!silent) alert(validation.message);
                 return false;
             }
-
-            const trimmedName = name.trim();
+            
+            const trimmedName = validation.name;
             const list = type === 'ae' ? staffListAE : staffListAEQT;
             
             // Check duplicate (case-insensitive)
             if (list.some(s => s.toLowerCase() === trimmedName.toLowerCase())) {
-                return false; // Silently fail for duplicates in batch mode
+                if (!silent) alert('Nhân viên "' + trimmedName + '" đã tồn tại!');
+                return false;
             }
 
             if (type === 'ae') {
@@ -414,7 +449,8 @@
             
             saveStaffListData(type);
             if (!silent) {
-                showStaffNotification('✅ Đã thêm: ' + trimmedName + ' (' + (type === 'ae' ? 'AE' : 'AE-QT') + ')');
+                const typeLabel = type === 'ae' ? 'AE' : 'AE-QT';
+                showStaffNotification('✅ Đã thêm: ' + trimmedName + ' (' + typeLabel + ')');
             }
             return true;
         }
@@ -423,17 +459,25 @@
         window.editStaff = function(oldName, newName, type) {
             loadStaffListData();
             
-            if (!newName || newName.trim() === '') {
-                alert('Vui lòng nhập tên mới!');
+            // Validate new name
+            const validation = validateStaffName(newName);
+            if (!validation.valid) {
+                alert(validation.message);
                 return false;
             }
-
-            const trimmedNewName = newName.trim();
+            
+            const trimmedNewName = validation.name;
+            
+            // No change
+            if (trimmedNewName === oldName) {
+                return false;
+            }
+            
             const list = type === 'ae' ? staffListAE : staffListAEQT;
             
             // Check if new name already exists (excluding current)
             if (list.some(s => s !== oldName && s.toLowerCase() === trimmedNewName.toLowerCase())) {
-                alert('Tên này đã tồn tại!');
+                alert('Tên "' + trimmedNewName + '" đã tồn tại!');
                 return false;
             }
 
@@ -445,7 +489,7 @@
                     staffListAEQT[index] = trimmedNewName;
                 }
                 saveStaffListData(type);
-                showStaffNotification('✅ Đã sửa: ' + trimmedNewName);
+                showStaffNotification('✏️ Đã cập nhật: ' + oldName + ' → ' + trimmedNewName);
                 return true;
             }
             return false;
@@ -700,18 +744,24 @@
             }
 
             emptyState.style.display = 'none';
-            container.innerHTML = filteredList.map(name => `
-                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: white; border: 1px solid #e5e7eb; border-radius: 6px; transition: all 0.2s;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 16px;">${type === 'ae' ? '💼' : '🌐'}</span>
-                        <span style="font-weight: 600; color: #1f2937; font-size: 13px;">${name}</span>
+            container.innerHTML = filteredList.map((name, idx) => {
+                const escapedName = escapeHtml(name);
+                const escapedForJs = name.replace(/'/g, "\\'")
+                    .replace(/"/g, '\\"')
+                    .replace(/\\/g, '\\\\');
+                return `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: white; border: 1px solid #e5e7eb; border-radius: 6px; transition: all 0.2s; animation: slideIn 0.2s ease ${idx * 0.03}s both;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+                            <span style="font-size: 16px;">${type === 'ae' ? '💼' : '🌐'}</span>
+                            <span style="font-weight: 600; color: #1f2937; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapedName}">${escapedName}</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; flex-shrink: 0;">
+                            <button onclick="editStaffFromModal('${escapedForJs}', '${type}')" style="padding: 5px 10px; background: ${buttonColor}; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; transition: all 0.2s;" onmouseenter="this.style.opacity='0.8'" onmouseleave="this.style.opacity='1'">✏️ Sửa</button>
+                            <button onclick="deleteStaffFromModal('${escapedForJs}', '${type}')" style="padding: 5px 10px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; transition: all 0.2s;" onmouseenter="this.style.opacity='0.8'" onmouseleave="this.style.opacity='1'">🗑️</button>
+                        </div>
                     </div>
-                    <div style="display: flex; gap: 6px;">
-                        <button onclick="editStaffFromModal('${name.replace(/'/g, "\\'")}', '${type}')" style="padding: 5px 10px; background: ${buttonColor}; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;">✏️ Sửa</button>
-                        <button onclick="deleteStaffFromModal('${name.replace(/'/g, "\\'")}', '${type}')" style="padding: 5px 10px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;">🗑️</button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             
             console.log('✅ Rendered', filteredList.length, type, 'staff members');
         }
