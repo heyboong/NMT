@@ -57,9 +57,7 @@
     function getNote(tableName, rowIndex) {
         const notes = loadNotes();
         const key = getNoteKey(tableName, rowIndex);
-        const note = notes[key];
-        // Only return note if it has actual content (not empty or whitespace)
-        return (note && note.trim()) ? note : null;
+        return notes[key] || null;
     }
 
     /**
@@ -172,46 +170,13 @@
                 });
                 
                 // Update note icon button in action-cell
-                const actionCell = row.querySelector('.action-cell');
-                const existingNoteBtn = actionCell.querySelector('button[title*="ghi chú"]');
-                const hasNote = noteText.length > 0;
-                
-                if (hasNote && !existingNoteBtn) {
-                    // Create note button if it doesn't exist
-                    const noteBtn = document.createElement('button');
-                    noteBtn.type = 'button';
-                    noteBtn.textContent = '📝';
-                    noteBtn.title = 'Xem/Sửa ghi chú';
-                    noteBtn.style.border = '1px solid #3b82f6';
-                    noteBtn.style.borderRadius = '4px';
-                    noteBtn.style.padding = '2px 6px';
-                    noteBtn.style.background = '#dbeafe';
-                    noteBtn.style.cursor = 'pointer';
-                    noteBtn.style.fontSize = '11px';
-                    noteBtn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (window.showInlineNotePopup) {
-                            window.showInlineNotePopup(e, currentTableName, currentRowIndex);
-                        }
-                    });
-                    
-                    // Insert before delete button
-                    const deleteBtn = actionCell.querySelector('button[title="Xóa dòng"]');
-                    if (deleteBtn) {
-                        actionCell.insertBefore(noteBtn, deleteBtn);
-                    } else {
-                        actionCell.appendChild(noteBtn);
-                    }
-                } else if (!hasNote && existingNoteBtn) {
-                    // Remove note button if note is deleted
-                    existingNoteBtn.remove();
-                } else if (hasNote && existingNoteBtn) {
-                    // Update existing button
-                    existingNoteBtn.textContent = '📝';
-                    existingNoteBtn.title = 'Xem/Sửa ghi chú';
-                    existingNoteBtn.style.border = '1px solid #3b82f6';
-                    existingNoteBtn.style.background = '#dbeafe';
+                const noteBtn = row.querySelector('.action-cell button[title*="ghi chú"]');
+                if (noteBtn) {
+                    const hasNote = noteText.length > 0;
+                    noteBtn.textContent = hasNote ? '📝' : '📋';
+                    noteBtn.title = hasNote ? 'Xem/Sửa ghi chú' : 'Thêm ghi chú';
+                    noteBtn.style.border = hasNote ? '1px solid #3b82f6' : '1px solid #d1d5db';
+                    noteBtn.style.background = hasNote ? '#dbeafe' : '#f9fafb';
                 }
             }
         }
