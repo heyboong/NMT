@@ -57,6 +57,11 @@
 
     // Show autocomplete
     function showAutocomplete(cell, searchTerm) {
+        if (!cell) {
+            console.warn('⚠️ showAutocomplete: No cell provided');
+            return;
+        }
+        
         if (!autocompleteList) createAutocomplete();
         
         loadStaffNames();
@@ -97,6 +102,12 @@
 
         // Get cell position
         const rect = cell.getBoundingClientRect();
+        if (!rect || rect.width === 0) {
+            console.warn('⚠️ Cell has no dimensions, cannot show autocomplete');
+            hideAutocomplete();
+            return;
+        }
+        
         autocompleteList.style.left = rect.left + window.scrollX + 'px';
         autocompleteList.style.top = (rect.bottom + window.scrollY + 2) + 'px';
         autocompleteList.style.width = Math.max(rect.width, 220) + 'px';
@@ -149,35 +160,41 @@
         }).join('');
 
         // Add hover and click handlers
-        autocompleteList.querySelectorAll('.autocomplete-item').forEach(item => {
-            item.addEventListener('mouseenter', function() {
-                this.style.background = '#eff6ff';
+        try {
+            autocompleteList.querySelectorAll('.autocomplete-item').forEach(item => {
+                if (!item) return;
+                
+                item.addEventListener('mouseenter', function() {
+                    this.style.background = '#eff6ff';
+                });
+                item.addEventListener('mouseleave', function() {
+                    this.style.background = 'white';
+                });
+                // Use mousedown instead of click to prevent blur event from hiding dropdown first
+                item.addEventListener('mousedown', function(e) {
+                    e.preventDefault(); // Prevent blur on cell
+                    e.stopPropagation(); // Stop event bubbling
+                    const name = this.dataset.name;
+                    const prefix = this.dataset.prefix;
+                    console.log('🖱️ Autocomplete item clicked:', name);
+                    if (currentCell) {
+                        // Combine prefix with selected name
+                        currentCell.textContent = prefix + name;
+                        console.log('✅ Set cell text to:', prefix + name);
+                        // Trigger input event to save data
+                        const event = new Event('input', { bubbles: true });
+                        currentCell.dispatchEvent(event);
+                    }
+                    hideAutocomplete();
+                    // Re-focus the cell after selection
+                    if (currentCell) {
+                        setTimeout(() => currentCell.focus(), 50);
+                    }
+                });
             });
-            item.addEventListener('mouseleave', function() {
-                this.style.background = 'white';
-            });
-            // Use mousedown instead of click to prevent blur event from hiding dropdown first
-            item.addEventListener('mousedown', function(e) {
-                e.preventDefault(); // Prevent blur on cell
-                e.stopPropagation(); // Stop event bubbling
-                const name = this.dataset.name;
-                const prefix = this.dataset.prefix;
-                console.log('🖱️ Autocomplete item clicked:', name);
-                if (currentCell) {
-                    // Combine prefix with selected name
-                    currentCell.textContent = prefix + name;
-                    console.log('✅ Set cell text to:', prefix + name);
-                    // Trigger input event to save data
-                    const event = new Event('input', { bubbles: true });
-                    currentCell.dispatchEvent(event);
-                }
-                hideAutocomplete();
-                // Re-focus the cell after selection
-                if (currentCell) {
-                    setTimeout(() => currentCell.focus(), 50);
-                }
-            });
-        });
+        } catch (err) {
+            console.error('Error attaching autocomplete item handlers:', err);
+        }
 
         autocompleteList.style.display = 'block';
         currentCell = cell;
@@ -205,16 +222,26 @@
         // Load staff names on init
         loadStaffNames();
         
+        // Create autocomplete element
+        if (!autocompleteList) {
+            createAutocomplete();
+        }
+        
         // Wait for tables to be rendered
         setTimeout(() => {
             // Listen to all table bodies in the document
             document.addEventListener('focus', (e) => {
-                const cell = e.target;
-                
-                // Check if it's an editable cell with data-col or data-col-key attribute
-                if (cell.tagName === 'TD' && 
-                    cell.hasAttribute('contenteditable') && 
-                    (cell.dataset.col || cell.dataset.colKey)) {
+                try {
+                    const cell = e.target;
+                    
+                    // Check if it's an editable cell with data-col or data-col-key attribute
+                    if (!cell || cell.tagName !== 'TD' || !cell.hasAttribute('contenteditable')) {
+                        return;
+                    }
+                    
+                    if (!cell.dataset.col && !cell.dataset.colKey) {
+                        return;
+                    }
                     
                     const colName = (cell.dataset.col || cell.dataset.colKey || '').toLowerCase();
                     
@@ -223,35 +250,45 @@
                         const value = cell.textContent.trim();
                         showAutocomplete(cell, value);
                     }
+                } catch (err) {
+                    console.error('Error in focus handler:', err);
                 }
             }, true);
 
             document.addEventListener('input', (e) => {
-                const cell = e.target;
-                
-                if (cell.tagName === 'TD' && 
-                    cell.hasAttribute('contenteditable') && 
-                    (cell.dataset.col || cell.dataset.colKey)) {
+                try {
+                    const cell = e.target;
                     
-                    const colName = (cell.dataset.col || cell.dataset.colKey || '').toLowerCase();
-                    
-                    if (colName === 'name' || colName === 'staff') {
-                        const value = cell.textContent.trim();
-                        showAutocomplete(cell, value);
+                    if (cell.tagName === 'TD' && 
+                        cell.hasAttribute('contenteditable') && 
+                        (cell.dataset.col || cell.dataset.colKey)) {
+                        
+                        const colName = (cell.dataset.col || cell.dataset.colKey || '').toLowerCase();
+                        
+                        if (colName === 'name' || colName === 'staff') {
+                            const value = cell.textContent.trim();
+                            showAutocomplete(cell, value);
+                        }
                     }
+                } catch (err) {
+                    console.error('Error in input handler:', err);
                 }
             });
 
             document.addEventListener('blur', (e) => {
-                const cell = e.target;
-                
-                if (cell.tagName === 'TD' && (cell.dataset.col || cell.dataset.colKey)) {
-                    const colName = (cell.dataset.col || cell.dataset.colKey || '').toLowerCase();
+                try {
+                    const cell = e.target;
                     
-                    if (colName === 'name' || colName === 'staff') {
-                        // Longer delay to allow mousedown on autocomplete item
-                        setTimeout(hideAutocomplete, 300);
+                    if (cell.tagName === 'TD' && (cell.dataset.col || cell.dataset.colKey)) {
+                        const colName = (cell.dataset.col || cell.dataset.colKey || '').toLowerCase();
+                        
+                        if (colName === 'name' || colName === 'staff') {
+                            // Longer delay to allow mousedown on autocomplete item
+                            setTimeout(hideAutocomplete, 300);
+                        }
                     }
+                } catch (err) {
+                    console.error('Error in blur handler:', err);
                 }
             }, true);
 
@@ -261,27 +298,36 @@
 
     // Close autocomplete on outside click (but not on the dropdown itself)
     document.addEventListener('mousedown', (e) => {
-        if (autocompleteList && 
-            autocompleteList.style.display === 'block' &&
-            !autocompleteList.contains(e.target) && 
-            e.target !== currentCell &&
-            (!e.target.dataset || e.target.dataset.col !== 'name' && e.target.dataset.col !== 'staff')) {
-            hideAutocomplete();
+        try {
+            if (!autocompleteList) return;
+            
+            if (autocompleteList.style.display === 'block' &&
+                !autocompleteList.contains(e.target) && 
+                e.target !== currentCell &&
+                (!e.target.dataset || (e.target.dataset.col !== 'name' && e.target.dataset.col !== 'staff'))) {
+                hideAutocomplete();
+            }
+        } catch (err) {
+            console.error('Error in mousedown handler:', err);
         }
     });
 
     // Close on Escape key
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            hideAutocomplete();
-        }
-        
-        // Arrow key navigation (future enhancement)
-        if (autocompleteList && autocompleteList.style.display === 'block') {
-            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                e.preventDefault();
-                // TODO: Navigate through items
+        try {
+            if (e.key === 'Escape' && autocompleteList) {
+                hideAutocomplete();
             }
+            
+            // Arrow key navigation (future enhancement)
+            if (autocompleteList && autocompleteList.style.display === 'block') {
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    // TODO: Navigate through items
+                }
+            }
+        } catch (err) {
+            console.error('Error in keydown handler:', err);
         }
     });
 

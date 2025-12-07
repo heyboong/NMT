@@ -414,6 +414,14 @@ function renderUSDChart() {
  */
 function updateMonthlyTotalBadge() {
     const badge = document.getElementById('monthly-total-current');
+    const badgeLabel = document.getElementById('monthly-badge-label');
+    
+    // Update badge label with current month
+    const currentMonth = new Date().getMonth() + 1; // 1-12
+    if (badgeLabel) {
+        badgeLabel.textContent = `TỔNG THÁNG ${currentMonth}`;
+    }
+    
     if (!badge) return;
 
     const monthlyData = calculateMonthlyStats();
@@ -422,7 +430,9 @@ function updateMonthlyTotalBadge() {
     const data = latestKey ? monthlyData[latestKey] : null;
     const value = data ? data.totalSum : 0;
 
-    badge.textContent = `💎 Tổng: ${formatVND(value)}`;
+    // Update only the value part, keep the label intact
+    const labelText = badgeLabel ? badgeLabel.textContent : `TỔNG THÁNG ${currentMonth}`;
+    badge.innerHTML = `💎 <span id="monthly-badge-label">${labelText}</span>: ${formatVND(value)}`;
 }
 
 /**

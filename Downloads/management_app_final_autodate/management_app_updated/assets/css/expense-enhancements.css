@@ -1,0 +1,292 @@
+/* Expense Management Enhancements */
+
+/* Smooth transitions for all inputs */
+#expense-tbody input,
+#expense-tbody select,
+#income-tbody input,
+#income-tbody select {
+    transition: all 0.2s ease;
+}
+
+/* Focus states */
+#expense-tbody input:focus,
+#expense-tbody select:focus,
+#income-tbody input:focus,
+#income-tbody select:focus {
+    outline: none;
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+    transform: scale(1.01);
+}
+
+/* Hover effects for table rows */
+#expense-tbody tr,
+#income-tbody tr {
+    transition: all 0.2s ease;
+}
+
+#expense-tbody tr:hover,
+#income-tbody tr:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Button hover effects */
+.btn-primary {
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Delete button enhancements */
+button[onclick*="delete"] {
+    transition: all 0.15s ease;
+}
+
+button[onclick*="delete"]:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4) !important;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Fade in animation for new rows */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.new-row-animation {
+    animation: fadeInUp 0.3s ease;
+}
+
+/* Success indicator */
+.save-success {
+    animation: successPulse 0.6s ease;
+}
+
+@keyframes successPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Error shake animation */
+.error-shake {
+    animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Month selector enhancement */
+#month-selector {
+    transition: all 0.2s ease;
+}
+
+#month-selector:hover {
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: translateY(-1px);
+}
+
+#month-selector:focus {
+    outline: none;
+    border-color: white;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+/* Summary cards pulse on update */
+.summary-update {
+    animation: summaryPulse 0.5s ease;
+}
+
+@keyframes summaryPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+/* Category summary hover */
+#category-summary > div {
+    transition: all 0.2s ease;
+}
+
+#category-summary > div:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Tooltip style */
+.field-tooltip {
+    position: absolute;
+    background: #1f2937;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.field-tooltip.show {
+    opacity: 1;
+}
+
+/* Input placeholder animation */
+#expense-tbody input::placeholder,
+#income-tbody input::placeholder {
+    transition: all 0.2s ease;
+}
+
+#expense-tbody input:focus::placeholder,
+#income-tbody input:focus::placeholder {
+    opacity: 0.5;
+    transform: translateX(5px);
+}
+
+/* Number input styling */
+input[type="text"][style*="text-align: right"] {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+}
+
+/* Smooth scroll */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Table responsive wrapper */
+.table-container {
+    transition: all 0.3s ease;
+}
+
+/* Icon animation */
+td span[style*="font-size: 18px"] {
+    display: inline-block;
+    transition: all 0.2s ease;
+}
+
+tr:hover td span[style*="font-size: 18px"] {
+    transform: scale(1.1);
+}
+
+/* Better focus indicator for date inputs */
+input[type="date"]:focus {
+    outline: none;
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+}
+
+/* Disabled state */
+input:disabled,
+select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #f3f4f6 !important;
+}
+
+/* Loading overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.loading-overlay.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.loading-content {
+    background: white;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.loading-content .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f4f6;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 15px;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    #expense-tbody input,
+    #income-tbody input {
+        font-size: 14px;
+        padding: 8px !important;
+    }
+    
+    button {
+        padding: 10px 14px !important;
+        font-size: 14px !important;
+    }
+    
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Print styles */
+@media print {
+    .btn-primary,
+    button[onclick*="delete"],
+    .navbar {
+        display: none !important;
+    }
+    
+    #expense-tbody tr,
+    #income-tbody tr {
+        page-break-inside: avoid;
+    }
+}

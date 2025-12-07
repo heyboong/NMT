@@ -176,11 +176,14 @@
         // Reset button
         resetBtn.addEventListener('click', resetFormatting);
 
-        // Track focused cell
+        // Track focused cell (for applying colors when toolbar is open)
         document.addEventListener('focusin', (e) => {
             if (e.target.contentEditable === 'true' && e.target.tagName === 'TD') {
                 currentCell = e.target;
-                updateToolbarState();
+                // Only update toolbar state if toolbar is already visible
+                if (toolbarVisible) {
+                    updateToolbarState();
+                }
             }
         });
 
@@ -250,9 +253,15 @@
         const toggleBtnConversion = document.getElementById('text-color-toggle-conversion');
         const toggleBtnWithdraw = document.getElementById('text-color-toggle-withdraw');
         
-        toolbar.classList.remove('active');
-        if (toggleBtnConversion) toggleBtnConversion.classList.remove('active');
-        if (toggleBtnWithdraw) toggleBtnWithdraw.classList.remove('active');
+        if (toolbar) {
+            toolbar.classList.remove('active');
+        }
+        if (toggleBtnConversion) {
+            toggleBtnConversion.classList.remove('active');
+        }
+        if (toggleBtnWithdraw) {
+            toggleBtnWithdraw.classList.remove('active');
+        }
         toolbarVisible = false;
     }
 

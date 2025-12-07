@@ -23,6 +23,7 @@
         <a href="balance.html">👥 Danh Sách Tên</a>
         <a href="usdt-purchase.html">💰 Nhập USDT</a>
         <a href="rate.html">💱 Tỷ Giá USD</a>
+        <a href="expense.html">💸 Thu Chi</a>
         <a href="settings.html">⚙️ Cài Đặt</a>
     </nav>
 
@@ -30,8 +31,7 @@
         <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px;">
             <h2 style="margin:0;">💼 Bảng AE</h2>
             <div style="display:flex; gap:8px;">
-                <button type="button" onclick="AE_addRowToEnd()" style="padding:8px 12px; background:#3b82f6; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer;">➕ Thêm dòng mới</button>
-                <span style="color:#6b7280; font-size:12px; align-self:center;">Hoặc dùng nút ➕ trên cột STT để chèn vào giữa</span>
+                <button type="button" onclick="AE_addRowToEnd()" style="padding:8px 12px; background:#3b82f6; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer;">➕ Thêm dòng</button>
             </div>
         </div>
         <!-- AE worksheet; behaves like a simple spreadsheet.  -->
@@ -40,6 +40,7 @@
                 <!-- Column letter row -->
                 <tr>
                     <th class="row-header"></th>
+                    <th class="action-header"></th>
                     <th>A</th>
                     <th>B</th>
                     <th>C</th>
@@ -51,6 +52,7 @@
                 <!-- Header names and total sum cell -->
                 <tr>
                     <th class="row-header">1</th>
+                    <th class="action-header">Chức Năng</th>
                     <th>Ngày làm</th>
                     <th>Tiền làm (VND)</th>
                     <th>Tên NV</th>

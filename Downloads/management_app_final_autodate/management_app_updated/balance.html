@@ -24,6 +24,7 @@
         <a href="balance.html" class="active">👥 Danh Sách Tên</a>
         <a href="usdt-purchase.html">💰 Nhập USDT</a>
         <a href="rate.html">💱 Tỷ Giá USD</a>
+        <a href="expense.html">💸 Thu Chi</a>
         <a href="settings.html">⚙️ Cài Đặt</a>
     </nav>
 
@@ -37,7 +38,7 @@
                 </h1>
                 <div style="display: flex; gap: 12px;">
                     <button id="manage-staff-btn" style="padding: 10px 20px; background: #8b5cf6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                        <span>👤</span> Quản Lý Nhân Viên
+                        <span>👤</span> Quản Lý NV
                     </button>
                     <button id="refresh-btn" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                         <span>🔄</span> Làm mới
@@ -103,14 +104,14 @@
             <div>
                 <h2 style="margin: 0 0 16px 0; color: #1e40af; display: flex; align-items: center; gap: 8px; padding: 12px; background: #dbeafe; border-radius: 8px; font-size: 18px;">
                     <span style="font-size: 24px;">💼</span>
-                    Nhân Viên Bảng AE
+                    NV Bảng AE
                 </h2>
                 <div id="people-list-ae" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
                     <!-- Cards AE sẽ được thêm động - Hiển thị 4 thẻ mỗi hàng, tự động xuống dòng -->
                 </div>
                 <div id="empty-state-ae" style="display: none; text-align: center; padding: 40px 15px; background: white; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
                     <div style="font-size: 48px; margin-bottom: 12px;">💼</div>
-                    <h3 style="color: #6b7280; margin-bottom: 8px; font-size: 16px;">Chưa có dữ liệu nhân viên AE</h3>
+                    <h3 style="color: #6b7280; margin-bottom: 8px; font-size: 16px;">Chưa có dữ liệu NV AE</h3>
                     <p style="color: #9ca3af; font-size: 13px; margin: 0 0 16px 0; line-height: 1.6;">
                         Trang này tự động hiển thị tên nhân viên từ <strong>Bảng AE</strong>.<br>
                         Vui lòng nhập dữ liệu vào cột <strong>"Tên NV"</strong> trong Bảng AE để bắt đầu theo dõi công nợ.
@@ -125,16 +126,16 @@
             <div>
                 <h2 style="margin: 0 0 16px 0; color: #92400e; display: flex; align-items: center; gap: 8px; padding: 12px; background: #fef3c7; border-radius: 8px; font-size: 18px;">
                     <span style="font-size: 24px;">🌐</span>
-                    Nhân Viên Bảng AE-QT
+                    NV Bảng AE-QT
                 </h2>
                 <div id="people-list-aeqt" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
                     <!-- Cards AE-QT sẽ được thêm động - Hiển thị 4 thẻ mỗi hàng, tự động xuống dòng -->
                 </div>
                 <div id="empty-state-aeqt" style="display: none; text-align: center; padding: 40px 15px; background: white; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
                     <div style="font-size: 48px; margin-bottom: 12px;">🌐</div>
-                    <h3 style="color: #6b7280; margin-bottom: 8px; font-size: 16px;">Chưa có dữ liệu nhân viên AE-QT</h3>
+                    <h3 style="color: #6b7280; margin-bottom: 8px; font-size: 16px;">Chưa có dữ liệu NV AE-QT</h3>
                     <p style="color: #9ca3af; font-size: 13px; margin: 0 0 16px 0; line-height: 1.6;">
-                        Trang này tự động hiển thị tên nhân viên từ <strong>Bảng AE-QT</strong>.<br>
+                        Trang này tự động hiển thị Tên NV từ <strong>Bảng AE-QT</strong>.<br>
                         Vui lòng nhập dữ liệu vào cột <strong>"Tên NV"</strong> trong Bảng AE-QT để bắt đầu theo dõi công nợ.
                     </p>
                     <button onclick="window.location.href='AE-QT.html'" style="padding: 10px 20px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.3s;" onmouseover="this.style.background='#d97706'" onmouseout="this.style.background='#f59e0b'">
@@ -221,13 +222,13 @@
             </div>
         </div>
 
-        <!-- Modal Quản Lý Nhân Viên -->
+        <!-- Modal Quản Lý NV -->
         <div id="staff-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
             <div style="background: white; border-radius: 12px; width: 95%; max-width: 1200px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
                 <div style="padding: 24px; border-bottom: 2px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
                     <h2 style="margin: 0; color: #1f2937; display: flex; align-items: center; gap: 10px;">
                         <span style="font-size: 28px;">👤</span>
-                        Quản Lý Nhân Viên
+                        Quản Lý NV
                     </h2>
                     <button onclick="closeStaffModal()" style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">✕ Đóng</button>
                 </div>
@@ -267,7 +268,7 @@
                             <!-- Empty state AE -->
                             <div id="staff-empty-ae" style="display: none; text-align: center; padding: 30px 15px; background: white; border-radius: 8px; border: 1px dashed #bfdbfe;">
                                 <div style="font-size: 40px; margin-bottom: 8px;">💼</div>
-                                <p style="color: #6b7280; margin: 0; font-size: 13px;">Chưa có nhân viên AE</p>
+                                <p style="color: #6b7280; margin: 0; font-size: 13px;">Chưa có NV AE</p>
                             </div>
                         </div>
 
@@ -275,7 +276,7 @@
                         <div style="border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; background: #fffbeb;">
                             <h3 style="margin: 0 0 16px 0; color: #92400e; display: flex; align-items: center; gap: 8px; font-size: 18px;">
                                 <span style="font-size: 24px;">🌐</span>
-                                Nhân Viên Bảng AE-QT
+                                NV Bảng AE-QT
                             </h3>
                             
                             <!-- Form thêm AE-QT -->
@@ -303,7 +304,7 @@
                             <!-- Empty state AE-QT -->
                             <div id="staff-empty-aeqt" style="display: none; text-align: center; padding: 30px 15px; background: white; border-radius: 8px; border: 1px dashed #fde68a;">
                                 <div style="font-size: 40px; margin-bottom: 8px;">🌐</div>
-                                <p style="color: #6b7280; margin: 0; font-size: 13px;">Chưa có nhân viên AE-QT</p>
+                                <p style="color: #6b7280; margin: 0; font-size: 13px;">Chưa có NV AE-QT</p>
                             </div>
                         </div>
 
@@ -393,7 +394,7 @@
             loadStaffListData();
             
             if (!name || name.trim() === '') {
-                if (!silent) alert('Vui lòng nhập tên nhân viên!');
+                if (!silent) alert('Vui lòng nhập Tên NV!');
                 return false;
             }
 
@@ -658,7 +659,7 @@
                 if (addedCount === 1) {
                     showStaffNotification(`✅ Đã thêm: ${addedNames[0]} (${typeLabel})`);
                 } else {
-                    showStaffNotification(`✅ Đã thêm ${addedCount} nhân viên vào ${typeLabel}${duplicateCount > 0 ? ` (${duplicateCount} trùng)` : ''}`);
+                    showStaffNotification(`✅ Đã thêm ${addedCount} NV vào ${typeLabel}${duplicateCount > 0 ? ` (${duplicateCount} trùng)` : ''}`);
                 }
             } else if (duplicateCount > 0) {
                 alert('Tất cả tên đã tồn tại trong danh sách!');

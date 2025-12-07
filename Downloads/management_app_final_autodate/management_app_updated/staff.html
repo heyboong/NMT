@@ -34,9 +34,9 @@
         <div style="margin-bottom: 24px;">
             <h1 style="margin: 0 0 8px 0; color: #1f2937; display: flex; align-items: center; gap: 10px;">
                 <span style="font-size: 32px;">👤</span>
-                Quản Lý Danh Sách Nhân Viên
+                 Danh Sách NV
             </h1>
-            <p style="color: #6b7280; margin: 0;">Quản lý 2 danh sách riêng biệt: Nhân viên Bảng AE và Nhân viên Bảng AE-QT</p>
+            <p style="color: #6b7280; margin: 0;">Quản lý 2 danh sách riêng biệt: NV Bảng AE và NV Bảng AE-QT</p>
         </div>
 
         <!-- Two columns layout -->
@@ -46,7 +46,7 @@
             <div style="border: 2px solid #3b82f6; border-radius: 12px; padding: 20px; background: #f0f9ff;">
                 <h3 style="margin: 0 0 16px 0; color: #1e40af; display: flex; align-items: center; gap: 8px; font-size: 18px;">
                     <span style="font-size: 24px;">💼</span>
-                    Nhân Viên Bảng AE
+                    NV Bảng AE
                 </h3>
                 
                 <!-- Form thêm AE -->
@@ -74,7 +74,7 @@
                 <!-- Empty state AE -->
                 <div id="staff-empty-ae" style="display: none; text-align: center; padding: 30px 15px; background: white; border-radius: 8px; border: 1px dashed #bfdbfe;">
                     <div style="font-size: 40px; margin-bottom: 8px;">💼</div>
-                    <p style="color: #6b7280; margin: 0; font-size: 13px;">Chưa có nhân viên AE</p>
+                    <p style="color: #6b7280; margin: 0; font-size: 13px;">Chưa có NV AE</p>
                 </div>
             </div>
 
@@ -82,7 +82,7 @@
             <div style="border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; background: #fffbeb;">
                 <h3 style="margin: 0 0 16px 0; color: #92400e; display: flex; align-items: center; gap: 8px; font-size: 18px;">
                     <span style="font-size: 24px;">🌐</span>
-                    Nhân Viên Bảng AE-QT
+                    NV Bảng AE-QT
                 </h3>
                 
                 <!-- Form thêm AE-QT -->
@@ -110,7 +110,7 @@
                 <!-- Empty state AE-QT -->
                 <div id="staff-empty-aeqt" style="display: none; text-align: center; padding: 30px 15px; background: white; border-radius: 8px; border: 1px dashed #fde68a;">
                     <div style="font-size: 40px; margin-bottom: 8px;">🌐</div>
-                    <p style="color: #6b7280; margin: 0; font-size: 13px;">Chưa có nhân viên AE-QT</p>
+                    <p style="color: #6b7280; margin: 0; font-size: 13px;">Chưa có NV AE-QT</p>
                 </div>
             </div>
 
@@ -122,21 +122,6 @@
                 <strong>💡 Lưu ý:</strong> Hai danh sách riêng biệt giúp tránh nhầm lẫn khi chọn nhân viên. Danh sách bên trái cho Bảng AE (Nhận ×0.5), bên phải cho Bảng AE-QT (Nhận ×0.8).
             </p>
         </div>
-
-        <!-- Hướng dẫn -->
-        <div style="margin-top: 24px; padding: 16px; background: #f0f9ff; border-left: 4px solid #3b82f6; border-radius: 8px;">
-            <h3 style="margin: 0 0 12px 0; color: #1e40af; font-size: 16px;">📖 Hướng Dẫn Sử Dụng</h3>
-            <ul style="margin: 0; padding-left: 20px; color: #1e40af; line-height: 1.8;">
-                <li><strong>Thêm nhân viên:</strong> Nhập tên và nhấn "Thêm" hoặc Enter. Có thể thêm nhiều tên cùng lúc (cách nhau bằng dấu phẩy)</li>
-                <li><strong>Danh sách riêng:</strong> Nhân viên AE và AE-QT được quản lý riêng biệt để phù hợp với từng bảng</li>
-                <li><strong>Sử dụng:</strong> Khi nhập vào cột "Tên NV" trong Bảng AE hoặc AE-QT, danh sách tương ứng sẽ gợi ý tự động</li>
-                <li><strong>Chỉnh sửa:</strong> Click nút "✏️ Sửa" để chỉnh sửa tên</li>
-                <li><strong>Xóa:</strong> Click nút 🗑️ để xóa nhân viên khỏi danh sách</li>
-                <li><strong>Tìm kiếm:</strong> Gõ vào ô tìm kiếm để lọc danh sách nhanh</li>
-                <li><strong>Xuất dữ liệu:</strong> Click nút 📥 để xuất danh sách ra file CSV</li>
-            </ul>
-        </div>
-    </div>
 
     <!-- Scripts -->
     <script src="assets/js/supabase-sync.js"></script>

@@ -24,8 +24,9 @@
         <a href="AE.html">💼 Bảng AE</a>
         <a href="AE-QT.html">🌐 Bảng AE-QT</a>
         <a href="balance.html">👥 Danh Sách Tên</a>
-        <a href="usdt-purchase.html" class="active">💰 Giá Nhập USDT</a>
+        <a href="usdt-purchase.html" class="active">💰 Nhập USDT</a>
         <a href="rate.html">💱 Tỷ Giá USD</a>
+        <a href="expense.html">💸 Thu Chi</a>
         <a href="settings.html">⚙️ Cài Đặt</a>
     </nav>
 
@@ -51,7 +52,7 @@
             <h1 style="margin:0; font-size:22px; color:#111827; display:flex; align-items:center; gap:8px;">
                 <span>💰</span> Nhập USDT
             </h1>
-            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <div id="dashboard-toolbar" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                 <span id="p2p-rate-display" style="padding:8px 10px; background:#eef2ff; color:#111827; border:1px solid #e5e7eb; border-radius:8px; font-weight:600; display:flex; align-items:center; gap:6px;">
                     <span>💱 Giá P2P:</span>
                     <span id="current-p2p-rate">0₫</span>
@@ -60,6 +61,30 @@
                 <button id="export-usdt-btn" style="padding:8px 12px; background:#10b981; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer;">📥 Xuất Excel</button>
                 <button id="clear-all-btn" onclick="clearAllData()" style="padding:8px 12px; background:#ef4444; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer;">🗑️ Xóa toàn bộ</button>
                 <button id="add-row-btn" style="padding:8px 12px; background:#3b82f6; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer;">➕ Thêm dòng</button>
+            </div>
+        </div>
+
+        <!-- Bảng tổng hợp riêng -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+            <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div style="font-size: 12px; color: #065f46; font-weight: 600; margin-bottom: 4px; text-transform: uppercase;">💰 Tổng Tiền Nhập</div>
+                <div id="total-tien-nhap" style="font-size: 20px; font-weight: 800; color: #059669;">0₫</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%); padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div style="font-size: 12px; color: #991b1b; font-weight: 600; margin-bottom: 4px; text-transform: uppercase;">💵 Tổng USDT</div>
+                <div id="total-usdt" style="font-size: 20px; font-weight: 800; color: #dc2626;">0.00 $</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%); padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div style="font-size: 12px; color: #6b21a8; font-weight: 600; margin-bottom: 4px; text-transform: uppercase;">📊 Giá Nhập TB</div>
+                <div id="avg-gia-nhap" style="font-size: 20px; font-weight: 800; color: #7c3aed;">0₫</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%); padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div style="font-size: 12px; color: #9a3412; font-weight: 600; margin-bottom: 4px; text-transform: uppercase;">💼 Tổng Tiền Làm</div>
+                <div id="total-tien-lam" style="font-size: 20px; font-weight: 800; color: #ea580c;">0₫</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div style="font-size: 12px; color: #1e3a8a; font-weight: 600; margin-bottom: 4px; text-transform: uppercase;">📈 Lãi/Lỗ TB</div>
+                <div id="avg-lai-lo" style="font-size: 20px; font-weight: 800; color: #3b82f6;">0%</div>
             </div>
         </div>
 
@@ -81,19 +106,6 @@
                 <tbody id="usdt-purchase-tbody">
                     <!-- Dữ liệu sẽ được thêm động -->
                 </tbody>
-                <tfoot>
-                    <tr style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); font-weight: 700; border-top: 3px solid #3b82f6;">
-                        <th class="row-header" style="background: #3b82f6; color: white;">TỔNG</th>
-                        <th style="text-align: center; color: #1f2937;">—</th>
-                        <th id="total-tien-nhap" style="text-align: right; color: #059669; font-size: 15px;">0₫</th>
-                        <th id="total-usdt" style="text-align: right; color: #dc2626; font-size: 15px;">0.00 $</th>
-                        <th id="avg-gia-nhap" style="text-align: right; color: #7c3aed; font-size: 15px;">0₫</th>
-                        <th id="total-tien-lam" style="text-align: right; color: #ea580c; font-size: 15px;">0₫</th>
-                        <th style="text-align: center; color: #1f2937;">—</th>
-                        <th id="avg-lai-lo" style="text-align: center; font-size: 15px;">0%</th>
-                        <th style="text-align: center; color: #1f2937;">—</th>
-                    </tr>
-                </tfoot>
             </table>
         </div>
 

@@ -31,20 +31,41 @@ const USER_ID = 'default_user'; // Simple single-user mode
 
 /**
  * Initialize Supabase sync (Singleton pattern)
+ * Force enable - will keep trying until successful
  */
 async function initSupabaseSync() {
     // Prevent multiple initializations
     if (isInitialized) {
-        // Silent check - already initialized (this is good!)
         return;
     }
     
     try {
-        // Check if Supabase library is loaded
-        if (typeof window.supabase === 'undefined') {
-            console.warn('⚠️ Supabase library not loaded. Sync disabled.');
-            return;
+        // Wait for Supabase library to load
+        let attempts = 0;
+        const maxAttempts = 30; // 3 seconds
+        
+        while (!window.supabase?.createClient && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
         }
+        
+        // If library not loaded, use local copy
+        if (!window.supabase?.createClient) {
+            console.warn('⚠️ Supabase CDN unavailable. Trying direct connection...');
+            
+            // Try to create client directly
+            try {
+                const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+                window.supabase = { createClient };
+            } catch (err) {
+                console.error('❌ Cannot load Supabase. Running offline mode.');
+                console.info('💡 Data saved locally. Sync will activate when online.');
+                isInitialized = true;
+                return;
+            }
+        }
+
+        console.log('✓ Supabase library ready');
 
         // Create singleton Supabase client (only once)
         if (!supabase) {
@@ -55,8 +76,19 @@ async function initSupabaseSync() {
         // Mark as initialized
         isInitialized = true;
 
-        // Initial sync: Pull data from Supabase
-        await pullFromSupabase();
+        // Initial sync: Pull data from Supabase ONLY if localStorage is empty
+        // This prevents overwriting fresh data when navigating between pages
+        const hasLocalData = Object.keys(SYNC_KEYS).some(key => {
+            const value = localStorage.getItem(key);
+            return value && value !== '[]' && value !== '{}';
+        });
+        
+        if (!hasLocalData) {
+            console.log('📥 No local data found - pulling from cloud...');
+            await pullFromSupabase();
+        } else {
+            console.log('💾 Local data exists - skipping initial pull to preserve recent changes');
+        }
 
         // Setup auto-push on localStorage changes
         setupLocalStorageSync();
@@ -64,20 +96,21 @@ async function initSupabaseSync() {
         // Setup real-time subscriptions for multi-user sync
         setupRealtimeSync();
 
-        console.log('✅ Supabase sync initialized');
+        console.log('✅ Database sync active - data will be saved to cloud');
     } catch (error) {
-        console.error('❌ Supabase sync error:', error);
-        isInitialized = false; // Reset on error
+        console.error('Supabase connection error:', error);
+        console.info('💾 Continuing with local storage. Will retry sync later.');
+        isInitialized = true;
     }
 }
 
 /**
- * Pull all data from Supabase to localStorage
+ * Pull all data from Supabase to localStorage (Smart merge - only if cloud is newer)
  */
 async function pullFromSupabase() {
     if (!supabase) return;
 
-    console.log('📥 Pulling data from Supabase...');
+    console.log('📥 Checking cloud for updates...');
 
     // Sync predefined keys
     for (const [localKey, tableName] of Object.entries(SYNC_KEYS)) {
@@ -101,10 +134,24 @@ async function pullFromSupabase() {
             }
 
             if (data && data.length > 0) {
-                const jsonData = data[0].data;
-                const jsonString = typeof jsonData === 'string' ? jsonData : JSON.stringify(jsonData);
-                localStorage.setItem(localKey, jsonString);
-                console.log(`  ✓ ${localKey}: synced from cloud`);
+                // Check if we should overwrite local data
+                const cloudTimestamp = new Date(data[0].updated_at).getTime();
+                const localTimestampKey = `_timestamp_${localKey}`;
+                const localTimestamp = parseInt(localStorage.getItem(localTimestampKey) || '0');
+                
+                // Only overwrite if cloud is newer OR local is empty
+                const localData = localStorage.getItem(localKey);
+                const shouldUpdate = !localData || localData === '[]' || localData === '{}' || cloudTimestamp > localTimestamp;
+                
+                if (shouldUpdate) {
+                    const jsonData = data[0].data;
+                    const jsonString = typeof jsonData === 'string' ? jsonData : JSON.stringify(jsonData);
+                    localStorage.setItem(localKey, jsonString);
+                    localStorage.setItem(localTimestampKey, cloudTimestamp.toString());
+                    console.log(`  ✓ ${localKey}: synced from cloud (updated ${new Date(cloudTimestamp).toLocaleTimeString()})`);
+                } else {
+                    console.log(`  ⏭️ ${localKey}: local data is newer - skipping`);
+                }
             }
         } catch (err) {
             console.warn(`  ⚠️ ${localKey}: pull failed`, err.message);
@@ -114,7 +161,7 @@ async function pullFromSupabase() {
     // Sync dynamic system tables
     await syncSystemTables();
 
-    console.log('✅ Pull complete');
+    console.log('✅ Cloud sync check complete');
 }
 
 /**
@@ -178,6 +225,9 @@ async function pushToSupabase(localKey) {
             parsedData = value;
         }
 
+        const now = new Date();
+        const timestamp = now.getTime();
+
         // Check if record exists
         const { data: existing } = await supabase
             .from(tableName)
@@ -191,7 +241,7 @@ async function pushToSupabase(localKey) {
                 .from(tableName)
                 .update({ 
                     data: parsedData, 
-                    updated_at: new Date().toISOString() 
+                    updated_at: now.toISOString() 
                 })
                 .eq('id', existing[0].id);
 
@@ -208,7 +258,10 @@ async function pushToSupabase(localKey) {
             if (error) throw error;
         }
 
-        console.log(`☁️ Auto-synced: ${localKey}`);
+        // Save local timestamp to track last sync
+        localStorage.setItem(`_timestamp_${localKey}`, timestamp.toString());
+
+        console.log(`☁️ Auto-synced: ${localKey} at ${now.toLocaleTimeString()}`);
         showSyncActivity('Đã lưu cloud');
     } catch (err) {
         console.warn(`⚠️ Auto-sync failed for ${localKey}:`, err.message);
@@ -219,9 +272,16 @@ async function pushToSupabase(localKey) {
  * Setup localStorage change detection with auto-sync
  */
 function setupLocalStorageSync() {
+    // Prevent double-interception
+    if (window._localStorageIntercepted) {
+        console.log('✓ localStorage already intercepted');
+        return;
+    }
+    
     // Intercept localStorage.setItem
     const originalSetItem = localStorage.setItem;
     localStorage.setItem = function(key, value) {
+        // Call original first
         originalSetItem.apply(this, arguments);
         
         // Auto-sync on change
@@ -242,6 +302,9 @@ function setupLocalStorageSync() {
             }, 500); // 500ms debounce - fast response
         }
     };
+    
+    // Mark as intercepted to prevent double-interception
+    window._localStorageIntercepted = true;
 
     console.log('✅ Auto-sync localStorage monitoring active');
 }
@@ -402,22 +465,34 @@ window.SupabaseSync = {
 
 /**
  * Auto-initialize on page load (with singleton protection)
+ * Non-blocking - app works immediately with localStorage
  */
-document.addEventListener('DOMContentLoaded', async () => {
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize in background without blocking
+        setTimeout(() => autoInitialize(), 200);
+    });
+} else {
+    // DOM already loaded, initialize in background
+    setTimeout(() => autoInitialize(), 200);
+}
+
+async function autoInitialize() {
     // Check if already initialized by another script
     if (window._supabaseSyncInitialized) {
-        // Silent skip - another module already initialized
         return;
     }
     
-    console.log('🚀 Initializing Supabase auto-sync...');
     window._supabaseSyncInitialized = true;
     
+    // Initialize without blocking UI
     await initSupabaseSync();
     
-    // Add sync status indicator instead of manual button
-    addSyncStatusIndicator();
-});
+    // Add sync status indicator only if connected
+    if (supabase) {
+        addSyncStatusIndicator();
+    }
+}
 
 /**
  * Add a sync status indicator (auto-sync mode)

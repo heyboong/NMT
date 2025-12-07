@@ -222,25 +222,11 @@
         // Remove has-note class
         row.classList.remove('has-note');
 
-        // Add indicator if note exists
+        // Note: Indicators now shown in action column buttons, not in row headers
+        // Just keep has-note class for potential styling
         const note = getNote(tableName, rowIndex);
         if (note) {
-            // Add has-note class for styling
             row.classList.add('has-note');
-            
-            const indicator = document.createElement('span');
-            indicator.className = 'note-indicator';
-            indicator.textContent = '📝';
-            indicator.title = 'Click để xem ghi chú';
-            indicator.onclick = (e) => {
-                e.stopPropagation();
-                showNotePopup(row, tableName, rowIndex);
-            };
-
-            const firstCell = row.querySelector('th, td');
-            if (firstCell) {
-                firstCell.appendChild(indicator);
-            }
         }
     }
 

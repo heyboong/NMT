@@ -20,15 +20,96 @@
         <a href="balance.html">👥 Danh Sách Tên</a>
         <a href="usdt-purchase.html">💰 Nhập USDT</a>
         <a href="rate.html" class="active">💱 Tỷ Giá USD</a>
+        <a href="expense.html">💸 Thu Chi</a>
         <a href="settings.html">⚙️ Cài Đặt</a>
     </nav>
 
+    <style>
+        .rate-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .rate-header h2 {
+            margin: 0 0 16px 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .rate-info-card {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-top: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .rate-info-card .label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        .rate-info-card .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .status-badge[data-status="loading"] {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .status-badge[data-status="success"] {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status-badge[data-status="warning"] {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+        .status-badge[data-status="error"] {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .status-badge[data-status="loading"]::before {
+            content: "⏳";
+        }
+        .status-badge[data-status="success"]::before {
+            content: "✅";
+        }
+        .status-badge[data-status="warning"]::before {
+            content: "⚠️";
+        }
+        .status-badge[data-status="error"]::before {
+            content: "❌";
+        }
+    </style>
+
     <div class="container">
-        <h2>💱 Tỷ Giá USD</h2>
-        <!-- Hiển thị tỷ giá hiện tại tự động cập nhật -->
-        <!-- Hiển thị tỷ giá tham khảo từ API làm mặc định; người dùng có thể sửa lại giá mua/bán theo P2P -->
-        <p id="current-rate-info" class="info-text">Giá P2P tham khảo (VND): <span id="rate-current-price">Đang tải…</span></p>
-        <p class="status-line">Trạng thái kết nối: <span id="rate-fetch-status" data-status="loading">Đang tải tỷ giá…</span></p>
+        <div class="rate-header">
+            <h2>💱 Tỷ Giá USD/VND</h2>
+            <div class="rate-info-card">
+                <div>
+                    <div class="label">Giá P2P Binance (1 USDT = VND)</div>
+                    <div class="value" id="rate-current-price">Đang tải…</div>
+                </div>
+                <div style="text-align: right;">
+                    <span id="rate-fetch-status" class="status-badge" data-status="loading">Đang tải tỷ giá…</span>
+                </div>
+            </div>
+        </div>
         <form id="rate-form">
             <div class="form-grid">
                 <label class="hidden-row">
@@ -200,23 +281,37 @@
 
         async function fetchFallbackRates() {
             try {
-                const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BUSDUSDT');
-                const busdData = await res.json();
-                const busdPrice = parseFloat(busdData.price);
-                const usdtToUsd = busdPrice > 0 ? 1 / busdPrice : 1;
+                updateFetchStatus('Đang thử nguồn dự phòng…', 'warning');
+                
+                // Try ExchangeRate API
                 const fxRes = await fetch('https://open.er-api.com/v6/latest/USD');
                 const fxData = await fxRes.json();
                 const usdToVnd = fxData && fxData.rates && fxData.rates.VND ? fxData.rates.VND : 0;
-                crossRate = usdtToUsd * usdToVnd;
-                if (crossRate > 0) {
+                
+                if (usdToVnd > 0) {
+                    crossRate = usdToVnd;
                     currentPriceEl.textContent = formatVND(crossRate);
+                    prefillPrices();
+                    updateFetchStatus('Đã lấy tỷ giá từ nguồn dự phòng (ExchangeRate API)', 'success');
+                    console.log('✅ Fallback rate fetched:', crossRate, 'VND');
+                    return;
                 }
-                prefillPrices();
-                updateFetchStatus('Đã lấy tỷ giá dự phòng từ API công khai.', 'success');
+                
+                throw new Error('Fallback rate invalid');
             } catch (err) {
                 console.error('Fallback rate fetch failed:', err);
-                currentPriceEl.textContent = 'N/A';
-                updateFetchStatus('Không lấy được tỷ giá từ bất kỳ nguồn nào.', 'error');
+                
+                // Try to load from localStorage as last resort
+                const settings = loadData(settingsKey);
+                if (settings && settings.buyPrice > 0) {
+                    crossRate = settings.buyPrice;
+                    currentPriceEl.textContent = formatVND(crossRate) + ' (từ bộ nhớ)';
+                    prefillPrices();
+                    updateFetchStatus('Đang dùng tỷ giá đã lưu (offline)', 'warning');
+                } else {
+                    currentPriceEl.textContent = 'Không có dữ liệu';
+                    updateFetchStatus('Không lấy được tỷ giá. Vui lòng nhập thủ công.', 'error');
+                }
             }
         }
 

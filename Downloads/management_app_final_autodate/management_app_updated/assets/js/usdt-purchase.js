@@ -29,7 +29,8 @@ async function fetchBinanceP2PRate() {
                 }
             }
         } catch (e) {
-            console.warn(`⚠️ Netlify Function ${url} failed:`, e.message);
+            // Silently skip if Netlify function doesn't exist
+            console.log(`⏭️ Skipping unavailable endpoint: ${url}`);
         }
     }
     

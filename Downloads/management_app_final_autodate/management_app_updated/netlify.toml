@@ -4,7 +4,10 @@
   ignore = "git diff --quiet HEAD^ HEAD ./"
   functions = "netlify/functions"
 
+# Redirect all routes to index.html for SPA (except static files and functions)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  force = false
+  conditions = {Role = ["!admin"]}

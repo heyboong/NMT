@@ -50,10 +50,11 @@ table.sheet td {
     color: #000000;
 }
 
-/* Header cells - cho phép wrap text để hiển thị đầy đủ */
+/* Header cells - cố định trên 1 dòng, không xuống dòng */
 table.sheet th {
-    white-space: normal;
-    overflow: visible;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     padding: 6px 8px;
     min-width: 80px;
 }
@@ -72,9 +73,9 @@ table.sheet thead tr:first-child th {
     text-align: center;
     font-weight: bold;
     font-size: 13px;
-    white-space: normal;
-    overflow: visible;
-    word-wrap: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     padding: 6px 8px;
 }
 
@@ -84,9 +85,9 @@ table.sheet thead tr:nth-child(2) th {
     text-align: center;
     font-weight: bold;
     font-size: 15px;
-    white-space: normal;
-    overflow: visible;
-    word-wrap: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     padding: 6px 8px;
 }
 
@@ -97,6 +98,217 @@ table.sheet .row-header {
     text-align: center;
     font-weight: normal;
     width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    padding: 4px 2px !important;
+}
+
+/* Action column for buttons */
+table.sheet .action-header,
+table.sheet .action-cell {
+    background-color: #f0f4f8;
+    width: 100px;
+    min-width: 100px;
+    max-width: 100px;
+    text-align: center;
+    padding: 2px !important;
+}
+
+/* Note indicator in cells */
+table.sheet td[data-has-note="true"] {
+    position: relative;
+}
+
+table.sheet td[data-has-note="true"]::after {
+    content: '📝';
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 10px;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Note tooltip on hover */
+.cell-note-tooltip {
+    position: fixed;
+    background: #1f2937;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    max-width: 300px;
+    word-wrap: break-word;
+    z-index: 9998;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+    animation: tooltipFadeIn 0.2s ease-out;
+}
+
+.cell-note-tooltip::before {
+    content: '📝 Ghi chú:';
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 11px;
+    color: #93c5fd;
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Inline note popup */
+.inline-note-popup {
+    position: fixed;
+    background: white;
+    border: 2px solid #3b82f6;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    width: 350px;
+    padding: 0;
+    animation: popupSlideIn 0.2s ease-out;
+}
+
+@keyframes popupSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.inline-note-header {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px 6px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.inline-note-header span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.inline-note-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    transition: background 0.2s;
+}
+
+.inline-note-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.inline-note-body {
+    padding: 15px;
+}
+
+.inline-note-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 10px;
+    border: 2px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.2s;
+}
+
+.inline-note-textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.inline-note-footer {
+    padding: 0 15px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.inline-note-char-count {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.inline-note-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.inline-note-btn {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.inline-note-btn-save {
+    background: #3b82f6;
+    color: white;
+}
+
+.inline-note-btn-save:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.inline-note-btn-delete {
+    background: #ef4444;
+    color: white;
+}
+
+.inline-note-btn-delete:hover {
+    background: #dc2626;
+}
+
+.inline-note-btn-cancel {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.inline-note-btn-cancel:hover {
+    background: #d1d5db;
+}
+
+table.sheet .action-cell button {
+    font-size: 11px !important;
+    padding: 2px 6px !important;
+    margin: 0 !important;
+    min-width: unset !important;
+    width: auto !important;
 }
 
 /* Alternating row colours */
@@ -259,4 +471,15 @@ table.sheet td.total-sum {
 
 .adjustable-table tbody tr.resizing {
     user-select: none;
+}
+
+/* Staff name color coding - AE and AE-QT staff identification */
+.staff-color-aeqt {
+    color: #1e40af !important; /* Dark blue for AE-QT staff */
+    font-weight: 600 !important;
+}
+
+.staff-color-ae {
+    color: #dc2626 !important; /* Dark red for AE staff */
+    font-weight: 700 !important;
 }

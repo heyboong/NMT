@@ -19,6 +19,83 @@
     // Use global formatVND from app.js
 
     /**
+     * Get note for specific row from localStorage
+     */
+    function getNote(tableName, rowIndex) {
+        try {
+            const notes = JSON.parse(localStorage.getItem('table_row_notes') || '{}');
+            const key = `${tableName}_row_${rowIndex}`;
+            return notes[key] || null;
+        } catch (err) {
+            console.error('Error loading note:', err);
+            return null;
+        }
+    }
+
+    /**
+     * Get unique staff names from AE and AE-QT tables
+     * Returns { aeStaff: Set, aeqtStaff: Set }
+     */
+    function getStaffLists() {
+        const aeData = loadData('AE_sheet') || [];
+        const aeqtData = loadData('AEQT_sheet') || [];
+        
+        const aeStaff = new Set();
+        const aeqtStaff = new Set();
+        
+        // Extract names from AE table
+        aeData.forEach(row => {
+            if (row.name && row.name.trim()) {
+                // Split by comma in case of multiple names
+                const names = row.name.split(',').map(n => n.trim()).filter(n => n);
+                names.forEach(name => aeStaff.add(name));
+            }
+        });
+        
+        // Extract names from AE-QT table
+        aeqtData.forEach(row => {
+            if (row.name && row.name.trim()) {
+                const names = row.name.split(',').map(n => n.trim()).filter(n => n);
+                names.forEach(name => aeqtStaff.add(name));
+            }
+        });
+        
+        return { aeStaff, aeqtStaff };
+    }
+
+    /**
+     * Apply color to staff name based on which table they belong to
+     * AE-QT: blue, AE: dark red
+     * Only applies if no text-color class is already set
+     */
+    function applyStaffColor(element, staffName) {
+        if (!staffName || !staffName.trim()) return;
+        
+        // Check if element already has a text-color class (from text-color-highlight tool)
+        const hasTextColorClass = element.className.split(' ').some(cls => 
+            cls.startsWith('text-color-') && cls !== 'text-color-default'
+        );
+        
+        // If already has custom color from text-color tool, don't override
+        if (hasTextColorClass) {
+            return;
+        }
+        
+        const { aeStaff, aeqtStaff } = getStaffLists();
+        const name = staffName.trim();
+        
+        // Remove any existing staff color classes
+        element.classList.remove('staff-color-aeqt', 'staff-color-ae');
+        
+        // Check if name exists in either list and add appropriate class
+        if (aeqtStaff.has(name)) {
+            element.classList.add('staff-color-aeqt'); // Dark blue
+        } else if (aeStaff.has(name)) {
+            element.classList.add('staff-color-ae'); // Dark red
+        }
+    }
+
+    /**
      * Round VND exchange rate to the nearest unit (whole number).
      * 
      * Business Rule: Exchange rates should always be rounded to whole VND
@@ -153,7 +230,7 @@
                     });
                     
                     if (!res.ok) {
-                        console.warn(`⚠️ ${endpoint} returned ${res.status}`);
+                        console.log(`⏭️ Skipping unavailable endpoint: ${endpoint}`);
                         continue;
                     }
                     
@@ -196,18 +273,55 @@
 
     async function fetchFallbackRates() {
         try {
-            const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BUSDUSDT');
+            // Try Binance Spot with timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+            
+            const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BUSDUSDT', {
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            
+            if (!res.ok) throw new Error('Binance API error: ' + res.status);
+            
             const busdData = await res.json();
             const busdPrice = parseFloat(busdData.price);
             const usdtToUsd = busdPrice > 0 ? 1 / busdPrice : 1;
+            
             const fxRes = await fetch('https://open.er-api.com/v6/latest/USD');
             const fxData = await fxRes.json();
             const usdToVnd = fxData && fxData.rates && fxData.rates.VND ? fxData.rates.VND : 0;
+            
             crossRate = usdtToUsd * usdToVnd;
             sellPrice = crossRate;
             buyPrice = crossRate;
+            
+            // Cache successful fetch
+            if (crossRate > 0) {
+                localStorage.setItem('_cached_rate', crossRate.toString());
+                localStorage.setItem('_cached_rate_time', Date.now().toString());
+            }
         } catch (err) {
-            console.error('Error fetching fallback rates:', err);
+            console.warn('⚠️ Fallback rates failed:', err.message);
+            
+            // Try using cached rate (if less than 24 hours old)
+            const cachedRate = localStorage.getItem('_cached_rate');
+            const cachedTime = localStorage.getItem('_cached_rate_time');
+            
+            if (cachedRate && cachedTime) {
+                const age = Date.now() - parseInt(cachedTime);
+                const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+                
+                if (age < maxAge) {
+                    crossRate = parseFloat(cachedRate);
+                    sellPrice = crossRate;
+                    buyPrice = crossRate;
+                    console.log('📦 Using cached rate from', new Date(parseInt(cachedTime)).toLocaleString());
+                    return;
+                }
+            }
+            
+            console.error('❌ No valid rate available - using stored prices');
         }
     }
 
@@ -490,6 +604,17 @@
         return cleaned;
     }
 
+    function deleteConversionRow(index) {
+        if (index < 0 || index >= convData.length) return;
+        if (!confirm('Điều này sẽ xóa dòng dữ liệu. Tiếp tục?')) return;
+        convData.splice(index, 1);
+        saveData('dashboard_conversion', convData);
+        renderConversionTable();
+        if (typeof showNotification === 'function') {
+            showNotification('Đã xóa dòng thành công', 'success');
+        }
+    }
+
     function renderConversionTable() {
         convTableBody.innerHTML = '';
         let previousDate = null; // Theo dõi ngày trước đó (normalized)
@@ -509,27 +634,108 @@
             
             const header = document.createElement('th');
             header.className = 'row-header';
-            header.style.display = 'flex';
-            header.style.alignItems = 'center';
-            header.style.gap = '6px';
-            header.style.whiteSpace = 'nowrap';
-            header.style.justifyContent = 'flex-start';
-            const rowNumber = document.createElement('span');
-            rowNumber.textContent = rowIndex + 2;
+            header.textContent = rowIndex + 2;
+            tr.appendChild(header);
+            
+            // Action column with buttons
+            const actionCell = document.createElement('td');
+            actionCell.className = 'action-cell';
+            actionCell.style.display = 'flex';
+            actionCell.style.alignItems = 'center';
+            actionCell.style.gap = '4px';
+            actionCell.style.justifyContent = 'center';
+            actionCell.style.padding = '2px';
+            
             const insertBtn = document.createElement('button');
             insertBtn.type = 'button';
             insertBtn.textContent = '➕';
             insertBtn.title = 'Chèn dòng dưới';
             insertBtn.style.border = '1px solid #d1d5db';
-            insertBtn.style.borderRadius = '6px';
+            insertBtn.style.borderRadius = '4px';
             insertBtn.style.padding = '2px 6px';
             insertBtn.style.background = '#f9fafb';
             insertBtn.style.cursor = 'pointer';
             insertBtn.style.fontSize = '11px';
             insertBtn.addEventListener('click', () => insertConversionRowAfter(rowIndex));
-            header.appendChild(rowNumber);
-            header.appendChild(insertBtn);
-            tr.appendChild(header);
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.textContent = '🗑️';
+            deleteBtn.title = 'Xóa dòng';
+            deleteBtn.style.border = '1px solid #fca5a5';
+            deleteBtn.style.borderRadius = '4px';
+            deleteBtn.style.padding = '2px 6px';
+            deleteBtn.style.background = '#fee2e2';
+            deleteBtn.style.cursor = 'pointer';
+            deleteBtn.style.fontSize = '11px';
+            deleteBtn.addEventListener('click', () => deleteConversionRow(rowIndex));
+            
+            // Note button
+            const noteBtn = document.createElement('button');
+            noteBtn.type = 'button';
+            const hasNote = getNote('Dashboard-Conversion', rowIndex);
+            noteBtn.textContent = hasNote ? '📝' : '📋';
+            noteBtn.title = hasNote ? 'Xem/Sửa ghi chú' : 'Thêm ghi chú';
+            noteBtn.style.border = hasNote ? '1px solid #3b82f6' : '1px solid #d1d5db';
+            noteBtn.style.borderRadius = '4px';
+            noteBtn.style.padding = '2px 6px';
+            noteBtn.style.background = hasNote ? '#dbeafe' : '#f9fafb';
+            noteBtn.style.cursor = 'pointer';
+            noteBtn.style.fontSize = '11px';
+            noteBtn.style.position = 'relative';
+            noteBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (window.showInlineNotePopup) {
+                    window.showInlineNotePopup(e, 'Dashboard-Conversion', rowIndex);
+                }
+            });
+            
+            // Add hover tooltip for note preview
+            if (hasNote) {
+                let tooltipTimeout;
+                let tooltip = null;
+                
+                noteBtn.addEventListener('mouseenter', (e) => {
+                    tooltipTimeout = setTimeout(() => {
+                        tooltip = document.createElement('div');
+                        tooltip.className = 'cell-note-tooltip';
+                        tooltip.textContent = hasNote;
+                        tooltip.style.cssText = `
+                            position: fixed;
+                            background: #1f2937;
+                            color: white;
+                            padding: 8px 12px;
+                            border-radius: 6px;
+                            font-size: 13px;
+                            max-width: 300px;
+                            white-space: pre-wrap;
+                            word-wrap: break-word;
+                            z-index: 10000;
+                            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+                        `;
+                        document.body.appendChild(tooltip);
+                        
+                        const btnRect = noteBtn.getBoundingClientRect();
+                        tooltip.style.left = btnRect.left + 'px';
+                        tooltip.style.top = (btnRect.bottom + 5) + 'px';
+                    }, 500);
+                });
+                
+                noteBtn.addEventListener('mouseleave', () => {
+                    clearTimeout(tooltipTimeout);
+                    if (tooltip && tooltip.parentNode) {
+                        tooltip.parentNode.removeChild(tooltip);
+                        tooltip = null;
+                    }
+                });
+            }
+            
+            actionCell.appendChild(insertBtn);
+            actionCell.appendChild(noteBtn);
+            actionCell.appendChild(deleteBtn);
+            tr.appendChild(actionCell);
+            
             convColumns.forEach(col => {
                 const td = document.createElement('td');
                 td.dataset.row = rowIndex;
@@ -566,6 +772,12 @@
                 if (col === 'vnd') {
                     td.classList.add('total-cell');
                 }
+                
+                // Apply staff color if this is the staff column
+                if (col === 'staff' && displayValue) {
+                    applyStaffColor(td, displayValue);
+                }
+                
                 td.addEventListener('input', onConvCellInput);
                 
                 // Add blur event to reformat after editing
@@ -584,6 +796,9 @@
                                 maximumFractionDigits: 2 
                             });
                         }
+                    } else if (col === 'staff' && savedValue) {
+                        // Reapply staff color after blur
+                        applyStaffColor(td, savedValue);
                     }
                 });
                 
@@ -1014,6 +1229,17 @@
         return Math.round(total * 100) / 100;
     }
 
+    function deleteWithdrawRow(index) {
+        if (index < 0 || index >= wData.length) return;
+        if (!confirm('Điều này sẽ xóa dòng dữ liệu. Tiếp tục?')) return;
+        wData.splice(index, 1);
+        saveData('dashboard_withdraw', wData);
+        renderWithdrawTable();
+        if (typeof showNotification === 'function') {
+            showNotification('Đã xóa dòng thành công', 'success');
+        }
+    }
+
     /**
      * Render the withdraw table body from wData.
      */
@@ -1043,27 +1269,108 @@
             
             const header = document.createElement('th');
             header.className = 'row-header';
-            header.style.display = 'flex';
-            header.style.alignItems = 'center';
-            header.style.gap = '6px';
-            header.style.whiteSpace = 'nowrap';
-            header.style.justifyContent = 'flex-start';
-            const rowNumber = document.createElement('span');
-            rowNumber.textContent = rowIndex + 2;
+            header.textContent = rowIndex + 2;
+            tr.appendChild(header);
+            
+            // Action column with buttons
+            const actionCell = document.createElement('td');
+            actionCell.className = 'action-cell';
+            actionCell.style.display = 'flex';
+            actionCell.style.alignItems = 'center';
+            actionCell.style.gap = '4px';
+            actionCell.style.justifyContent = 'center';
+            actionCell.style.padding = '2px';
+            
             const insertBtn = document.createElement('button');
             insertBtn.type = 'button';
             insertBtn.textContent = '➕';
             insertBtn.title = 'Chèn dòng dưới';
             insertBtn.style.border = '1px solid #d1d5db';
-            insertBtn.style.borderRadius = '6px';
+            insertBtn.style.borderRadius = '4px';
             insertBtn.style.padding = '2px 6px';
             insertBtn.style.background = '#f9fafb';
             insertBtn.style.cursor = 'pointer';
             insertBtn.style.fontSize = '11px';
             insertBtn.addEventListener('click', () => insertWithdrawRowAfter(rowIndex));
-            header.appendChild(rowNumber);
-            header.appendChild(insertBtn);
-            tr.appendChild(header);
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.textContent = '🗑️';
+            deleteBtn.title = 'Xóa dòng';
+            deleteBtn.style.border = '1px solid #fca5a5';
+            deleteBtn.style.borderRadius = '4px';
+            deleteBtn.style.padding = '2px 6px';
+            deleteBtn.style.background = '#fee2e2';
+            deleteBtn.style.cursor = 'pointer';
+            deleteBtn.style.fontSize = '11px';
+            deleteBtn.addEventListener('click', () => deleteWithdrawRow(rowIndex));
+            
+            // Note button
+            const noteBtn = document.createElement('button');
+            noteBtn.type = 'button';
+            const hasNote = getNote('Dashboard-Withdraw', rowIndex);
+            noteBtn.textContent = hasNote ? '📝' : '📋';
+            noteBtn.title = hasNote ? 'Xem/Sửa ghi chú' : 'Thêm ghi chú';
+            noteBtn.style.border = hasNote ? '1px solid #3b82f6' : '1px solid #d1d5db';
+            noteBtn.style.borderRadius = '4px';
+            noteBtn.style.padding = '2px 6px';
+            noteBtn.style.background = hasNote ? '#dbeafe' : '#f9fafb';
+            noteBtn.style.cursor = 'pointer';
+            noteBtn.style.fontSize = '11px';
+            noteBtn.style.position = 'relative';
+            noteBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (window.showInlineNotePopup) {
+                    window.showInlineNotePopup(e, 'Dashboard-Withdraw', rowIndex);
+                }
+            });
+            
+            // Add hover tooltip for note preview
+            if (hasNote) {
+                let tooltipTimeout;
+                let tooltip = null;
+                
+                noteBtn.addEventListener('mouseenter', (e) => {
+                    tooltipTimeout = setTimeout(() => {
+                        tooltip = document.createElement('div');
+                        tooltip.className = 'cell-note-tooltip';
+                        tooltip.textContent = hasNote;
+                        tooltip.style.cssText = `
+                            position: fixed;
+                            background: #1f2937;
+                            color: white;
+                            padding: 8px 12px;
+                            border-radius: 6px;
+                            font-size: 13px;
+                            max-width: 300px;
+                            white-space: pre-wrap;
+                            word-wrap: break-word;
+                            z-index: 10000;
+                            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+                        `;
+                        document.body.appendChild(tooltip);
+                        
+                        const btnRect = noteBtn.getBoundingClientRect();
+                        tooltip.style.left = btnRect.left + 'px';
+                        tooltip.style.top = (btnRect.bottom + 5) + 'px';
+                    }, 500);
+                });
+                
+                noteBtn.addEventListener('mouseleave', () => {
+                    clearTimeout(tooltipTimeout);
+                    if (tooltip && tooltip.parentNode) {
+                        tooltip.parentNode.removeChild(tooltip);
+                        tooltip = null;
+                    }
+                });
+            }
+            
+            actionCell.appendChild(insertBtn);
+            actionCell.appendChild(noteBtn);
+            actionCell.appendChild(deleteBtn);
+            tr.appendChild(actionCell);
+            
             wColumns.forEach(col => {
                 const td = document.createElement('td');
                 td.dataset.row = rowIndex;
@@ -1085,6 +1392,12 @@
                 if (['bankdep', 'bankbad', 'visa'].includes(col)) {
                     td.classList.add('total-cell');
                 }
+                
+                // Apply staff color if this is the staff column
+                if (col === 'staff' && displayValue) {
+                    applyStaffColor(td, displayValue);
+                }
+                
                 td.addEventListener('input', onWCellInput);
                 
                 // Add blur event to reformat after editing
@@ -1095,6 +1408,9 @@
                         if (!isNaN(numValue)) {
                             td.textContent = formatVND(numValue);
                         }
+                    } else if (col === 'staff' && savedValue) {
+                        // Reapply staff color after blur
+                        applyStaffColor(td, savedValue);
                     }
                 });
                 
@@ -1252,6 +1568,10 @@
     // Expose row add helpers for buttons
     window.DASH_addConversionRow = addConversionRowToEnd;
     window.DASH_addWithdrawRow = addWithdrawRowToEnd;
+    window.DASH_deleteConversionRow = deleteConversionRow;
+    window.DASH_deleteWithdrawRow = deleteWithdrawRow;
+    window.DASH_deleteConversionRow = deleteConversionRow;
+    window.DASH_deleteWithdrawRow = deleteWithdrawRow;
     
     renderConversionTable();
     renderWithdrawTable();
