@@ -169,42 +169,82 @@
         }
         tableBody.innerHTML = '';
         let previousDate = null; // Theo dõi ngày trước đó (normalized)
+        let dailyMoneySum = 0; // Tổng tiền làm theo ngày
+        let dailyTTSum = 0; // Tổng nhận theo ngày
         
         data.forEach((row, rowIndex) => {
             const tr = document.createElement('tr');
             
             // Chuẩn hóa và kiểm tra nếu ngày thay đổi so với dòng trước
             const currentDate = normalizeDateForComparison(row.date);
+            
+            // Nếu ngày thay đổi và có ngày trước đó, thêm dòng tổng cho ngày trước
+            if (currentDate && previousDate && currentDate !== previousDate && (dailyMoneySum > 0 || dailyTTSum > 0)) {
+                const summaryRow = createDailySummaryRow(previousDate, dailyMoneySum, dailyTTSum);
+                tableBody.appendChild(summaryRow);
+                // Reset counters
+                dailyMoneySum = 0;
+                dailyTTSum = 0;
+            }
+            
+            // Thêm border-top màu xanh lá để ngăn cách ngày mới
             if (currentDate && previousDate && currentDate !== previousDate) {
-                // Thêm border-top màu xanh lá để ngăn cách ngày mới
                 tr.style.borderTop = '3px solid #10b981';
                 tr.style.boxShadow = '0 -2px 4px rgba(16, 185, 129, 0.1)';
             }
+            
+            // Cộng dồn cho ngày hiện tại
+            if (currentDate) {
+                const money = parseFloat(row.money) || 0;
+                const tt = computeTT(row);
+                dailyMoneySum += money;
+                dailyTTSum += tt;
+            }
+            
             previousDate = currentDate;
             
             const th = document.createElement('th');
             th.className = 'row-header';
-            th.style.display = 'flex';
-            th.style.alignItems = 'center';
-            th.style.gap = '6px';
-            th.style.whiteSpace = 'nowrap';
-            th.style.justifyContent = 'flex-start';
-            const rowNumber = document.createElement('span');
-            rowNumber.textContent = rowIndex + 2;
+            th.textContent = rowIndex + 2;
+            tr.appendChild(th);
+            
+            // Action column with buttons
+            const actionCell = document.createElement('td');
+            actionCell.className = 'action-cell';
+            actionCell.style.display = 'flex';
+            actionCell.style.alignItems = 'center';
+            actionCell.style.gap = '4px';
+            actionCell.style.justifyContent = 'center';
+            actionCell.style.padding = '2px';
+            
             const insertBtn = document.createElement('button');
             insertBtn.type = 'button';
             insertBtn.textContent = '➕';
             insertBtn.title = 'Chèn dòng dưới';
             insertBtn.style.border = '1px solid #d1d5db';
-            insertBtn.style.borderRadius = '6px';
+            insertBtn.style.borderRadius = '4px';
             insertBtn.style.padding = '2px 6px';
             insertBtn.style.background = '#f9fafb';
             insertBtn.style.cursor = 'pointer';
             insertBtn.style.fontSize = '11px';
             insertBtn.addEventListener('click', () => insertRowAfter(rowIndex));
-            th.appendChild(rowNumber);
-            th.appendChild(insertBtn);
-            tr.appendChild(th);
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.textContent = '🗑️';
+            deleteBtn.title = 'Xóa dòng';
+            deleteBtn.style.border = '1px solid #fca5a5';
+            deleteBtn.style.borderRadius = '4px';
+            deleteBtn.style.padding = '2px 6px';
+            deleteBtn.style.background = '#fee2e2';
+            deleteBtn.style.cursor = 'pointer';
+            deleteBtn.style.fontSize = '11px';
+            deleteBtn.addEventListener('click', () => deleteRow(rowIndex));
+            
+            actionCell.appendChild(insertBtn);
+            actionCell.appendChild(deleteBtn);
+            tr.appendChild(actionCell);
+            
             columns.forEach(col => {
                 const td = document.createElement('td');
                 
@@ -272,11 +312,101 @@
             });
             tableBody.appendChild(tr);
         });
+        
+        // Thêm dòng tổng cho ngày cuối cùng nếu có dữ liệu
+        if (previousDate && (dailyMoneySum > 0 || dailyTTSum > 0)) {
+            const summaryRow = createDailySummaryRow(previousDate, dailyMoneySum, dailyTTSum);
+            tableBody.appendChild(summaryRow);
+        }
+        
         updateTotalDisplay();
         if (window.TableResizer) {
             window.TableResizer.initTable('aeqt-table', { enableRowResize: true });
         }
     }
+    
+    /**
+     * Create a daily summary row showing totals for a specific date
+     * @param {string} date - Normalized date string (YYYY-MM-DD)
+     * @param {number} moneySum - Total money for the day
+     * @param {number} ttSum - Total TT (Nhận) for the day
+     * @returns {HTMLTableRowElement}
+     */
+    function createDailySummaryRow(date, moneySum, ttSum) {
+        const tr = document.createElement('tr');
+        tr.className = 'daily-summary-row';
+        tr.style.background = 'linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%)';
+        tr.style.fontWeight = '700';
+        tr.style.borderTop = '2px solid #0ea5e9';
+        tr.style.borderBottom = '2px solid #0ea5e9';
+        
+        // Row header - empty
+        const th = document.createElement('th');
+        th.className = 'row-header';
+        th.style.background = 'linear-gradient(135deg, #bae6fd 0%, #93c5fd 100%)';
+        tr.appendChild(th);
+        
+        // Action column - empty
+        const actionCell = document.createElement('td');
+        actionCell.className = 'action-cell';
+        tr.appendChild(actionCell);
+        
+        // Date column - show formatted date
+        const dateCell = document.createElement('td');
+        dateCell.textContent = formatNormalizedDate(date);
+        dateCell.style.color = '#0369a1';
+        dateCell.style.fontSize = '13px';
+        tr.appendChild(dateCell);
+        
+        // Money column - show total
+        const moneyCell = document.createElement('td');
+        moneyCell.textContent = formatCurrency(moneySum);
+        moneyCell.style.color = '#0369a1';
+        moneyCell.style.fontSize = '14px';
+        tr.appendChild(moneyCell);
+        
+        // Empty cells for Name, Chia, Khóa
+        for (let i = 0; i < 3; i++) {
+            const emptyCell = document.createElement('td');
+            emptyCell.textContent = '—';
+            emptyCell.style.color = '#94a3b8';
+            emptyCell.style.textAlign = 'center';
+            tr.appendChild(emptyCell);
+        }
+        
+        // Note column - show "Tổng ngày"
+        const noteCell = document.createElement('td');
+        noteCell.textContent = '📊 Tổng ngày';
+        noteCell.style.color = '#0369a1';
+        noteCell.style.fontSize = '13px';
+        noteCell.style.fontStyle = 'italic';
+        tr.appendChild(noteCell);
+        
+        // TT column - show total
+        const ttCell = document.createElement('td');
+        ttCell.textContent = formatCurrency(ttSum);
+        ttCell.style.color = '#059669';
+        ttCell.style.fontSize = '14px';
+        ttCell.style.fontWeight = '700';
+        tr.appendChild(ttCell);
+        
+        return tr;
+    }
+    
+    /**
+     * Format normalized date (YYYY-MM-DD) back to DD/MM/YYYY
+     * @param {string} normalizedDate
+     * @returns {string}
+     */
+    function formatNormalizedDate(normalizedDate) {
+        if (!normalizedDate) return '';
+        const parts = normalizedDate.split('-');
+        if (parts.length === 3) {
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        return normalizedDate;
+    }
+    
     /**
      * Handler for cell input events with comprehensive validation.
      * 
@@ -389,6 +519,7 @@
         // Update aggregate total and persist
         updateTotalDisplay();
         saveData('AEQT_sheet', data);
+        console.log('💾 AE-QT data saved:', rowIndex, col, value);
         
         // Highlight row as recently updated
         if (tr) {
@@ -441,6 +572,17 @@
         if (last) {
             last.scrollIntoView({ behavior: 'smooth', block: 'center' });
             highlightRecentRow(last, 3000);
+        }
+    }
+
+    function deleteRow(index) {
+        if (index < 0 || index >= data.length) return;
+        if (!confirm('Điều này sẽ xóa dòng dữ liệu. Tiếp tục?')) return;
+        data.splice(index, 1);
+        saveData('AEQT_sheet', data);
+        renderTable();
+        if (window.showNotification) {
+            showNotification('Đã xóa dòng thành công', 'success');
         }
     }
 
