@@ -256,16 +256,16 @@
                         break;
                     }
                 } catch (err) {
-                    console.warn(`❌ ${endpoint} failed:`, err.message);
+                    console.log(`⏭️ Endpoint ${endpoint} unavailable`);
                 }
             }
         } catch (err) {
-            console.warn('❌ All API endpoints failed:', err);
+            console.log('⏭️ API endpoints unavailable, using cached data');
         }
         
         // Chỉ dùng giá từ localStorage nếu không lấy được từ API
         if (!fetchedFromAPI) {
-            console.warn('⚠️ Using stored prices from localStorage');
+            console.log('💾 Using stored prices from localStorage');
             applyStoredPrices();
         }
         updateRateWidget();

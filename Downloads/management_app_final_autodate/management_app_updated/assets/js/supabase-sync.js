@@ -51,15 +51,15 @@ async function initSupabaseSync() {
         
         // If library not loaded, use local copy
         if (!window.supabase?.createClient) {
-            console.warn('⚠️ Supabase CDN unavailable. Trying direct connection...');
+            console.log('⏭️ Supabase CDN unavailable - trying direct connection...');
             
             // Try to create client directly
             try {
                 const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
                 window.supabase = { createClient };
             } catch (err) {
-                console.error('❌ Cannot load Supabase. Running offline mode.');
-                console.info('💡 Data saved locally. Sync will activate when online.');
+                console.log('⏭️ Supabase unavailable - running offline mode');
+                console.log('💡 Data saved locally. Sync will activate when online.');
                 isInitialized = true;
                 return;
             }
