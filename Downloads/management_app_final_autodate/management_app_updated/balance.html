@@ -37,7 +37,7 @@
                     Danh Sách Tên
                 </h1>
                 <div style="display: flex; gap: 12px;">
-                    <button id="manage-staff-btn" style="padding: 10px 20px; background: #8b5cf6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <button id="manage-staff-btn" onclick="openStaffModal()" style="padding: 10px 20px; background: #8b5cf6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                         <span>👤</span> Quản Lý NV
                     </button>
                     <button id="refresh-btn" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
@@ -347,6 +347,24 @@
         // ====================================
         // Staff Manager - Two Separate Lists
         // ====================================
+        
+        // Simple function to open modal - called directly from onclick
+        window.openStaffModal = function() {
+            console.log('🚀 openStaffModal called');
+            const modal = document.getElementById('staff-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                console.log('✅ Modal opened');
+                // Load and render lists
+                loadStaffListData();
+                renderStaffListInModal('ae');
+                renderStaffListInModal('aeqt');
+            } else {
+                console.error('❌ Modal not found!');
+                alert('Lỗi: Không tìm thấy modal!');
+            }
+        }
+        
         const STAFF_AE_KEY = 'staff_list_ae';
         const STAFF_AEQT_KEY = 'staff_list_aeqt';
         let staffListAE = [];
