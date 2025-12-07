@@ -46,6 +46,11 @@
                 border-radius: 4px;
                 background: #fff;
             }
+            /* Tô màu xám cho cột Giá Nhập (cột thứ 5) và Giá P2P Bán (cột thứ 7) */
+            #usdt-purchase-table tbody tr td:nth-child(5),
+            #usdt-purchase-table tbody tr td:nth-child(7) {
+                background: #f3f4f6 !important;
+            }
         </style>
         <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px;">
             <h1 style="margin:0; font-size:22px; color:#111827; display:flex; align-items:center; gap:8px;">
@@ -95,9 +100,9 @@
                         <th style="width: 160px;">Ngày/Giờ Nhập</th>
                         <th style="width: 150px;">Tiền Nhập (VND)</th>
                         <th style="width: 130px;">Nhận USDT ($)</th>
-                        <th style="width: 140px;">Giá Nhập (VND)</th>
+                        <th style="width: 140px; background: #f3f4f6; color: #6b7280;">Giá Nhập (VND)</th>
                         <th style="width: 150px;">Tiền Làm (VND)</th>
-                        <th style="width: 150px;">Giá P2P Bán (VND)</th>
+                        <th style="width: 150px; background: #f3f4f6; color: #6b7280;">Giá P2P Bán (VND)</th>
                         <th style="width: 130px;">Lãi/Lỗ (%)</th>
                         <th style="width: 140px;">Thao Tác</th>
                     </tr>
