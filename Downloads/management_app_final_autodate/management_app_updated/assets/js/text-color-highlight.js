@@ -85,6 +85,13 @@
         `;
         
         document.body.appendChild(toolbar);
+        console.log('✓ Toolbar added to body, ID:', toolbar.id);
+        
+        // Verify toolbar is in DOM
+        setTimeout(() => {
+            const check = document.getElementById('text-color-toolbar');
+            console.log('✓ Toolbar verification:', !!check, check ? 'Found' : 'Not found');
+        }, 100);
     }
 
     /**
@@ -231,6 +238,9 @@
         const toggleBtnConversion = document.getElementById('text-color-toggle-conversion');
         const toggleBtnWithdraw = document.getElementById('text-color-toggle-withdraw');
         
+        console.log('📍 Toolbar element:', toolbar);
+        console.log('📍 Toggle buttons:', { conversion: !!toggleBtnConversion, withdraw: !!toggleBtnWithdraw });
+        
         if (!toolbar) {
             console.error('❌ Toolbar not found in toggleToolbar');
             return;
@@ -241,6 +251,7 @@
         
         if (toolbarVisible) {
             toolbar.classList.add('active');
+            console.log('📍 Toolbar classes after add:', toolbar.className);
             if (toggleBtnConversion) toggleBtnConversion.classList.add('active');
             if (toggleBtnWithdraw) toggleBtnWithdraw.classList.add('active');
             updateToolbarState();
