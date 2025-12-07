@@ -469,6 +469,20 @@ function updateCellCurrency(index, field, value) {
     const numericValue = parseFloat(value.replace(/[^0-9]/g, '')) || 0;
     usdtPurchaseData[index][field] = numericValue;
     
+    // Auto-update date/time when purchaseAmount has data
+    if (field === 'purchaseAmount' && numericValue > 0) {
+        const row = usdtPurchaseData[index];
+        if (!row.date || !row.time) {
+            const now = new Date();
+            if (!row.date) {
+                row.date = now.toISOString().split('T')[0];
+            }
+            if (!row.time) {
+                row.time = now.toTimeString().slice(0, 5);
+            }
+        }
+    }
+    
     saveData();
     renderTable();
     updateStatistics();
@@ -492,6 +506,20 @@ function updateCellUSDT(index, field, value) {
     // Remove comma but keep decimal point
     const numericValue = parseFloat(value.replace(/,/g, '')) || 0;
     usdtPurchaseData[index][field] = numericValue;
+    
+    // Auto-update date/time when usdtBuy has data
+    if (field === 'usdtBuy' && numericValue > 0) {
+        const row = usdtPurchaseData[index];
+        if (!row.date || !row.time) {
+            const now = new Date();
+            if (!row.date) {
+                row.date = now.toISOString().split('T')[0];
+            }
+            if (!row.time) {
+                row.time = now.toTimeString().slice(0, 5);
+            }
+        }
+    }
     
     saveData();
     renderTable();
