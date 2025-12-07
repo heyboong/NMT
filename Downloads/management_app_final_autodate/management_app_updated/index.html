@@ -47,29 +47,6 @@
     </nav>
 
     <div class="container">
-        <!-- Hero Section -->
-        <section class="page-hero">
-            <div class="hero-text">
-                <p class="eyebrow">Bảng Điều Khiển</p>
-                <div class="hero-actions">
-                    <a class="btn btn-primary" href="dashboard.html">Mở Bảng Chính</a>
-                    <a class="btn btn-ghost" href="usdt-purchase.html">💰 Nhập USDT</a>
-                    <a class="btn btn-ghost" href="AE.html">Bảng AE & AE-QT</a>
-                </div>
-                <div class="hero-meta">
-                    <span>Supabase + LocalStorage sync</span>
-                    <span class="dot"></span>
-                    <span>Biểu đồ Chart.js</span>
-                </div>
-            </div>
-            <div class="hero-stat">
-                <div class="hero-stat__label">Giá P2P mới nhất</div>
-                <div class="hero-stat__value" id="hero-p2p-rate">0₫</div>
-                <div class="hero-stat__source" id="hero-p2p-source">Đang tải...</div>
-            </div>
-            <div class="hero-bg-accent"></div>
-        </section>
-
         <!-- Thống kê tổng quan -->
         <div style="margin-bottom: 48px;">
             <div class="cards-grid summary-grid">
@@ -296,84 +273,6 @@
                             <td id="daily-total-combined" style="padding: 16px; text-align: center; color: #fbbf24; font-size: 18px; font-weight: 800; border-bottom-right-radius: 16px;">0₫</td>
                         </tr>
                     </tfoot>
-                </table>
-            </div>
-        </div>
-
-        <!-- Biểu đồ và thống kê theo tháng -->
-        <div style="margin-bottom: 48px;">
-            <h2 style="font-size: 28px; font-weight: 700; color: #1e293b; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
-                <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 4px; height: 32px; border-radius: 2px;"></span>
-                <span>📊 Thống Kê Tháng</span>
-                <span id="monthly-total-current" style="margin-left: auto; background: linear-gradient(135deg, #0ea5e9, #6366f1); color: #f8fafc; padding: 8px 12px; border-radius: 12px; font-size: 14px; font-weight: 800; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3), 0 0 20px rgba(239, 68, 68, 0.4), 0 6px 16px rgba(99,102,241,0.25); border: 3px solid #ef4444; white-space: nowrap;">
-                    💎 <span id="monthly-badge-label">TỔNG THÁNG 12</span>: —
-                </span>
-            </h2>
-            
-            <!-- Bảng thống kê tháng -->
-            <div style="margin-bottom: 32px; overflow-x: auto; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); background: white;">
-                <table id="monthly-stats-table" style="width: 100%; border-collapse: separate; border-spacing: 0; background: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-                    <thead>
-                        <tr style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                            <th style="padding: 12px 10px; text-align: center; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; border-top-left-radius: 16px; position: relative;">
-                                <div class="stat-head">
-                                    <span style="font-size: 13px;">📅</span>
-                                    <span>Tháng</span>
-                                </div>
-                            </th>
-                            <th class="stat-usdt-col" style="padding: 12px 8px; text-align: center; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; position: relative;">
-                                <div class="stat-head">
-                                    <span style="font-size: 12px;">💵</span>
-                                    <span>USDT</span>
-                                </div>
-                            </th>
-                            <th class="stat-usd-col" style="padding: 12px 8px; text-align: center; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; position: relative;">
-                                <div class="stat-head">
-                                    <span style="font-size: 12px;">💲</span>
-                                    <span>USD</span>
-                                </div>
-                            </th>
-                            <th style="padding: 12px 8px; text-align: center; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; position: relative;">
-                                <div class="stat-head">
-                                    <span style="font-size: 12px;">📊</span>
-                                    <span>Giá TB</span>
-                                </div>
-                            </th>
-                            <th style="padding: 12px 8px; text-align: center; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; position: relative;">
-                                <div class="stat-head">
-                                    <span style="font-size: 12px;">💱</span>
-                                    <span>Đổi</span>
-                                </div>
-                            </th>
-                            <th style="padding: 12px 8px; text-align: center; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; position: relative;">
-                                <div class="stat-head">
-                                    <span style="font-size: 12px;">💰</span>
-                                    <span>Lấy</span>
-                                </div>
-                            </th>
-                            <th style="padding: 12px 8px; text-align: center; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; background: rgba(5, 150, 105, 0.95); position: relative;">
-                                <div class="stat-head">
-                                    <span style="font-size: 12px;">💼</span>
-                                    <span>AE</span>
-                                </div>
-                            </th>
-                            <th style="padding: 12px 8px; text-align: center; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; background: rgba(8, 145, 178, 0.95); position: relative;">
-                                <div class="stat-head">
-                                    <span style="font-size: 12px;">🌐</span>
-                                    <span>AE-QT</span>
-                                </div>
-                            </th>
-                            <th style="padding: 12px 8px; text-align: center; border: none; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; background: rgba(220, 38, 38, 0.95); border-top-right-radius: 16px; position: relative;">
-                                <div class="stat-head">
-                                    <span style="font-size: 12px;">💸</span>
-                                    <span>Tiền Làm</span>
-                                </div>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody id="monthly-stats-body">
-                        <!-- Data will be populated by JS -->
-                    </tbody>
                 </table>
             </div>
         </div>
