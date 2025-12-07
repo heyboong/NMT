@@ -107,9 +107,9 @@ table.sheet .row-header {
 table.sheet .action-header,
 table.sheet .action-cell {
     background-color: #f0f4f8;
-    width: 100px;
-    min-width: 100px;
-    max-width: 100px;
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
     text-align: center;
     padding: 2px !important;
 }
