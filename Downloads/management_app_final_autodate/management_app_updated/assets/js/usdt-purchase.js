@@ -361,7 +361,7 @@ function renderTable() {
                     <div style="display: flex; gap: 8px; justify-content: center;">
                         <button onclick="insertRowAfter(${index})"
                             style="padding: 6px 10px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">
-                            ➕ Chèn dưới
+                            ➕ Chèn Dòng
                         </button>
                         <button onclick="deleteRow(${index})" 
                             style="padding: 6px 10px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">

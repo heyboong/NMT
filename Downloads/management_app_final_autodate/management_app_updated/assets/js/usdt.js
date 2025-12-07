@@ -288,9 +288,9 @@ function renderTable() {
                 </td>
                 <td style="text-align: center;">
                     <div style="display: flex; gap: 6px; justify-content: center;">
-                        <button onclick="insertRowAfter(${index})" 
-                            style="padding: 6px 10px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">
-                            ➕ Chèn dưới
+                        <button onclick="insertRowAfter(${index})"
+                            style="padding: 6px 10px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">
+                            ➕ Chèn Dòng
                         </button>
                         <button onclick="deleteRow(${index})" 
                             style="padding: 6px 10px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">
