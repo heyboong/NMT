@@ -51,7 +51,7 @@ async function fetchBinanceP2PRate() {
                 return { sellPrice, buyPrice: sellPrice, source: data.source || 'proxy' };
             }
         } catch (e) {
-            console.warn('Proxy failed:', e.message);
+            console.log('⏭️ Proxy not available');
         }
     }
 
@@ -67,7 +67,7 @@ async function fetchBinanceP2PRate() {
             }
         }
     } catch (e) {
-        console.warn('Ticker fallback failed:', e.message);
+        console.log('⏭️ Ticker fallback not available');
     }
 
     return null;
