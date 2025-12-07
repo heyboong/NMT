@@ -665,69 +665,7 @@
             deleteBtn.style.fontSize = '11px';
             deleteBtn.addEventListener('click', () => deleteConversionRow(rowIndex));
             
-            // Note button
-            const noteBtn = document.createElement('button');
-            noteBtn.type = 'button';
-            const hasNote = getNote('Dashboard-Conversion', rowIndex);
-            noteBtn.textContent = hasNote ? '📝' : '📋';
-            noteBtn.title = hasNote ? 'Xem/Sửa ghi chú' : 'Thêm ghi chú';
-            noteBtn.style.border = hasNote ? '1px solid #3b82f6' : '1px solid #d1d5db';
-            noteBtn.style.borderRadius = '4px';
-            noteBtn.style.padding = '2px 6px';
-            noteBtn.style.background = hasNote ? '#dbeafe' : '#f9fafb';
-            noteBtn.style.cursor = 'pointer';
-            noteBtn.style.fontSize = '11px';
-            noteBtn.style.position = 'relative';
-            noteBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (window.showInlineNotePopup) {
-                    window.showInlineNotePopup(e, 'Dashboard-Conversion', rowIndex);
-                }
-            });
-            
-            // Add hover tooltip for note preview
-            if (hasNote) {
-                let tooltipTimeout;
-                let tooltip = null;
-                
-                noteBtn.addEventListener('mouseenter', (e) => {
-                    tooltipTimeout = setTimeout(() => {
-                        tooltip = document.createElement('div');
-                        tooltip.className = 'cell-note-tooltip';
-                        tooltip.textContent = hasNote;
-                        tooltip.style.cssText = `
-                            position: fixed;
-                            background: #1f2937;
-                            color: white;
-                            padding: 8px 12px;
-                            border-radius: 6px;
-                            font-size: 13px;
-                            max-width: 300px;
-                            white-space: pre-wrap;
-                            word-wrap: break-word;
-                            z-index: 10000;
-                            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-                        `;
-                        document.body.appendChild(tooltip);
-                        
-                        const btnRect = noteBtn.getBoundingClientRect();
-                        tooltip.style.left = btnRect.left + 'px';
-                        tooltip.style.top = (btnRect.bottom + 5) + 'px';
-                    }, 500);
-                });
-                
-                noteBtn.addEventListener('mouseleave', () => {
-                    clearTimeout(tooltipTimeout);
-                    if (tooltip && tooltip.parentNode) {
-                        tooltip.parentNode.removeChild(tooltip);
-                        tooltip = null;
-                    }
-                });
-            }
-            
             actionCell.appendChild(insertBtn);
-            actionCell.appendChild(noteBtn);
             actionCell.appendChild(deleteBtn);
             tr.appendChild(actionCell);
             
@@ -762,7 +700,43 @@
                     }
                 }
                 
-                td.textContent = displayValue;
+                // For date column, add inline note button
+                if (col === 'date') {
+                    td.style.position = 'relative';
+                    td.style.paddingRight = '30px';
+                    td.textContent = displayValue;
+                    
+                    // Create inline note button
+                    const inlineNoteBtn = document.createElement('button');
+                    const hasNote = getNote('Dashboard-Conversion', rowIndex);
+                    inlineNoteBtn.type = 'button';
+                    inlineNoteBtn.textContent = hasNote ? '📝' : '📋';
+                    inlineNoteBtn.title = hasNote ? 'Xem/Sửa ghi chú' : 'Thêm ghi chú';
+                    inlineNoteBtn.style.cssText = `
+                        position: absolute;
+                        right: 4px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        border: ${hasNote ? '1px solid #3b82f6' : '1px solid #d1d5db'};
+                        border-radius: 4px;
+                        padding: 2px 4px;
+                        background: ${hasNote ? '#dbeafe' : '#f9fafb'};
+                        cursor: pointer;
+                        font-size: 11px;
+                        line-height: 1;
+                    `;
+                    inlineNoteBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (window.showInlineNotePopup) {
+                            window.showInlineNotePopup(e, 'Dashboard-Conversion', rowIndex);
+                        }
+                    });
+                    td.appendChild(inlineNoteBtn);
+                } else {
+                    td.textContent = displayValue;
+                }
+                
                 // Highlight the VND column as a total cell
                 if (col === 'vnd') {
                     td.classList.add('total-cell');
@@ -1300,69 +1274,7 @@
             deleteBtn.style.fontSize = '11px';
             deleteBtn.addEventListener('click', () => deleteWithdrawRow(rowIndex));
             
-            // Note button
-            const noteBtn = document.createElement('button');
-            noteBtn.type = 'button';
-            const hasNote = getNote('Dashboard-Withdraw', rowIndex);
-            noteBtn.textContent = hasNote ? '📝' : '📋';
-            noteBtn.title = hasNote ? 'Xem/Sửa ghi chú' : 'Thêm ghi chú';
-            noteBtn.style.border = hasNote ? '1px solid #3b82f6' : '1px solid #d1d5db';
-            noteBtn.style.borderRadius = '4px';
-            noteBtn.style.padding = '2px 6px';
-            noteBtn.style.background = hasNote ? '#dbeafe' : '#f9fafb';
-            noteBtn.style.cursor = 'pointer';
-            noteBtn.style.fontSize = '11px';
-            noteBtn.style.position = 'relative';
-            noteBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (window.showInlineNotePopup) {
-                    window.showInlineNotePopup(e, 'Dashboard-Withdraw', rowIndex);
-                }
-            });
-            
-            // Add hover tooltip for note preview
-            if (hasNote) {
-                let tooltipTimeout;
-                let tooltip = null;
-                
-                noteBtn.addEventListener('mouseenter', (e) => {
-                    tooltipTimeout = setTimeout(() => {
-                        tooltip = document.createElement('div');
-                        tooltip.className = 'cell-note-tooltip';
-                        tooltip.textContent = hasNote;
-                        tooltip.style.cssText = `
-                            position: fixed;
-                            background: #1f2937;
-                            color: white;
-                            padding: 8px 12px;
-                            border-radius: 6px;
-                            font-size: 13px;
-                            max-width: 300px;
-                            white-space: pre-wrap;
-                            word-wrap: break-word;
-                            z-index: 10000;
-                            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-                        `;
-                        document.body.appendChild(tooltip);
-                        
-                        const btnRect = noteBtn.getBoundingClientRect();
-                        tooltip.style.left = btnRect.left + 'px';
-                        tooltip.style.top = (btnRect.bottom + 5) + 'px';
-                    }, 500);
-                });
-                
-                noteBtn.addEventListener('mouseleave', () => {
-                    clearTimeout(tooltipTimeout);
-                    if (tooltip && tooltip.parentNode) {
-                        tooltip.parentNode.removeChild(tooltip);
-                        tooltip = null;
-                    }
-                });
-            }
-            
             actionCell.appendChild(insertBtn);
-            actionCell.appendChild(noteBtn);
             actionCell.appendChild(deleteBtn);
             tr.appendChild(actionCell);
             
@@ -1382,7 +1294,43 @@
                     }
                 }
                 
-                td.textContent = displayValue;
+                // For date column, add inline note button
+                if (col === 'date') {
+                    td.style.position = 'relative';
+                    td.style.paddingRight = '30px';
+                    td.textContent = displayValue;
+                    
+                    // Create inline note button
+                    const inlineNoteBtn = document.createElement('button');
+                    const hasNote = getNote('Dashboard-Withdraw', rowIndex);
+                    inlineNoteBtn.type = 'button';
+                    inlineNoteBtn.textContent = hasNote ? '📝' : '📋';
+                    inlineNoteBtn.title = hasNote ? 'Xem/Sửa ghi chú' : 'Thêm ghi chú';
+                    inlineNoteBtn.style.cssText = `
+                        position: absolute;
+                        right: 4px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        border: ${hasNote ? '1px solid #3b82f6' : '1px solid #d1d5db'};
+                        border-radius: 4px;
+                        padding: 2px 4px;
+                        background: ${hasNote ? '#dbeafe' : '#f9fafb'};
+                        cursor: pointer;
+                        font-size: 11px;
+                        line-height: 1;
+                    `;
+                    inlineNoteBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (window.showInlineNotePopup) {
+                            window.showInlineNotePopup(e, 'Dashboard-Withdraw', rowIndex);
+                        }
+                    });
+                    td.appendChild(inlineNoteBtn);
+                } else {
+                    td.textContent = displayValue;
+                }
+                
                 // Highlight the numeric columns as total cells when editing
                 if (['bankdep', 'bankbad', 'visa'].includes(col)) {
                     td.classList.add('total-cell');

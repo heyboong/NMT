@@ -172,14 +172,17 @@
                     updateCellNoteIndicator(cell, noteText.length > 0);
                 });
                 
-                // Update note icon button in action-cell
-                const noteBtn = row.querySelector('.action-cell button[title*="ghi chú"]');
-                if (noteBtn) {
-                    const hasNote = noteText.length > 0;
-                    noteBtn.textContent = hasNote ? '📝' : '📋';
-                    noteBtn.title = hasNote ? 'Xem/Sửa ghi chú' : 'Thêm ghi chú';
-                    noteBtn.style.border = hasNote ? '1px solid #3b82f6' : '1px solid #d1d5db';
-                    noteBtn.style.background = hasNote ? '#dbeafe' : '#f9fafb';
+                // Update note button in date cell
+                const dateCell = row.querySelector('td[data-col="date"]');
+                if (dateCell) {
+                    const noteBtn = dateCell.querySelector('button');
+                    if (noteBtn) {
+                        const hasNote = noteText.length > 0;
+                        noteBtn.textContent = hasNote ? '📝' : '📋';
+                        noteBtn.title = hasNote ? 'Xem/Sửa ghi chú' : 'Thêm ghi chú';
+                        noteBtn.style.border = hasNote ? '1px solid #3b82f6' : '1px solid #d1d5db';
+                        noteBtn.style.background = hasNote ? '#dbeafe' : '#f9fafb';
+                    }
                 }
             }
         }
