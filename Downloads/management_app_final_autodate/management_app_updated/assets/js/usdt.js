@@ -94,8 +94,6 @@ async function loadP2PRate() {
                     // Re-render to update profit/loss
                     renderTable();
                     updateStatistics();
-                    
-                    console.log('✅ P2P rate loaded:', currentP2PRate);
                 }
             }
         } else {
@@ -121,8 +119,6 @@ async function fetchBinanceP2PRate() {
 
     for (const endpoint of endpoints) {
         try {
-            console.log(`🔄 Trying endpoint: ${endpoint}`);
-            
             let response;
             if (endpoint.includes('binance.com')) {
                 // Direct Binance API call
@@ -172,15 +168,13 @@ async function fetchBinanceP2PRate() {
                 };
                 
                 localStorage.setItem('rate_settings', JSON.stringify(rateSettings));
-                console.log('✅ P2P rate fetched:', sellPrice, 'from', rateSettings.source);
                 return;
             }
         } catch (error) {
-            console.log(`❌ Failed ${endpoint}:`, error.message);
+            // Silently skip failed endpoints
         }
     }
-    
-    console.warn('⚠️ All endpoints failed, using cached data');
+    // All endpoints failed, use cached data
 }
 
 // ====================================
@@ -189,7 +183,6 @@ async function fetchBinanceP2PRate() {
 function saveData() {
     try {
         localStorage.setItem('usdt_data', JSON.stringify(usdtData));
-        console.log('✅ USDT data saved');
     } catch (e) {
         console.error('Error saving data:', e);
         alert('Lỗi khi lưu dữ liệu!');

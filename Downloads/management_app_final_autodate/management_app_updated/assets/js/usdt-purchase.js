@@ -7,8 +7,6 @@ let currentP2PRate = 0;
 
 // Fetch live P2P sell price (via Netlify Function to bypass CORS)
 async function fetchBinanceP2PRate() {
-    console.log('🚀 Fetching P2P rate...');
-    
     // Method 1: Netlify Function (Primary - bypasses CORS)
     const origin = window.location.origin;
     const netlifyUrls = [
@@ -215,7 +213,6 @@ async function loadP2PRate() {
                 saveData();
                 renderTable();
                 updateStatistics();
-                console.log(`✅ Tự động áp dụng giá P2P cho ${updated} dòng`);
                 if (typeof showSuccess === 'function') {
                     showSuccess(`Đã cập nhật giá P2P: ${formatCurrency(currentP2PRate)}`);
                 }
@@ -225,7 +222,6 @@ async function loadP2PRate() {
                 }
             }
 
-            console.log('✅ P2P rate loaded:', currentP2PRate);
         } else {
             console.warn('⚠️ Giá P2P không hợp lệ');
             if (typeof showWarning === 'function') {
@@ -249,7 +245,6 @@ window.loadP2PRate = loadP2PRate;
 function saveData() {
     try {
         localStorage.setItem('usdt_purchase_data', JSON.stringify(usdtPurchaseData));
-        console.log('✅ USDT purchase data saved');
     } catch (e) {
         console.error('Error saving data:', e);
         if (typeof showError === 'function') {
@@ -766,8 +761,6 @@ async function clearAllData() {
         } else {
             alert('✅ Đã xóa toàn bộ dữ liệu và tạo lại bảng mới!\n\n20 dòng trống đã được tạo sẵn.');
         }
-        
-        console.log('✅ All data cleared and reset');
     } catch (e) {
         console.error('Error clearing data:', e);
         if (typeof showError === 'function') {
