@@ -57,7 +57,9 @@
     function getNote(tableName, rowIndex) {
         const notes = loadNotes();
         const key = getNoteKey(tableName, rowIndex);
-        return notes[key] || null;
+        const note = notes[key];
+        // Only return note if it has actual content (not empty or whitespace)
+        return (note && note.trim()) ? note : null;
     }
 
     /**

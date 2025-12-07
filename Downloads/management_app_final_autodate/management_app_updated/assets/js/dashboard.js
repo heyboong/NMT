@@ -25,7 +25,9 @@
         try {
             const notes = JSON.parse(localStorage.getItem('table_row_notes') || '{}');
             const key = `${tableName}_row_${rowIndex}`;
-            return notes[key] || null;
+            const note = notes[key];
+            // Only return note if it has actual content (not empty or whitespace)
+            return (note && note.trim()) ? note : null;
         } catch (err) {
             console.error('Error loading note:', err);
             return null;
@@ -667,9 +669,9 @@
             
             actionCell.appendChild(insertBtn);
             
-            // Note button - only show if row has a note
+            // Note button - only show if row has a note with actual content
             const hasNote = getNote('Dashboard-Conversion', rowIndex);
-            if (hasNote) {
+            if (hasNote && hasNote.trim()) {
                 const noteBtn = document.createElement('button');
                 noteBtn.type = 'button';
                 noteBtn.textContent = '📝';
@@ -1304,9 +1306,9 @@
             
             actionCell.appendChild(insertBtn);
             
-            // Note button - only show if row has a note
+            // Note button - only show if row has a note with actual content
             const hasNote = getNote('Dashboard-Withdraw', rowIndex);
-            if (hasNote) {
+            if (hasNote && hasNote.trim()) {
                 const noteBtn = document.createElement('button');
                 noteBtn.type = 'button';
                 noteBtn.textContent = '📝';
