@@ -168,6 +168,60 @@
             </div>
         </div>
 
+        <!-- Bảng tổng tiền làm hàng ngày -->
+        <div style="margin-bottom: 48px;">
+            <h2 style="font-size: 28px; font-weight: 700; color: #1e293b; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+                <span style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 4px; height: 32px; border-radius: 2px;"></span>
+                <span>📅 Tiền Làm Hàng Ngày</span>
+            </h2>
+            
+            <div style="margin-bottom: 32px; overflow-x: auto; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); background: white;">
+                <table id="daily-earnings-table" style="width: 100%; border-collapse: separate; border-spacing: 0; background: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                    <thead>
+                        <tr style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <th style="padding: 14px 16px; text-align: center; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; border-top-left-radius: 16px;">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <span style="font-size: 16px;">📅</span>
+                                    <span>Ngày</span>
+                                </div>
+                            </th>
+                            <th style="padding: 14px 16px; text-align: center; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; background: rgba(5, 150, 105, 0.95);">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <span style="font-size: 16px;">💼</span>
+                                    <span>AE</span>
+                                </div>
+                            </th>
+                            <th style="padding: 14px 16px; text-align: center; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; background: rgba(8, 145, 178, 0.95);">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <span style="font-size: 16px;">🌐</span>
+                                    <span>AE-QT</span>
+                                </div>
+                            </th>
+                            <th style="padding: 14px 16px; text-align: center; border: none; color: white; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; background: rgba(239, 68, 68, 0.95); border-top-right-radius: 16px;">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <span style="font-size: 16px;">💰</span>
+                                    <span>Tổng Cộng</span>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="daily-earnings-body">
+                        <!-- Data will be populated by JS -->
+                    </tbody>
+                    <tfoot>
+                        <tr style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); font-weight: 800; border-top: 3px solid #10b981;">
+                            <td style="padding: 16px; text-align: center; color: white; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom-left-radius: 16px;">
+                                📊 Tổng Tất Cả
+                            </td>
+                            <td id="daily-total-ae" style="padding: 16px; text-align: center; color: #10b981; font-size: 16px; font-weight: 800;">0₫</td>
+                            <td id="daily-total-aeqt" style="padding: 16px; text-align: center; color: #0891b2; font-size: 16px; font-weight: 800;">0₫</td>
+                            <td id="daily-total-combined" style="padding: 16px; text-align: center; color: #fbbf24; font-size: 18px; font-weight: 800; border-bottom-right-radius: 16px;">0₫</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
         <!-- Biểu đồ và thống kê theo tháng -->
         <div style="margin-bottom: 48px;">
             <h2 style="font-size: 28px; font-weight: 700; color: #1e293b; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
@@ -769,6 +823,182 @@
             });
         }
         
+        /**
+         * Load and display daily earnings from AE and AE-QT tables
+         */
+        window.loadDailyEarnings = function() {
+            console.log('📅 Loading daily earnings...');
+            
+            const tableBody = document.getElementById('daily-earnings-body');
+            const totalAEEl = document.getElementById('daily-total-ae');
+            const totalAEQTEl = document.getElementById('daily-total-aeqt');
+            const totalCombinedEl = document.getElementById('daily-total-combined');
+            
+            if (!tableBody) {
+                console.warn('⚠️ Daily earnings table not found');
+                return;
+            }
+            
+            // Load data from localStorage
+            const aeData = loadData('AE_sheet') || [];
+            const aeqtData = loadData('AEQT_sheet') || [];
+            
+            // Helper function to normalize dates
+            const normalizeDate = (dateStr) => {
+                if (!dateStr) return '';
+                const cleaned = dateStr.trim();
+                if (!cleaned) return '';
+                
+                // Try DD/MM/YYYY or DD-MM-YYYY format
+                const dmyMatch = cleaned.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+                if (dmyMatch) {
+                    const day = dmyMatch[1].padStart(2, '0');
+                    const month = dmyMatch[2].padStart(2, '0');
+                    const year = dmyMatch[3];
+                    return `${year}-${month}-${day}`;
+                }
+                
+                // Try YYYY-MM-DD format
+                const ymdMatch = cleaned.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+                if (ymdMatch) {
+                    const year = ymdMatch[1];
+                    const month = ymdMatch[2].padStart(2, '0');
+                    const day = ymdMatch[3].padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                }
+                
+                return cleaned;
+            };
+            
+            // Group AE data by date
+            const aeByDate = {};
+            aeData.forEach(row => {
+                if (row && row.date) {
+                    const normalized = normalizeDate(row.date);
+                    if (normalized) {
+                        if (!aeByDate[normalized]) {
+                            aeByDate[normalized] = 0;
+                        }
+                        const money = parseFloat(row.money) || 0;
+                        aeByDate[normalized] += money;
+                    }
+                }
+            });
+            
+            // Group AE-QT data by date
+            const aeqtByDate = {};
+            aeqtData.forEach(row => {
+                if (row && row.date) {
+                    const normalized = normalizeDate(row.date);
+                    if (normalized) {
+                        if (!aeqtByDate[normalized]) {
+                            aeqtByDate[normalized] = 0;
+                        }
+                        const money = parseFloat(row.money) || 0;
+                        aeqtByDate[normalized] += money;
+                    }
+                }
+            });
+            
+            // Get all unique dates and sort descending (newest first)
+            const allDates = new Set([...Object.keys(aeByDate), ...Object.keys(aeqtByDate)]);
+            const sortedDates = Array.from(allDates).sort((a, b) => b.localeCompare(a));
+            
+            // Calculate totals
+            let totalAE = 0;
+            let totalAEQT = 0;
+            
+            // Clear table
+            tableBody.innerHTML = '';
+            
+            // Populate table
+            sortedDates.forEach((date, index) => {
+                const aeAmount = aeByDate[date] || 0;
+                const aeqtAmount = aeqtByDate[date] || 0;
+                const combined = aeAmount + aeqtAmount;
+                
+                totalAE += aeAmount;
+                totalAEQT += aeqtAmount;
+                
+                // Format date back to DD/MM/YYYY
+                const parts = date.split('-');
+                const displayDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                
+                const tr = document.createElement('tr');
+                tr.style.transition = 'all 0.2s ease';
+                
+                // Alternate row colors
+                if (index % 2 === 0) {
+                    tr.style.background = '#f8fafc';
+                } else {
+                    tr.style.background = 'white';
+                }
+                
+                // Hover effect
+                tr.addEventListener('mouseenter', function() {
+                    this.style.background = '#e0f2fe';
+                    this.style.transform = 'scale(1.01)';
+                });
+                tr.addEventListener('mouseleave', function() {
+                    if (index % 2 === 0) {
+                        this.style.background = '#f8fafc';
+                    } else {
+                        this.style.background = 'white';
+                    }
+                    this.style.transform = 'scale(1)';
+                });
+                
+                // Date column
+                const dateCell = document.createElement('td');
+                dateCell.textContent = displayDate;
+                dateCell.style.padding = '12px 16px';
+                dateCell.style.textAlign = 'center';
+                dateCell.style.fontWeight = '600';
+                dateCell.style.color = '#1e293b';
+                dateCell.style.fontSize = '14px';
+                tr.appendChild(dateCell);
+                
+                // AE column
+                const aeCell = document.createElement('td');
+                aeCell.textContent = aeAmount > 0 ? formatVND(aeAmount) : '—';
+                aeCell.style.padding = '12px 16px';
+                aeCell.style.textAlign = 'center';
+                aeCell.style.fontWeight = '600';
+                aeCell.style.color = aeAmount > 0 ? '#059669' : '#94a3b8';
+                aeCell.style.fontSize = '14px';
+                tr.appendChild(aeCell);
+                
+                // AE-QT column
+                const aeqtCell = document.createElement('td');
+                aeqtCell.textContent = aeqtAmount > 0 ? formatVND(aeqtAmount) : '—';
+                aeqtCell.style.padding = '12px 16px';
+                aeqtCell.style.textAlign = 'center';
+                aeqtCell.style.fontWeight = '600';
+                aeqtCell.style.color = aeqtAmount > 0 ? '#0891b2' : '#94a3b8';
+                aeqtCell.style.fontSize = '14px';
+                tr.appendChild(aeqtCell);
+                
+                // Combined column
+                const combinedCell = document.createElement('td');
+                combinedCell.textContent = formatVND(combined);
+                combinedCell.style.padding = '12px 16px';
+                combinedCell.style.textAlign = 'center';
+                combinedCell.style.fontWeight = '700';
+                combinedCell.style.color = '#dc2626';
+                combinedCell.style.fontSize = '15px';
+                tr.appendChild(combinedCell);
+                
+                tableBody.appendChild(tr);
+            });
+            
+            // Update footer totals
+            if (totalAEEl) totalAEEl.textContent = formatVND(totalAE);
+            if (totalAEQTEl) totalAEQTEl.textContent = formatVND(totalAEQT);
+            if (totalCombinedEl) totalCombinedEl.textContent = formatVND(totalAE + totalAEQT);
+            
+            console.log(`✅ Daily earnings loaded: ${sortedDates.length} days, AE: ${formatVND(totalAE)}, AE-QT: ${formatVND(totalAEQT)}, Total: ${formatVND(totalAE + totalAEQT)}`);
+        };
+        
         // Initialize
         window.addEventListener('DOMContentLoaded', async () => {
             console.log('🚀 Page loaded, initializing...');
@@ -781,6 +1011,9 @@
             // Load summary data
             await window.loadHomeSummary();
             
+            // Load daily earnings
+            window.loadDailyEarnings();
+            
             // Check data availability
             window.checkDataAvailability();
 
@@ -791,6 +1024,7 @@
             const refreshInterval = window.P2P_REFRESH_INTERVAL || (10 * 60 * 1000); // 10 phút
             setInterval(() => {
                 window.loadHomeSummary();
+                window.loadDailyEarnings(); // Also refresh daily earnings
                 console.log('🔄 Tự động cập nhật giá P2P lúc', new Date().toLocaleTimeString('vi-VN'));
             }, refreshInterval);
             
@@ -802,7 +1036,10 @@
             }, 500);
             
             // Refresh data when storage changes
-            window.addEventListener('storage', window.loadHomeSummary);
+            window.addEventListener('storage', () => {
+                window.loadHomeSummary();
+                window.loadDailyEarnings();
+            });
         });
         
         })(); // End of IIFE
