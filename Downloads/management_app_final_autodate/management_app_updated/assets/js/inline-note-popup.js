@@ -82,7 +82,10 @@
     function updateCellNoteIndicator(cell, hasNote) {
         if (!cell) return;
         
-        if (hasNote) {
+        // Only show note indicator on cells that have content
+        const hasContent = cell.textContent && cell.textContent.trim();
+        
+        if (hasNote && hasContent) {
             cell.setAttribute('data-has-note', 'true');
             // Only set title if we have the context
             if (currentTableName !== null && currentRowIndex !== null) {
@@ -453,7 +456,8 @@
                 
                 if (note) {
                     row.querySelectorAll('td[contenteditable="true"]').forEach(cell => {
-                        if (cell) {
+                        // Only show note indicator on cells that have content
+                        if (cell && cell.textContent && cell.textContent.trim()) {
                             cell.setAttribute('data-has-note', 'true');
                             const preview = note.length > 50 ? note.substring(0, 50) + '...' : note;
                             cell.title = 'Ghi chú: ' + preview;
