@@ -1,7 +1,8 @@
 -- ========================================
 -- SUPABASE DATABASE SETUP
 -- Tạo đầy đủ các bảng cho Management App
--- Version: 2.0 - Updated with all localStorage keys
+-- Version: 3.0 - Updated December 2025
+-- Features: AE, AE-QT, Dashboard (Conversion/Withdraw), System, USDT, Notes, Staff Color Coding
 -- ========================================
 
 -- Enable UUID extension
@@ -362,6 +363,32 @@ WHERE schemaname = 'public'
     )
 ORDER BY tablename;
 
+-- Count records in each table
+SELECT 'ae_data' as table_name, COUNT(*) as records FROM ae_data
+UNION ALL
+SELECT 'ae_qt_data', COUNT(*) FROM ae_qt_data
+UNION ALL
+SELECT 'history_data', COUNT(*) FROM history_data
+UNION ALL
+SELECT 'dashboard_conversion', COUNT(*) FROM dashboard_conversion
+UNION ALL
+SELECT 'dashboard_withdraw', COUNT(*) FROM dashboard_withdraw
+UNION ALL
+SELECT 'rate_settings', COUNT(*) FROM rate_settings
+UNION ALL
+SELECT 'system_categories', COUNT(*) FROM system_categories
+UNION ALL
+SELECT 'table_row_notes', COUNT(*) FROM table_row_notes
+UNION ALL
+SELECT 'usdt_data', COUNT(*) FROM usdt_data
+UNION ALL
+SELECT 'usdt_purchase_data', COUNT(*) FROM usdt_purchase_data
+UNION ALL
+SELECT 'staff_list_ae', COUNT(*) FROM staff_list_ae
+UNION ALL
+SELECT 'staff_list_aeqt', COUNT(*) FROM staff_list_aeqt
+ORDER BY table_name;
+
 -- ========================================
 -- SETUP COMPLETE
 -- ========================================
@@ -375,9 +402,36 @@ ORDER BY tablename;
 -- All 12 tables will be created with:
 -- - UUID primary keys
 -- - user_id for multi-tenant support
--- - JSONB data storage
+-- - JSONB data storage for flexibility
 -- - Timestamps (created_at, updated_at)
--- - Indexes for performance
+-- - Indexes for performance optimization
 -- - Row Level Security (RLS) enabled
--- - Auto-update triggers
+-- - Auto-update triggers for updated_at
+-- 
+-- localStorage Keys Mapped:
+-- - AE_sheet → ae_data
+-- - AEQT_sheet → ae_qt_data
+-- - historyData → history_data
+-- - dashboard_conversion → dashboard_conversion
+-- - dashboard_withdraw → dashboard_withdraw
+-- - rate_settings → rate_settings
+-- - system_categories_* → system_categories
+-- - table_row_notes → table_row_notes
+-- - usdt_sheet → usdt_data
+-- - usdtPurchaseData → usdt_purchase_data
+-- - staffList_AE → staff_list_ae
+-- - staffList_AEQT → staff_list_aeqt
+-- 
+-- Features Supported:
+-- ✅ AE và AE-QT: Bảng chính với công thức tính toán tự động
+-- ✅ Dashboard: Conversion (Đổi USDT) và Withdraw (Rút tiền)
+-- ✅ System: Quản lý danh mục động
+-- ✅ USDT: Mua bán USDT
+-- ✅ Notes: Ghi chú cho từng dòng bảng (Ctrl+Click, Right-click)
+-- ✅ Staff Color Coding: Tự động tô màu tên nhân viên
+--    - Xanh dương: Nhân viên AE-QT
+--    - Đỏ đậm: Nhân viên AE
+-- ✅ Text Color Highlight: Tô màu chữ tùy chỉnh
+-- ✅ Export Excel/CSV
+-- ✅ Auto-sync with localStorage
 -- ========================================

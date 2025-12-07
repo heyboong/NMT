@@ -546,7 +546,7 @@
             const label = type === 'ae' ? 'AE' : 'AE-QT';
             
             if (list.length === 0) {
-                alert('Danh sách trống!');
+                showStaffNotification('⚠️ Danh sách trống!');
                 return;
             }
 
@@ -565,9 +565,71 @@
             link.click();
             document.body.removeChild(link);
             
-            showStaffNotification('📥 Đã xuất file CSV - ' + label);
+            showStaffNotification('📥 Đã xuất ' + list.length + ' NV - ' + label);
+        }
+        
+        // Import staff list from clipboard (NEW FEATURE)
+        window.importStaffListFromClipboard = async function(type) {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (!text || !text.trim()) {
+                    showStaffNotification('⚠️ Clipboard trống!');
+                    return;
+                }
+                
+                // Parse names (support comma, newline, or semicolon separated)
+                const names = text.split(/[,;\n\r]+/).map(n => n.trim()).filter(n => n.length > 0);
+                
+                if (names.length === 0) {
+                    showStaffNotification('⚠️ Không tìm thấy tên hợp lệ!');
+                    return;
+                }
+                
+                if (confirm(`Nhập ${names.length} tên vào ${type === 'ae' ? 'AE' : 'AE-QT'}?\n\n${names.slice(0, 5).join(', ')}${names.length > 5 ? '...' : ''}`)) {
+                    let added = 0;
+                    let duplicates = 0;
+                    
+                    names.forEach(name => {
+                        if (addStaff(name, type, true)) {
+                            added++;
+                        } else {
+                            duplicates++;
+                        }
+                    });
+                    
+                    renderStaffListInModal(type);
+                    showStaffNotification(`✅ Nhập: ${added} thành công${duplicates > 0 ? `, ${duplicates} trùng` : ''}`);
+                }
+            } catch (err) {
+                console.error('Import error:', err);
+                showStaffNotification('❌ Lỗi: ' + err.message);
+            }
         }
 
+        // Clear all staff (NEW FEATURE)
+        window.clearAllStaff = function(type) {
+            loadStaffListData();
+            const list = type === 'ae' ? staffListAE : staffListAEQT;
+            const label = type === 'ae' ? 'AE' : 'AE-QT';
+            
+            if (list.length === 0) {
+                showStaffNotification('⚠️ Danh sách đã trống!');
+                return;
+            }
+            
+            if (confirm(`Xóa tất cả ${list.length} NV trong danh sách ${label}?\n\n⚠️ Hành động này KHÔNG THỂ HOÀN TÁC!`)) {
+                const count = list.length;
+                if (type === 'ae') {
+                    staffListAE = [];
+                } else {
+                    staffListAEQT = [];
+                }
+                saveStaffListData(type);
+                renderStaffListInModal(type);
+                showStaffNotification(`🗑️ Đã xóa ${count} NV khỏi ${label}`);
+            }
+        }
+        
         // Show notification
         function showStaffNotification(message) {
             const notification = document.createElement('div');
@@ -604,22 +666,50 @@
             
             // Load staff data on init
             loadStaffListData();
+            console.log('📊 Staff data loaded - AE:', staffListAE.length, 'AE-QT:', staffListAEQT.length);
             
             // Open staff management modal
             const manageStaffBtn = document.getElementById('manage-staff-btn');
+            console.log('🔍 Manage button found:', !!manageStaffBtn);
             
             if (manageStaffBtn) {
-                manageStaffBtn.addEventListener('click', function() {
-                    console.log('👆 Button clicked!');
+                console.log('✅ Adding click listener to manage-staff-btn');
+                
+                manageStaffBtn.addEventListener('click', function(e) {
+                    console.log('👆 Button clicked! Event:', e);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
                     const modal = document.getElementById('staff-modal');
+                    console.log('🔍 Modal found:', !!modal);
                     
                     if (modal) {
                         modal.style.display = 'flex';
                         console.log('✅ Modal display set to flex');
-                        renderStaffListInModal('ae');
-                        renderStaffListInModal('aeqt');
+                        
+                        try {
+                            renderStaffListInModal('ae');
+                            console.log('✅ AE list rendered');
+                        } catch (err) {
+                            console.error('❌ Error rendering AE list:', err);
+                        }
+                        
+                        try {
+                            renderStaffListInModal('aeqt');
+                            console.log('✅ AE-QT list rendered');
+                        } catch (err) {
+                            console.error('❌ Error rendering AE-QT list:', err);
+                        }
+                    } else {
+                        console.error('❌ Modal not found!');
+                        alert('Lỗi: Không tìm thấy modal! Vui lòng refresh trang.');
                     }
                 });
+                
+                console.log('✅ Click listener added successfully');
+            } else {
+                console.error('❌ manage-staff-btn not found in DOM!');
+                alert('Lỗi: Không tìm thấy nút Quản Lý NV! Vui lòng refresh trang.');
             }
             
             // Enter key support for new staff inputs
@@ -664,11 +754,15 @@
         window.addStaffFromModal = function(type) {
             const inputId = type === 'ae' ? 'new-staff-ae' : 'new-staff-aeqt';
             const input = document.getElementById(inputId);
-            if (!input) return;
+            if (!input) {
+                console.error('❌ Input not found:', inputId);
+                return;
+            }
             
             const inputValue = input.value.trim();
             if (!inputValue) {
-                alert('Vui lòng nhập tên nhân viên!');
+                showStaffNotification('⚠️ Vui lòng nhập tên nhân viên!');
+                input.focus();
                 return;
             }
             
@@ -676,20 +770,24 @@
             const names = inputValue.split(',').map(name => name.trim()).filter(name => name.length > 0);
             
             if (names.length === 0) {
-                alert('Vui lòng nhập tên hợp lệ!');
+                showStaffNotification('⚠️ Vui lòng nhập tên hợp lệ!');
                 return;
             }
             
             let addedCount = 0;
             let duplicateCount = 0;
+            let errorCount = 0;
             const addedNames = [];
             
             names.forEach(name => {
-                if (addStaff(name, type)) {
+                const result = addStaff(name, type, true); // silent mode
+                if (result === true) {
                     addedCount++;
                     addedNames.push(name);
-                } else {
+                } else if (result === false) {
                     duplicateCount++;
+                } else {
+                    errorCount++;
                 }
             });
             
@@ -698,15 +796,22 @@
             renderStaffListInModal(type);
             
             // Show summary notification
+            const typeLabel = type === 'ae' ? 'AE' : 'AE-QT';
             if (addedCount > 0) {
-                const typeLabel = type === 'ae' ? 'AE' : 'AE-QT';
                 if (addedCount === 1) {
                     showStaffNotification(`✅ Đã thêm: ${addedNames[0]} (${typeLabel})`);
                 } else {
-                    showStaffNotification(`✅ Đã thêm ${addedCount} NV vào ${typeLabel}${duplicateCount > 0 ? ` (${duplicateCount} trùng)` : ''}`);
+                    let message = `✅ Đã thêm ${addedCount} NV vào ${typeLabel}`;
+                    if (duplicateCount > 0) message += ` (⚠️ ${duplicateCount} trùng)`;
+                    if (errorCount > 0) message += ` (❌ ${errorCount} lỗi)`;
+                    showStaffNotification(message);
                 }
-            } else if (duplicateCount > 0) {
-                alert('Tất cả tên đã tồn tại trong danh sách!');
+            } else {
+                if (duplicateCount > 0) {
+                    showStaffNotification('⚠️ Tất cả tên đã tồn tại trong danh sách!');
+                } else if (errorCount > 0) {
+                    showStaffNotification('❌ Có lỗi xảy ra khi thêm!');
+                }
             }
         }
 
