@@ -35,6 +35,9 @@
         createToolbarHTML();
         console.log('✓ Toolbar HTML created');
         
+        // Don't create toggle button - use existing buttons in HTML
+        // createToggleButton();
+        
         attachEventListeners();
         console.log('✓ Event listeners attached');
         
@@ -189,9 +192,12 @@
 
         // Close toolbar when clicking outside
         document.addEventListener('click', (e) => {
+            const isToggleBtn = e.target.closest('#text-color-toggle-conversion') || 
+                                e.target.closest('#text-color-toggle-withdraw');
+            
             if (toolbarVisible && 
                 !toolbar.contains(e.target) && 
-                !toggleBtn.contains(e.target) &&
+                !isToggleBtn &&
                 e.target !== currentCell) {
                 // Don't close if clicking on a contenteditable cell
                 if (!(e.target.contentEditable === 'true' && e.target.tagName === 'TD')) {
