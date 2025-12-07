@@ -330,11 +330,12 @@ function renderTable() {
                 </td>
                 <td>
                     <input type="text" 
-                        value="${workAmount > 0 ? formatCurrency(workAmount) : ''}"
-                        readonly
-                        placeholder="0₫"
-                        title="Tự động tính từ Bảng AE + AE-QT cùng ngày ${row.date || ''}"
-                        style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right; background: #e7f3ff; font-weight: 700; color: #0066cc; cursor: not-allowed;">
+                        value="${row.workAmount !== undefined ? formatCurrency(row.workAmount) : (workAmount > 0 ? formatCurrency(workAmount) : '')}"
+                        onfocus="this.value = this.value.replace(/[^0-9]/g, '')" 
+                        onblur="updateCellCurrency(${index}, 'workAmount', this.value); this.value = formatCurrency(parseFloat(this.value.replace(/[^0-9]/g, '')) || 0)"
+                        placeholder="${workAmount > 0 ? formatCurrency(workAmount) + ' (auto)' : '0₫'}"
+                        title="Có thể nhập thủ công hoặc tự động tính từ Bảng AE + AE-QT cùng ngày ${row.date || ''}"
+                        style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; text-align: right; background: ${row.workAmount !== undefined ? 'white' : '#e7f3ff'}; font-weight: 700; color: ${row.workAmount !== undefined ? '#1e40af' : '#0066cc'};">
                 </td>
                 <td>
                     <input type="text" 
@@ -400,9 +401,10 @@ function updateTotals() {
             countGiaNhap++;
         }
         
-        // Tiền Làm từ bảng AE + AE-QT
+        // Tiền Làm từ bảng AE + AE-QT (hoặc nhập thủ công)
         const dateKey = normalizeDateKey(row.date);
-        const workAmount = dateKey ? (workTotals[dateKey] || 0) : 0;
+        const autoWorkAmount = dateKey ? (workTotals[dateKey] || 0) : 0;
+        const workAmount = row.workAmount !== undefined ? row.workAmount : autoWorkAmount;
         totalTienLam += workAmount;
         
         // Lãi/Lỗ %
@@ -470,7 +472,8 @@ function updateCellCurrency(index, field, value) {
     if (numericValue > 0 && typeof showSuccess === 'function') {
         const fieldNames = {
             'purchaseAmount': 'Tiền Nhập',
-            'sellPrice': 'Giá P2P Bán'
+            'sellPrice': 'Giá P2P Bán',
+            'workAmount': 'Tiền Làm'
         };
         showSuccess(`Đã cập nhật ${fieldNames[field] || field}: ${formatCurrency(numericValue)}`, 2000);
     }
@@ -527,6 +530,7 @@ function addNewRow() {
         time: nowTime,
         purchaseAmount: 0,
         usdtBuy: 0,
+        workAmount: undefined,  // Để undefined để tự động tính từ AE/AE-QT
         sellPrice: currentP2PRate > 0 ? currentP2PRate : 0  // Tự động điền giá P2P nếu có
     });
     
@@ -560,6 +564,7 @@ function insertRowAfter(index) {
         time: baseTime,
         purchaseAmount: 0,
         usdtBuy: 0,
+        workAmount: undefined,  // Để undefined để tự động tính từ AE/AE-QT
         sellPrice: currentP2PRate > 0 ? currentP2PRate : (usdtPurchaseData[index]?.sellPrice || 0)
     };
 
